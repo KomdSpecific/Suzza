@@ -3,7 +3,8 @@
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "model/ModelResourceManager.h"
 #include "ImageLoaderManager.h"
-#include "commonmacro/VkMacro.h"
+#include "ModelLoaderManager.h"
+#include "macros/VkMacro.h"
 #include "GameApplication.h"
 
 #include <stdexcept>
@@ -18,6 +19,8 @@ namespace suz
 	ModelResourceManager Engine::m_modelResourceManager;
 	/* 图像加载管理器分配内存 */
 	ImageLoaderManager Engine::m_imageLoaderManager;
+	/* 模型加载管理器分配内存 */
+	ModelLoaderManager Engine::m_modelLoaderManager;
 	/* 图像Bindless插槽管理器分配内存 */
 	BindlessSlotsAllocator Engine::m_bindlessSlotsAllocator;
 
@@ -42,6 +45,11 @@ namespace suz
 		return m_imageLoaderManager;
 	}
 
+	ModelLoaderManager& Engine::GetModelLoaderManager()
+	{
+		return m_modelLoaderManager;
+	}
+
 	BindlessSlotsAllocator& Engine::GetBindlessSlotsAllocator()
 	{
 		return m_bindlessSlotsAllocator;
@@ -51,6 +59,8 @@ namespace suz
 	{
 		/* 图像加载管理器创建调度器 */
 		m_imageLoaderManager.CreateImageDispatcher();
+		/* 模型加载管理器创建调度器 */
+		m_modelLoaderManager.CreateModelLoaderDispatcher();
 
 		/* 创建主窗口 */
 		m_mainWindow = std::make_unique<MainWindow>(WIDTH, HEIGHT, "First Window");

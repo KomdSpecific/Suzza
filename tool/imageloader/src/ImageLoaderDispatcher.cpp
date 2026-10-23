@@ -35,7 +35,7 @@ namespace suz
 	{
 		std::string extensionName = GetFileExtension(FilePath);
 
-		for (auto& loader : m_loaders)
+		for (const auto& loader : m_loaders)
 		{
 			/* 找到支持该格式的加载器, 直接调用 */
 			if (loader->QuerySupportFormat(extensionName))

@@ -10,79 +10,83 @@
 
 bool GameApplication::Init()
 {
-	const std::vector<suz::Vertex> vertices = {
-		/* 纹理读取从左上角开始画N字 */
-		// -------- 面1：+X面（向前面，X=+0.5f）4顶点
-		{{ 0.5f, -0.5f, -0.5f }, {1,1,1}, {0,0}},
-		{{ 0.5f,  0.5f, -0.5f }, {1,1,1}, {1,0}},
-		{{ 0.5f,  0.5f,  0.5f }, {1,1,1}, {1,1}},
-		{{ 0.5f, -0.5f,  0.5f }, {1,1,1}, {0,1}},
+	//const std::vector<suz::Vertex> vertices = {
+	//	/* 纹理读取从左上角开始画N字 */
+	//	// -------- 面1：+X面（向前面，X=+0.5f）4顶点
+	//	{{ 0.5f, -0.5f, -0.5f }, {1,1,1}, {0,0}},
+	//	{{ 0.5f,  0.5f, -0.5f }, {1,1,1}, {1,0}},
+	//	{{ 0.5f,  0.5f,  0.5f }, {1,1,1}, {1,1}},
+	//	{{ 0.5f, -0.5f,  0.5f }, {1,1,1}, {0,1}},
 
-		// -------- 面2：‑X面（朝后，X=-0.5f）
-		{{-0.5f, -0.5f, -0.5f }, {1,1,1}, {0,1}},
-		{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {1,1}},
-		{{-0.5f,  0.5f,  0.5f }, {1,1,1}, {1,0}},
-		{{-0.5f, -0.5f,  0.5f }, {1,1,1}, {0,0}},
+	//	// -------- 面2：‑X面（朝后，X=-0.5f）
+	//	{{-0.5f, -0.5f, -0.5f }, {1,1,1}, {0,1}},
+	//	{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {1,1}},
+	//	{{-0.5f,  0.5f,  0.5f }, {1,1,1}, {1,0}},
+	//	{{-0.5f, -0.5f,  0.5f }, {1,1,1}, {0,0}},
 
-		// -------- 面3：+Y面（向右，Y=+0.5f）
-		{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {0,0}},
-		{{ 0.5f,  0.5f, -0.5f }, {1,1,1}, {1,0}},
-		{{ 0.5f,  0.5f,  0.5f }, {1,1,1}, {1,1}},
-		{{-0.5f,  0.5f,  0.5f }, {1,1,1}, {0,1}},
+	//	// -------- 面3：+Y面（向右，Y=+0.5f）
+	//	{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {0,0}},
+	//	{{ 0.5f,  0.5f, -0.5f }, {1,1,1}, {1,0}},
+	//	{{ 0.5f,  0.5f,  0.5f }, {1,1,1}, {1,1}},
+	//	{{-0.5f,  0.5f,  0.5f }, {1,1,1}, {0,1}},
 
-		// -------- 面4：‑Y面（向左，Y=-0.5f）
-		{{-0.5f, -0.5f, -0.5f }, {1,1,1}, {0,0}},
-		{{ 0.5f, -0.5f, -0.5f }, {1,1,1}, {1,0}},
-		{{ 0.5f, -0.5f,  0.5f }, {1,1,1}, {1,1}},
-		{{-0.5f, -0.5f,  0.5f }, {1,1,1}, {0,1}},
+	//	// -------- 面4：‑Y面（向左，Y=-0.5f）
+	//	{{-0.5f, -0.5f, -0.5f }, {1,1,1}, {0,0}},
+	//	{{ 0.5f, -0.5f, -0.5f }, {1,1,1}, {1,0}},
+	//	{{ 0.5f, -0.5f,  0.5f }, {1,1,1}, {1,1}},
+	//	{{-0.5f, -0.5f,  0.5f }, {1,1,1}, {0,1}},
 
-		// -------- 面5：+Z面（顶面，Z=+0.5f）
-		{{-0.5f, -0.5f,  0.5f }, {1,1,1}, {0,0}},
-		{{ 0.5f, -0.5f,  0.5f }, {1,1,1}, {1,0}},
-		{{ 0.5f,  0.5f,  0.5f }, {1,1,1}, {1,1}},
-		{{-0.5f,  0.5f,  0.5f }, {1,1,1}, {0,1}},
+	//	// -------- 面5：+Z面（顶面，Z=+0.5f）
+	//	{{-0.5f, -0.5f,  0.5f }, {1,1,1}, {0,0}},
+	//	{{ 0.5f, -0.5f,  0.5f }, {1,1,1}, {1,0}},
+	//	{{ 0.5f,  0.5f,  0.5f }, {1,1,1}, {1,1}},
+	//	{{-0.5f,  0.5f,  0.5f }, {1,1,1}, {0,1}},
 
-		// -------- 面6：‑Z面（底面，Z=-0.5f）
-		{{-0.5f, -0.5f, -0.5f }, {1,1,1}, {0,0}},
-		{{ 0.5f, -0.5f, -0.5f }, {1,1,1}, {1,0}},
-		{{ 0.5f,  0.5f, -0.5f }, {1,1,1}, {1,1}},
-		{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {0,1}},
-	};
+	//	// -------- 面6：‑Z面（底面，Z=-0.5f）
+	//	{{-0.5f, -0.5f, -0.5f }, {1,1,1}, {0,0}},
+	//	{{ 0.5f, -0.5f, -0.5f }, {1,1,1}, {1,0}},
+	//	{{ 0.5f,  0.5f, -0.5f }, {1,1,1}, {1,1}},
+	//	{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {0,1}},
+	//};
 
-	const std::vector<uint16_t> indices =
-	{
-		//前面 (0,1,2), (0,2,3)
-		0,1,2, 0,2,3,
-		//后面 (4,5,6), (4,6,7)
-		4,5,6, 4,6,7,
-		//左面 (8,9,10), (8,10,11)
-		8,9,10, 8,10,11,
-		//右面 (12,13,14), (12,14,15)
-		12,13,14, 12,14,15,
-		//底面 (16,17,18), (16,18,19)
-		16,17,18, 16,18,19,
-		//顶面 (20,21,22), (20,22,23)
-		20,21,22, 20,22,23
-	};
+	//const std::vector<suz::uint32> indices =
+	//{
+	//	//前面 (0,1,2), (0,2,3)
+	//	0,1,2, 0,2,3,
+	//	//后面 (4,5,6), (4,6,7)
+	//	4,5,6, 4,6,7,
+	//	//左面 (8,9,10), (8,10,11)
+	//	8,9,10, 8,10,11,
+	//	//右面 (12,13,14), (12,14,15)
+	//	12,13,14, 12,14,15,
+	//	//底面 (16,17,18), (16,18,19)
+	//	16,17,18, 16,18,19,
+	//	//顶面 (20,21,22), (20,22,23)
+	//	20,21,22, 20,22,23
+	//};
 
 	m_scene = std::make_unique<suz::Scene>();
 
 	suz::ModelResourceManager& modelManager = suz::Engine::GetModelResourceManager();
 
 	/* 加载Mesh */
-	suz::Mesh* mesh = new suz::Mesh(vertices, indices);
-	const std::string& meshId = modelManager.LoadMesh(mesh);
+	/*suz::Mesh* mesh = new suz::Mesh(vertices, indices);
+	const std::string& meshId = modelManager.LoadMesh(mesh);*/
 
 	/* 加载Material */
-	suz::Material* material1 = new suz::Material();
+	/*suz::Material* material1 = new suz::Material();
 	const std::string& materialId1 = modelManager.LoadMaterial(material1);
 
 	std::filesystem::path filePath = FileSystem::GetAssetsFolder() / "textures" / "1275469.jpg";
 	suz::Material* material2 = new suz::Material(filePath.string());
-	const std::string& materialId2 = modelManager.LoadMaterial(material2);
+	const std::string& materialId2 = modelManager.LoadMaterial(material2);*/
+
+
+	std::filesystem::path filePath = FileSystem::GetAssetsFolder() / "model" / "pony_cartoon" / "scene.gltf";
+	m_scene->LoadModel(filePath.string());
 
 	/* 创建Actor */
-	suz::Actor* actor1 = new suz::Actor();
+	/*suz::Actor* actor1 = new suz::Actor();
 	m_scene->RegisterActor(actor1);
 
 	suz::Actor* actor2 = new suz::Actor();
@@ -99,7 +103,7 @@ bool GameApplication::Init()
 	meshComponentActor2->CreateMaterial(materialId2);
 	actor2->RegisterComponent<suz::MeshComponent>(meshComponentActor2);
 	actor2->SetActorLocation({ 3.0f,1.2f,0.0f });
-	actor2->SetActorRotation({ 0.0f,0.0f,0.0f });
+	actor2->SetActorRotation({ 0.0f,0.0f,0.0f });*/
 
 	/* 定义玩家Actor */
 	suz::PlayerController* player = new suz::PlayerController(m_scene.get());

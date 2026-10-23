@@ -3,7 +3,7 @@
 #include "Component.h"
 #include "model/Mesh.h"
 #include "model/Material.h"
-#include "commonmacro/GameSceneMacro.h"
+#include "macros/GameSceneMacro.h"
 
 #include <memory>
 #include <vector>
@@ -22,7 +22,7 @@ namespace suz
 		~MeshComponent();
 
 		void CreateMesh(const std::string& MeshId);
-		void CreateMesh(const std::vector<Vertex>& Vertices, const std::vector<uint16_t>& Indices);
+		void CreateMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
 		void CreateMesh(Mesh* mesh);
 
 		void CreateMaterial(const std::string& MaterialId);

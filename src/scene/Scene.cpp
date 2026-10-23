@@ -1,7 +1,13 @@
 #include "Scene.h"
+#include "Engine.h"
+#include "model/ModelResourceManager.h"
+#include "ModelLoaderManager.h"
+#include "components/MeshComponent.h"
 
 namespace suz
 {
+	void CopyVertexDataStruct(std::vector<ModelVertexData> SrcData, std::vector<Vertex>& DstData);
+
 	void Scene::RegisterActor(Actor* TargetActor)
 	{
 		if (!TargetActor) return;
@@ -20,6 +26,30 @@ namespace suz
 		/* 非立即删除, 而是标记为待删除列表 */
 		if (!TargetActor) return;
 		m_actorForDestroy.push_back(TargetActor);
+	}
+
+	void Scene::LoadModel(const std::string& FilePath)
+	{
+		std::vector<ModelData> modelData = Engine::GetModelLoaderManager().LoadModel(FilePath);
+		ModelResourceManager& resourceManager = Engine::GetModelResourceManager();
+
+		for (const ModelData& model : modelData)
+		{
+			std::vector<Vertex> vertex{};
+			CopyVertexDataStruct(model.vertices, vertex);
+
+			suz::MeshComponent* meshComponent = new suz::MeshComponent();
+			/* 加载Mesh */
+			meshComponent->CreateMesh(vertex, model.indices);
+
+			std::string texturePath = model.modelFolderPath + "/" + model.material.baseColorTexturePath;
+			/* 加载Material */
+			meshComponent->CreateMaterial(new Material(texturePath));
+
+			Actor* actor = new Actor();
+			RegisterActor(actor);
+			actor->RegisterComponent<MeshComponent>(meshComponent);
+		}
 	}
 
 	void Scene::BeginPlay()
@@ -69,5 +99,11 @@ namespace suz
 
 		m_actorForDestroy.clear();
 		m_rootActorList.clear();
+	}
+
+	void CopyVertexDataStruct(std::vector<ModelVertexData> SrcData, std::vector<Vertex>& DstData)
+	{
+		DstData.resize(SrcData.size());
+		memcpy(DstData.data(), SrcData.data(), sizeof(ModelVertexData) * SrcData.size());
 	}
 }

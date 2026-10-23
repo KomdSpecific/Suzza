@@ -1,10 +1,11 @@
 #include "Pipeline.h"
 #include "model/Render.h"
-#include "commonmacro/VkMacro.h"
+#include "macros/VkMacro.h"
+
+#include "debug/SuzzaLog.h"
 
 #include <fstream>
 #include <stdexcept>
-#include <iostream>
 #include <cassert>
 
 namespace suz
@@ -37,7 +38,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class Pipeline Warning: 未调用Destroy手动销毁!" << std::endl;
+			SUZZA_LOG_ERROR("Class Pipeline Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
 	}

@@ -1,8 +1,9 @@
 #include "SyncObject.h"
-#include "commonmacro/VkMacro.h"
+#include "macros/VkMacro.h"
+
+#include "debug/SuzzaLog.h"
 
 #include <stdexcept>
-#include <iostream>
 
 namespace suz
 {
@@ -16,7 +17,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class SyncObject Warning: 未调用Destroy手动销毁!" << std::endl;
+			SUZZA_LOG_ERROR("Class SyncObject Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
 	}

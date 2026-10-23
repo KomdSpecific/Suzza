@@ -4,9 +4,10 @@
 #include "BufferArea.h"
 #include "MainWindow.h"
 
+#include "debug/SuzzaLog.h"
+
 #include <cstdint>
 #include <stdexcept>
-#include <iostream>
 #include <string>
 
 namespace suz
@@ -23,7 +24,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class SwapChain Warning: 未调用Destroy手动销毁!" << std::endl;
+			SUZZA_LOG_ERROR("Class SwapChain Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
 	}

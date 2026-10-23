@@ -3,12 +3,12 @@
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "VulkanInitialize.h"
 #include "Pipeline.h"
-#include "commonmacro/VkMacro.h"
+#include "macros/VkMacro.h"
 #include "graphics/Texture.h"
-#include "scene/Actor.h"
+
+#include "debug/SuzzaLog.h"
 
 #include <stdexcept>
-#include <iostream>
 
 namespace suz
 {
@@ -27,7 +27,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class BufferArea Warning: 未调用Destroy手动销毁!" << std::endl;
+			SUZZA_LOG_ERROR("Class BufferArea Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
 	}
@@ -126,10 +126,10 @@ namespace suz
 		vkFreeMemory(m_device, stagingMemory, nullptr);
 	}
 
-	uint32_t BufferArea::CreateIndexBuffer(const std::vector<uint16_t>& Indices, VkBuffer& IndexBuffer, VkDeviceMemory& IndexBufferMemory)
+	uint32 BufferArea::CreateIndexBuffer(const std::vector<uint32>& Indices, VkBuffer& IndexBuffer, VkDeviceMemory& IndexBufferMemory)
 	{
 		const VkDeviceSize bufferSize = sizeof(Indices[0]) * Indices.size();
-		uint32_t indexBufferSize = static_cast<uint32_t>(Indices.size());
+		uint32 indexBufferSize = static_cast<uint32>(Indices.size());
 
 		/* 创建主机可见的缓冲作为临时缓冲 */
 		VkBuffer stagingBuffer = {};
@@ -141,7 +141,7 @@ namespace suz
 		void* data;
 		vkMapMemory(m_device, stagingMemory, 0, bufferSize, 0, &data);
 		/* 拷贝数据到映射的内存 */
-		memcpy(data, Indices.data(), (size_t)bufferSize);
+		memcpy(data, Indices.data(), (usize)bufferSize);
 		vkUnmapMemory(m_device, stagingMemory);
 
 		/* 创建设备本地内存的缓冲区(内存类型最佳且无法直接访问) */
@@ -156,7 +156,7 @@ namespace suz
 		return indexBufferSize;
 	}
 
-	void BufferArea::CopyBufferToImage(const VkBuffer& SrcBuffer, const VkImage& DstImage, uint32_t Width, uint32_t Height)
+	void BufferArea::CopyBufferToImage(const VkBuffer& SrcBuffer, const VkImage& DstImage, uint32 Width, uint32 Height)
 	{
 		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
@@ -256,7 +256,7 @@ namespace suz
 			vkCmdBindVertexBuffers(CommandBuffer, 0, 1, &mesh->GetMeshVertexBuffer(), offsets);
 			if (mesh->GetMeshIndexBuffer() != VK_NULL_HANDLE)
 			{
-				vkCmdBindIndexBuffer(CommandBuffer, mesh->GetMeshIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(CommandBuffer, mesh->GetMeshIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			}
 
 			for (const ModelConstant& modelConstant : modelConstants)
@@ -306,7 +306,7 @@ namespace suz
 		);
 	}
 
-	uint32_t BufferArea::FindMemoryType(uint32_t TypeFilter, const VkMemoryPropertyFlags& Properties)
+	uint32 BufferArea::FindMemoryType(uint32 TypeFilter, const VkMemoryPropertyFlags& Properties)
 	{
 		const VkPhysicalDevice& physicalDevice = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetPhysicalDevice();
 		/* 查询相关可用内存的信息 */
@@ -314,7 +314,7 @@ namespace suz
 		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &physicalDeviceMemory);
 
 		/* 查询合适的内存索引 可能存在多个期望的属性因此按位与运算比较 */
-		for (size_t typeIndex = 0; typeIndex < physicalDeviceMemory.memoryTypeCount; typeIndex++)
+		for (usize typeIndex = 0; typeIndex < physicalDeviceMemory.memoryTypeCount; typeIndex++)
 		{
 			if (TypeFilter & (1 << typeIndex) && (physicalDeviceMemory.memoryTypes[typeIndex].propertyFlags & Properties) == Properties)
 			{

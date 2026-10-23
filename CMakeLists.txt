@@ -23,13 +23,17 @@ project (SuzzaEngine)
 
 find_package(Vulkan REQUIRED)
 
+
+add_subdirectory(shared)
+
+add_subdirectory(thirdparty/cgltf)
 add_subdirectory(thirdparty/glfw)
 add_subdirectory(thirdparty/glm)
 add_subdirectory(thirdparty/stb_image)
 
-
 add_subdirectory(tool/broadcast)
 add_subdirectory(tool/imageloader)
+add_subdirectory(tool/modelloader)
 
 
 set(SHADERS_DIR "${CMAKE_SOURCE_DIR}/shaders")
@@ -132,9 +136,14 @@ target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE
 	glfw
 	glm
 	Vulkan::Vulkan
+	stb_image
+	cgltf
+
+	Suzza_Shared_Moudle
+
 	Brocast_Delegate_Moudle
 	Image_Loader_Moudle
-	stb_image
+	Model_Loader_Moudle
 )
 
 # 拷贝资产文件目录

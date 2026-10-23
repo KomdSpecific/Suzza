@@ -2,6 +2,8 @@
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 
+#include "debug/SuzzaLog.h"
+
 namespace suz
 {
 	Material::Material(const std::string& FilePath)
@@ -14,6 +16,11 @@ namespace suz
 
 	Material::~Material()
 	{
+		if (*m_isAlive)
+		{
+			SUZZA_LOG_ERROR("Class Material Warning: 未调用Destroy手动销毁!");
+			Destroy();
+		}
 	}
 
 	void Material::Destroy()

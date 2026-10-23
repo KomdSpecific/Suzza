@@ -13,6 +13,7 @@ namespace suz
 	class VulkanResourceManager;
 	class ModelResourceManager;
 	class ImageLoaderManager;
+	class ModelLoaderManager;
 	class BindlessSlotsAllocator;
 
 	class Engine
@@ -22,6 +23,7 @@ namespace suz
 		static VulkanResourceManager& GetVulkanResourceManager();
 		static ModelResourceManager& GetModelResourceManager();
 		static ImageLoaderManager& GetImageLoaderManager();
+		static ModelLoaderManager& GetModelLoaderManager();
 		static BindlessSlotsAllocator& GetBindlessSlotsAllocator();
 
 	private:
@@ -48,6 +50,8 @@ namespace suz
 		static ModelResourceManager m_modelResourceManager;
 		/* 图像加载管理器 */
 		static ImageLoaderManager m_imageLoaderManager;
+		/* 模型加载管理器 */
+		static ModelLoaderManager m_modelLoaderManager;
 		/* 图像Bindless插槽管理器 */
 		static BindlessSlotsAllocator m_bindlessSlotsAllocator;
 		/* 引擎窗口 */

@@ -3,7 +3,7 @@
 #include "BaseObject.h"
 #include "SuzzaTypes.h"
 #include "graphics/Texture.h"
-#include "commonmacro/VkMacro.h"
+#include "macros/VkMacro.h"
 
 #include <string>
 #include <utility>

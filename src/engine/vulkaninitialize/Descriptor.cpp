@@ -3,10 +3,11 @@
 #include "VulkanResourceManager.h"
 #include "Pipeline.h"
 #include "BufferArea.h"
-#include "commonmacro/VkMacro.h"
+#include "macros/VkMacro.h"
+
+#include "debug/SuzzaLog.h"
 
 #include <array>
-#include <iostream>
 
 namespace suz
 {
@@ -19,7 +20,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class Descriptor Warning: 未调用Destroy手动销毁!" << std::endl;
+			SUZZA_LOG_ERROR("Class Descriptor Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
 	}

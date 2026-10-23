@@ -1,22 +1,19 @@
 #pragma once
 
 #include "BaseObject.h"
+#include "SuzzaTypes.h"
 #include "Component.h"
+#include "structtype/ModelStructor.h"
 
 #include <vulkan/vulkan.h>
-#include <glm/glm.hpp>
 #include <array>
 #include <vector>
 #include <unordered_set>
 
 namespace suz
 {
-	struct Vertex
+	struct Vertex : public ModelVertexData
 	{
-		glm::vec3 position;
-		glm::vec3 color;
-		glm::vec2 texCoord;
-
 		static VkVertexInputBindingDescription GetBindingDescription();
 
 		static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescription();
@@ -25,7 +22,7 @@ namespace suz
 	class Mesh : public BaseObject
 	{
 	public:
-		Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint16_t>& Indices);
+		Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
 		~Mesh();
 
 		virtual void Destroy() override;
@@ -36,11 +33,11 @@ namespace suz
 
 		VkBuffer m_indexBuffer = {};
 		VkDeviceMemory m_indexBufferMemory = {};
-		uint32_t m_indexBufferSize = 0;
+		uint32 m_indexBufferSize = 0;
 
 	public:
 		inline VkBuffer& GetMeshVertexBuffer() { return m_vertexBuffer; }
 		inline VkBuffer& GetMeshIndexBuffer() { return m_indexBuffer; }
-		inline const uint32_t& GetIndexBufferSize() const { return m_indexBufferSize; }
+		inline const uint32& GetIndexBufferSize() const { return m_indexBufferSize; }
 	};
 }

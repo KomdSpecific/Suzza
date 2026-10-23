@@ -38,9 +38,9 @@ namespace suz
 #pragma region BUFFER_HELPER_FUNCTION
 		static void CreateBuffer(const VkDeviceSize& Buffersize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Properties, VkBuffer& BufferToCreate, VkDeviceMemory& AllocatedMemory);
 		void CreateVertexBuffer(const std::vector<Vertex>& Vertices, VkBuffer& VertexBuffer, VkDeviceMemory& VertexBufferMemory);
-		uint32_t CreateIndexBuffer(const std::vector<uint16_t>& Indices, VkBuffer& IndexBuffer, VkDeviceMemory& IndexBufferMemory);
+		uint32 CreateIndexBuffer(const std::vector<uint32>& Indices, VkBuffer& IndexBuffer, VkDeviceMemory& IndexBufferMemory);
 		/* 复制缓冲区到图像 */
-		void CopyBufferToImage(const VkBuffer& SrcBuffer, const VkImage& DstImage, uint32_t Width, uint32_t Height);
+		void CopyBufferToImage(const VkBuffer& SrcBuffer, const VkImage& DstImage, uint32 Width, uint32 Height);
 		/* 只创建缓冲区并关联内存, 不正式更改顶点属性 */
 		void CreateUniformBuffers();
 
@@ -54,7 +54,7 @@ namespace suz
 #pragma region STATIC_HELPER_FUNCTION
 		static VkFormat FindDepthFormat();
 		/* 找到正确的内存类型 */
-		static uint32_t FindMemoryType(uint32_t TypeFilter, const VkMemoryPropertyFlags& Properties);
+		static uint32 FindMemoryType(uint32 TypeFilter, const VkMemoryPropertyFlags& Properties);
 		/* 找到支持的格式 */
 		static VkFormat FindSupportFormat(const std::vector<VkFormat>& Candidates, const VkImageTiling& Tiling, const VkFormatFeatureFlags& Features);
 

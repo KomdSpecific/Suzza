@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
 namespace suz
 {
@@ -12,6 +13,8 @@ namespace suz
 	public:
 		void RegisterActor(Actor* TargetActor);
 		void MarkedActorDestroy(Actor* TargetActor);
+
+		void LoadModel(const std::string& FilePath);
 
 		void BeginPlay();
 		void Update(float DeltaTime);

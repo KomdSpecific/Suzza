@@ -3,7 +3,7 @@
 #include "BaseObject.h"
 #include "Mesh.h"
 #include "Material.h"
-#include "commonmacro/VkMacro.h"
+#include "macros/VkMacro.h"
 #include "SuzzaTypes.h"
 
 #include <string>
@@ -26,7 +26,7 @@ namespace suz
 
 	public:
 #pragma region Mesh
-		const std::string LoadMesh(const std::vector<Vertex>& Vertices, const std::vector<uint16>& Indices);
+		const std::string LoadMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
 		const std::string LoadMesh(Mesh* MeshToLoad);
 
 		void UnLoadMesh(const std::string& MeshId);

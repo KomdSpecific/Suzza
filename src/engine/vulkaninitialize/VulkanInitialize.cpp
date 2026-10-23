@@ -3,11 +3,11 @@
 #include "MainWindow.h"
 #include "SwapChain.h"
 #include "device/DeviceFunctionLibrary.h"
-#include "commonmacro/VkMacro.h"
+#include "macros/VkMacro.h"
 
-#include <GLFW/glfw3.h>
+#include "debug/SuzzaLog.h"
+
 #include <stdexcept>
-#include <iostream>
 #include <set>
 
 namespace suz
@@ -34,7 +34,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class VulkanInitialize Warning: 未调用Destroy手动销毁!" << std::endl;
+			SUZZA_LOG_ERROR("Class VulkanInitialize Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
 	}

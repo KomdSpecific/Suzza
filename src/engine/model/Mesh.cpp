@@ -3,7 +3,7 @@
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkaninitialize/BufferArea.h"
 
-#include <iostream>
+#include "debug/SuzzaLog.h"
 
 namespace suz
 {
@@ -23,7 +23,7 @@ namespace suz
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;							// 对应着色器的location指令
 		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;	// 描述属性的所有分量, 此处3个32位浮点分量
-		attributeDescriptions[0].offset = offsetof(Vertex, position);	// 从顶点内开始读取的偏移量
+		attributeDescriptions[0].offset = offsetof(Vertex, location);	// 从顶点内开始读取的偏移量
 
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
@@ -38,22 +38,19 @@ namespace suz
 		return attributeDescriptions;
 	}
 
-	Mesh::Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint16_t>& Indices)
+	Mesh::Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
 	{
 		Engine& engInstance = Engine::GetEngineInstance();
 		BufferArea* bufferarea = engInstance.GetVulkanResourceManager().GetBufferArea();
 		bufferarea->CreateVertexBuffer(Vertices, m_vertexBuffer, m_vertexBufferMemory);
 		m_indexBufferSize = bufferarea->CreateIndexBuffer(Indices, m_indexBuffer, m_indexBufferMemory);
-		/* 创建描述缓冲 */
-		//bufferarea->CreateUniformBuffers();
-		//bufferarea->CreateDescriptorSets();
 	}
 
 	Mesh::~Mesh()
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class Mesh Warning: 未调用Destroy手动销毁!" << std::endl;
+			SUZZA_LOG_ERROR("Class Mesh Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
 	}

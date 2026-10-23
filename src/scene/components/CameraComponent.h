@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Component.h"
-#include "commonmacro/GameSceneMacro.h"
+#include "macros/GameSceneMacro.h"
 
 #include <glm/glm.hpp>
 

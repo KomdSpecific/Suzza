@@ -2,7 +2,7 @@
 
 #include "Component.h"
 #include "input/InputManager.h"
-#include "commonmacro/GameSceneMacro.h"
+#include "macros/GameSceneMacro.h"
 
 namespace suz
 {
@@ -22,7 +22,7 @@ namespace suz
 
 		suz::InputManager& m_inputManager;
 
-		float m_moveSpeed = 1.0f;						// 移动速度
+		float m_moveSpeed = 100.0f;						// 移动速度
 		float m_sensitivity = 0.1f;						// 鼠标旋转灵敏度
 	};
 }

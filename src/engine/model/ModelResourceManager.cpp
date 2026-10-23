@@ -32,7 +32,7 @@ namespace suz
 		*m_isAlive = false;
 	}
 
-	const std::string ModelResourceManager::LoadMesh(const std::vector<Vertex>& Vertices, const std::vector<uint16>& Indices)
+	const std::string ModelResourceManager::LoadMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
 	{
 		std::shared_ptr<Mesh> loadedMesh = std::make_shared<Mesh>(Vertices, Indices);
 

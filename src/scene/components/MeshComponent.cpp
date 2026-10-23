@@ -43,7 +43,7 @@ namespace suz
 		}
 	}
 
-	void MeshComponent::CreateMesh(const std::vector<Vertex>& Vertices, const std::vector<uint16_t>& Indices)
+	void MeshComponent::CreateMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
 	{
 		ModelResourceManager& modelManager = Engine::GetModelResourceManager();
 		const std::string& meshId = modelManager.LoadMesh(Vertices, Indices);

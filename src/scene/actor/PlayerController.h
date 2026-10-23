@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Actor.h"
-#include "commonmacro/GameSceneMacro.h"
+#include "macros/GameSceneMacro.h"
 
 namespace suz
 {
