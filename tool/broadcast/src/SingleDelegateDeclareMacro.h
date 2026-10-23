@@ -1,101 +1,133 @@
 #pragma once
 
+#include "SingleDelegate.h"
+
 #define DECLARE_SINGLE_DELEGATE(DELEGATE_CLASS_NAME) \
 namespace suz \
 { \
-	template<typename Class> \
 	class DELEGATE_CLASS_NAME \
 	{ \
 	public: \
+		template<typename Class> \
 		void Bind(Class* TargetObj, void(Class::* CallbackFunc)()); \
+		template<typename Lambda> \
+		void Bind(Lambda&& CallbackFunc); \
 	\
-		void Execute(); \
+		void Execute() const; \
 	\
 		void Remove(); \
 	\
-		void IsSame(Class* TargetObj, void(Class::* CallbackFunc)()) const \
+		template<typename Class> \
+		bool IsSame(Class* TargetObj, void(Class::* CallbackFunc)()) const \
 		{ \
-			return m_objPtr == TargetObj && CallbackFunction == CallbackFunc; \
+			if (!m_delegate) return false; \
+			\
+			auto* realDelegate = dynamic_cast<DelegateWrapper<Class>*>(m_delegate.get()); \
+			if (realDelegate) \
+			{ \
+				return realDelegate->IsSame(TargetObj, CallbackFunc); \
+			} \
+			\
+			return false; \
 		} \
 	\
 	private: \
-		Class* m_objPtr; \
-		std::shared_ptr<bool> m_isObjAlive; \
-		void (Class::* CallbackFunction)(); \
+		std::unique_ptr<DelegateWrapperBase> m_delegate = {}; \
 	}; \
 	\
 	template<typename Class> \
-	inline void DELEGATE_CLASS_NAME<Class>::Bind(Class* TargetObj, void(Class::* CallbackFunc)()) \
+	inline void DELEGATE_CLASS_NAME::Bind(Class* TargetObj, void(Class::* CallbackFunc)()) \
 	{ \
-		m_objPtr = TargetObj; \
-		m_isObjAlive = TargetObj->GetValidPtr(); \
-		CallbackFunction = CallbackFunc; \
+		auto delegateWrapper = std::make_unique<DelegateWrapper<Class>>(); \
+		delegateWrapper->Bind(TargetObj, CallbackFunc); \
+		m_delegate = std::move(delegateWrapper); \
 	} \
 	\
-	template<typename Class> \
-	inline void DELEGATE_CLASS_NAME<Class>::Execute() \
+	template<typename Lambda> \
+	inline void DELEGATE_CLASS_NAME::Bind(Lambda&& CallbackFunc) \
 	{ \
-		if (m_isObjAlive && *m_isObjAlive) \
+		m_delegate = std::make_unique<LambdaWrapper>(std::forward<Lambda>(CallbackFunc)); \
+	} \
+	\
+	inline void DELEGATE_CLASS_NAME::Execute() const\
+	{ \
+		if (!m_delegate) return; \
+		\
+		auto pack = std::make_any<std::tuple<>>(); \
+		m_delegate->ExecutePack(pack); \
+	} \
+	\
+	inline void DELEGATE_CLASS_NAME::Remove() \
+	{ \
+		if (m_delegate) \
 		{ \
-			(m_objPtr->*CallbackFunction)(); \
+			m_delegate->Remove(); \
+			m_delegate = nullptr; \
 		} \
-	} \
-	\
-	template<typename Class> \
-	inline void DELEGATE_CLASS_NAME<Class>::Remove() \
-	{ \
-		m_objPtr = nullptr; \
-		m_isObjAlive.reset(); \
-		CallbackFunction = nullptr; \
 	} \
 }
 
 #define DECLARE_SINGLE_DELEGATE_ONE_PARAM(DELEGATE_CLASS_NAME, PARAM1) \
 namespace suz \
 { \
-	template<typename Class, typename PARAM1> \
 	class DELEGATE_CLASS_NAME \
 	{ \
 	public: \
+		template<typename Class> \
 		void Bind(Class* TargetObj, void(Class::* CallbackFunc)(PARAM1)); \
+		template<typename Lambda> \
+		void Bind(Lambda&& CallbackFunc); \
 	\
 		void Execute(PARAM1 Value1) const; \
 	\
 		void Remove(); \
 	\
+		template<typename Class> \
 		bool IsSame(Class* TargetObj, void(Class::* CallbackFunc)(PARAM1)) const \
 		{	\
-			return m_objPtr == TargetObj && CallbackFunction == CallbackFunc;	\
+			if (!m_delegate) return false; \
+			\
+			auto* realDelegate = dynamic_cast<DelegateWrapper<Class, PARAM1>*>(m_delegate.get()); \
+			if (realDelegate) \
+			{ \
+				return realDelegate->IsSame(TargetObj, CallbackFunc); \
+			} \
+			\
+			return false;	\
 		} \
 	\
 	private:	\
-		Class* m_objPtr;	\
-		std::shared_ptr<bool> m_isObjAlive;		\
-		void (Class::* CallbackFunction)(PARAM1); \
+		std::unique_ptr<DelegateWrapperBase> m_delegate = {}; \
 	}; \
 	\
-	template<typename Class, typename PARAM1> \
-	inline void DELEGATE_CLASS_NAME<Class, PARAM1>::Bind(Class* TargetObj, void(Class::* CallbackFunc)(PARAM1)) \
+	template<typename Class> \
+	inline void DELEGATE_CLASS_NAME::Bind(Class* TargetObj, void(Class::* CallbackFunc)(PARAM1)) \
 	{ \
-		m_objPtr = TargetObj; \
-		m_isObjAlive = TargetObj->GetValidPtr(); \
-		CallbackFunction = CallbackFunc; \
+		auto delegateWrapper = std::make_unique<DelegateWrapper<Class, PARAM1>>(); \
+		delegateWrapper->Bind(TargetObj, CallbackFunc); \
+		m_delegate = std::move(delegateWrapper); \
 	} \
 	\
-	template<typename Class, typename PARAM1> \
-	inline void DELEGATE_CLASS_NAME<Class, PARAM1>::Execute(PARAM1 Value1) const \
+	template<typename Lambda> \
+	inline void DELEGATE_CLASS_NAME::Bind(Lambda&& CallbackFunc) \
 	{ \
-		if (m_isObjAlive && *m_isObjAlive) \
+		m_delegate = std::make_unique<LambdaWrapper<PARAM1>>(std::forward<Lambda>(CallbackFunc)); \
+	} \
+	\
+	inline void DELEGATE_CLASS_NAME::Execute(PARAM1 Value1) const \
+	{ \
+		if (!m_delegate) return; \
+		\
+		auto pack = std::make_any<std::tuple<PARAM1>>(std::move(Value1)); \
+		m_delegate->ExecutePack(pack); \
+	} \
+	\
+	inline void DELEGATE_CLASS_NAME::Remove() \
+	{ \
+		if (m_delegate) \
 		{ \
-			(m_objPtr->*CallbackFunction)(std::forward<PARAM1>(Value1)); \
+			m_delegate->Remove(); \
+			m_delegate = nullptr; \
 		} \
-	} \
-	\
-	template<typename Class, typename PARAM1> \
-	inline void DELEGATE_CLASS_NAME<Class, PARAM1>::Remove() \
-	{ \
-		m_objPtr = nullptr; \
-		m_isObjAlive.reset(); \
-		CallbackFunction = nullptr; \
 	} \
 }

@@ -105,6 +105,8 @@ namespace suz
 
 		VkPhysicalDevice m_vkPhysicalDevice = {};
 		VkDevice m_device = {};
+
+		QueueFamilyIndices m_queueFamilyIndices = {};
 		VkQueue m_graphicsQueue = {};
 		VkQueue m_presentQueue = {};
 
@@ -117,9 +119,13 @@ namespace suz
 		> m_deviceFeaturesChain = {};
 
 	public:
+		inline const VkInstance& GetVulkanInstance() const { return m_vkInstance; }
 		inline const VkSurfaceKHR& GetSurface() const { return m_surface; }
 		inline const VkPhysicalDevice& GetPhysicalDevice() const { return m_vkPhysicalDevice; }
 		inline const VkDevice& GetDevice() const { return m_device; }
+		
+		inline const uint32& GetGraphicsFamily() const { return m_queueFamilyIndices.graphicsFamily.value(); }
+		inline const uint32& GetPresentFamily() const { return m_queueFamilyIndices.presentFamily.value(); }
 		inline const VkQueue& GetGraphicsQueue() const { return m_graphicsQueue; }
 		inline const VkQueue& GetPresentQueue() const { return m_presentQueue; }
 	};

@@ -8,7 +8,13 @@ set(CMAKE_CXX_STANDARD 20)
 # 在正式发布时将此设置为ON而不是OFF
 # 设置是否为生产构建
 # Make Sure PRODUCTION_BUILD WHEN SEND TO INTERNET
-set(PRODUCTION_BUILD OFF CACHE BOOL "Make this a production build" FORCE)
+set(PRODUCTION_BUILD OFF CACHE BOOL "Make this a production build")
+
+if(NOT PRODUCTION_BUILD)
+	# 非生产环境默认开启编辑器
+	add_compile_definitions(EDITOR)
+endif()
+
 # 资产输出目录
 set(ASSETS_DIR "${CMAKE_BINARY_DIR}/assets")
 
@@ -23,6 +29,11 @@ project (SuzzaEngine)
 
 find_package(Vulkan REQUIRED)
 
+
+# 添加指定的第三方库
+if(NOT PRODUCTION_BUILD)
+	add_subdirectory(thirdparty/imgui-docking)
+endif()
 
 add_subdirectory(shared)
 
@@ -126,8 +137,8 @@ target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/io"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/engine"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/scene"
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/common"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/core"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/surface"
 )
 # Include Binary Files
 target_include_directories("${PROJECT_NAME}" PRIVATE "${PROJECT_BINARY_DIR}")
@@ -135,6 +146,7 @@ target_include_directories("${PROJECT_NAME}" PRIVATE "${PROJECT_BINARY_DIR}")
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE
 	glfw
 	glm
+	imgui_docking
 	Vulkan::Vulkan
 	stb_image
 	cgltf

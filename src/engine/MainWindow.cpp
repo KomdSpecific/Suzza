@@ -65,6 +65,8 @@ namespace suz
 	{
 		if (!(*m_isAlive)) return;
 
+		m_windowChangedDelegate.RemoveAll();
+
 		glfwDestroyWindow(m_window);
 		glfwTerminate();
 

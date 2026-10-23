@@ -3,6 +3,7 @@
 #include "BaseObject.h"
 #include "input/InputManager.h"
 #include "MultipleDelegateDeclareMacro.h"
+#include "SingleDelegateDeclareMacro.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>

@@ -2,9 +2,12 @@
 
 #include "MainWindow.h"
 #include "model/Render.h"
+#include "SingleDelegateDeclareMacro.h"
 
 #include <memory>
 #include <chrono>
+
+DECLARE_SINGLE_DELEGATE_ONE_PARAM(EngineImGuiRenderEventDelegate, VkCommandBuffer);
 
 class GameApplication;
 
@@ -15,6 +18,8 @@ namespace suz
 	class ImageLoaderManager;
 	class ModelLoaderManager;
 	class BindlessSlotsAllocator;
+
+	class EditorUI;
 
 	class Engine
 	{
@@ -63,11 +68,20 @@ namespace suz
 		/* 渲染每帧 */
 		std::unique_ptr<Render> m_render;
 
+		/* 引擎全局广播委托 */
+		EngineImGuiRenderEventDelegate m_imguiRenderDelegate;
+
+#ifdef EDITOR
+		/* 编辑器UI */
+		std::unique_ptr<EditorUI> m_editorUI = nullptr;
+#endif
+
 	public:
 		void SetApplication(GameApplication* gameApp);
 		GameApplication* GetApplication();
 
 		inline MainWindow* GetMainWindow() { return m_mainWindow.get(); }
 		inline Render* GetRender() { return m_render.get(); }
+		inline EngineImGuiRenderEventDelegate& GetEngineImGuiRenderEventDelegate() { return m_imguiRenderDelegate; }
 	};
 }

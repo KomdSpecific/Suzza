@@ -6,6 +6,7 @@
 #include "ModelLoaderManager.h"
 #include "macros/VkMacro.h"
 #include "GameApplication.h"
+#include "editor/EditorUI.h"
 
 #include <stdexcept>
 #include <glm/gtc/matrix_transform.hpp>
@@ -74,6 +75,21 @@ namespace suz
 		/* 渲染每帧实例初始化 */
 		m_render = std::make_unique<Render>();
 
+#ifdef EDITOR
+		m_editorUI = std::make_unique<EditorUI>();
+		m_editorUI->Init(
+			m_mainWindow->GetMainWindow(),
+			m_vkResourceManager.GetVulkanInitialize()->GetVulkanInstance(),
+			m_vkResourceManager.GetVulkanInitialize()->GetPhysicalDevice(),
+			m_vkResourceManager.GetVulkanInitialize()->GetDevice(),
+			m_vkResourceManager.GetVulkanInitialize()->GetGraphicsFamily(),
+			m_vkResourceManager.GetVulkanInitialize()->GetGraphicsQueue(),
+			m_vkResourceManager.GetRenderPass()->GetRenderPass(),
+			m_vkResourceManager.GetBufferArea()->GetCommandPool()
+		);
+#endif
+
+
 		return m_gameApplication->Init();
 	}
 
@@ -88,6 +104,11 @@ namespace suz
 		{
 			/* 自动检查和处理窗口事件 */
 			glfwPollEvents();
+
+#ifdef EDITOR
+			/* 编辑器开始新的一帧 */
+			m_editorUI->BeginFrame();
+#endif
 
 			auto now = std::chrono::high_resolution_clock::now();
 			float deltaTime = std::chrono::duration<float>(now - m_lastTime).count();
@@ -108,6 +129,10 @@ namespace suz
 	void Engine::Destroy()
 	{
 		m_gameApplication->Destroy();
+
+#ifdef EDITOR
+		m_editorUI->Destroy();
+#endif
 
 		/* 模型资源管理器统一销毁 */
 		m_modelResourceManager.Destroy();

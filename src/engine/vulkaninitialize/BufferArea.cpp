@@ -200,6 +200,8 @@ namespace suz
 
 	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const std::unordered_map<Mesh*, std::vector<ModelConstant>>& MeshToDraw, uint32_t ImageIndex)
 	{
+		EngineImGuiRenderEventDelegate& engineDelegate = Engine::GetEngineInstance().GetEngineImGuiRenderEventDelegate();
+
 		VkCommandBufferBeginInfo bufferBeginInfo{};
 		bufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		bufferBeginInfo.flags = 0;
@@ -268,6 +270,8 @@ namespace suz
 				vkCmdDrawIndexed(CommandBuffer, mesh->GetIndexBufferSize(), 1, 0, 0, 0);
 			}
 		}
+
+		engineDelegate.Execute(CommandBuffer);
 
 		/* Ω· ¯ªÊ÷∆√¸¡Ó */
 		vkCmdEndRenderPass(CommandBuffer);

@@ -6,7 +6,6 @@
 #include "io/FileSystem.h"
 
 #include <vector>
-#include <iostream>
 
 bool GameApplication::Init()
 {

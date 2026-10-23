@@ -274,6 +274,8 @@ namespace suz
 			i++;
 		}
 
+		m_queueFamilyIndices = indices;
+
 		return indices;
 	}
 

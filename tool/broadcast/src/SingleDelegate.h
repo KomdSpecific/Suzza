@@ -1,77 +1,20 @@
 #pragma once
 
-#include <memory>
+#include "wrapper/DelegateWrapper.h"
+#include "wrapper/LambdaWrapper.h"
+
 #include <any>
 #include <tuple>
 
 namespace suz
 {
-	class DelegateWrapperBase
-	{
-	public:
-		virtual void ExecutePack(const std::any& AnyTuple) = 0;
-		virtual void Remove() = 0;
-		virtual ~DelegateWrapperBase() = default;
-	};
-
-	template<typename Class, typename... Args>
-	class DelegateWrapper : public DelegateWrapperBase
-	{
-		using MemberFuncPtr = void (Class::*)(Args...);
-	public:
-		void Bind(Class* TargetObj, MemberFuncPtr CallbackFunc)
-		{
-			m_objPtr = TargetObj;
-			m_isObjAlive = TargetObj->GetValidPtr();
-			m_callbackFunction = CallbackFunc;
-		}
-
-		void Execute(Args... arg) const
-		{
-			if (m_objPtr && m_isObjAlive && *m_isObjAlive)
-			{
-				(m_objPtr->*m_callbackFunction)(std::forward<Args>(arg)...);
-			}
-		}
-
-		virtual void ExecutePack(const std::any& AnyTuple) override
-		{
-			if (!m_objPtr || !m_isObjAlive || !(*m_isObjAlive)) return;
-
-			const auto& tuple = std::any_cast<std::tuple<Args...>>(AnyTuple);
-			std::apply(
-				[this](auto&&...args)
-				{
-					this->Execute(std::forward<decltype(args)>(args)...);
-				},
-				tuple
-			);
-		}
-
-		virtual void Remove() override
-		{
-			m_objPtr = nullptr;
-			m_isObjAlive.reset();
-			m_callbackFunction = nullptr;
-		}
-		
-		bool IsSame(Class* TargetObj, MemberFuncPtr CallbackFunc) const
-		{
-			return m_objPtr == TargetObj && m_callbackFunction == CallbackFunc;
-		}
-
-	private:
-		Class* m_objPtr;
-		std::shared_ptr<bool> m_isObjAlive;
-		MemberFuncPtr m_callbackFunction;
-	};
-
-
 	class SingleDelegate
 	{
 	public:
 		template<typename Class>
 		void Bind(Class* TargetObj, void(Class::* CallbackFunc)());
+		template<typename Lambda>
+		void Bind(Lambda&& CallbackFunc);
 
 		void Execute() const;
 
@@ -103,6 +46,12 @@ namespace suz
 		m_delegate = std::move(delegateWrapper);
 	}
 
+	template<typename Lambda>
+	inline void SingleDelegate::Bind(Lambda&& CallbackFunc)
+	{
+		m_delegate = std::make_unique<LambdaWrapper>(std::forward<Lambda>(CallbackFunc));
+	}
+
 	inline void SingleDelegate::Execute() const
 	{
 		if (!m_delegate) return;
@@ -116,6 +65,7 @@ namespace suz
 		if (m_delegate)
 		{
 			m_delegate->Remove();
+			m_delegate = nullptr;
 		}
 	}
 
@@ -126,6 +76,8 @@ namespace suz
 	public:
 		template<typename Class>
 		void Bind(Class* TargetObj, void(Class::* CallbackFunc)(TArg1));
+		template<typename Lambda>
+		void Bind(Lambda&& CallbackFunc);
 
 		void Execute(TArg1 Value1) const;
 
@@ -159,6 +111,13 @@ namespace suz
 	}
 
 	template<typename TArg1>
+	template<typename Lambda>
+	inline void SingleDelegateOneParam<TArg1>::Bind(Lambda&& CallbackFunc)
+	{
+		m_delegate = std::make_unique<LambdaWrapper<TArg1>>(std::forward<Lambda>(CallbackFunc));
+	}
+
+	template<typename TArg1>
 	inline void SingleDelegateOneParam<TArg1>::Execute(TArg1 Value1) const
 	{
 		if (!m_delegate) return;
@@ -173,6 +132,7 @@ namespace suz
 		if (m_delegate)
 		{
 			m_delegate->Remove();
+			m_delegate = nullptr;
 		}
 	}
 
@@ -183,6 +143,8 @@ namespace suz
 	public:
 		template<typename Class>
 		void Bind(Class* TargetObj, void(Class::* CallbackFunc)(TArg1, TArg2));
+		template<typename Lambda>
+		void Bind(Lambda&& CallbackFunc);
 
 		void Execute(TArg1 Value1, TArg2 Value2) const;
 
@@ -216,6 +178,13 @@ namespace suz
 	}
 
 	template<typename TArg1, typename TArg2>
+	template<typename Lambda>
+	inline void SingleDelegateTwoParams<TArg1, TArg2>::Bind(Lambda&& CallbackFunc)
+	{
+		m_delegate = std::make_unique<LambdaWrapper<TArg1, TArg2>>(std::forward<Lambda>(CallbackFunc));
+	}
+
+	template<typename TArg1, typename TArg2>
 	inline void SingleDelegateTwoParams<TArg1, TArg2>::Execute(TArg1 Value1, TArg2 Value2) const
 	{
 		if (!m_delegate) return;
@@ -230,6 +199,7 @@ namespace suz
 		if (m_delegate)
 		{
 			m_delegate->Remove();
+			m_delegate = nullptr;
 		}
 	}
 
@@ -240,6 +210,8 @@ namespace suz
 	public:
 		template<typename Class>
 		void Bind(Class* TargetObj, void (Class::* CallbackFunc)(TArg1, TArg2, TArg3));
+		template<typename Lambda>
+		void Bind(Lambda&& CallbackFunc);
 		
 		void Execute(TArg1 Value1, TArg2 Value2, TArg3 Value3) const;
 
@@ -273,6 +245,13 @@ namespace suz
 	}
 
 	template<typename TArg1, typename TArg2, typename TArg3>
+	template<typename Lambda>
+	inline void SingleDelegateThreeParam<TArg1, TArg2, TArg3>::Bind(Lambda&& CallbackFunc)
+	{
+		m_delegate = std::make_unique<LambdaWrapper<TArg1, TArg2, TArg3>>(std::forward<Lambda>(CallbackFunc));
+	}
+
+	template<typename TArg1, typename TArg2, typename TArg3>
 	inline void SingleDelegateThreeParam<TArg1, TArg2, TArg3>::Execute(TArg1 Value1, TArg2 Value2, TArg3 Value3) const
 	{
 		if (!m_delegate) return;
@@ -287,6 +266,7 @@ namespace suz
 		if (m_delegate)
 		{
 			m_delegate->Remove();
+			m_delegate = nullptr;
 		}
 	}
 }
