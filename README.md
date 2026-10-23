@@ -1,4 +1,4 @@
-[жпнд](./README_zh.md)
+[Chinese](./README_zh.md)
 
 # Suzza
 
