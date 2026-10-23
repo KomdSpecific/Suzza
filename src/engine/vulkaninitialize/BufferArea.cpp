@@ -14,12 +14,10 @@ namespace suz
 {
 	BufferArea::BufferArea(
 		Pipeline& Pipeline,
-		const VkPhysicalDevice& PhysicalDevice,
 		const VkDevice& Device,
-		const VkSurfaceKHR& Surface,
 		const VkExtent2D& SwapChainExtent,
 		const VkRenderPass& RenderPass
-	) : m_pipeline(Pipeline), m_physicalDevice(PhysicalDevice), m_device(Device), m_surface(Surface), m_swapChainExtent(SwapChainExtent), m_renderPass(RenderPass)
+	) : m_engineInstance(Engine::GetEngineInstance()), m_pipeline(Pipeline), m_device(Device), m_swapChainExtent(SwapChainExtent), m_renderPass(RenderPass)
 	{
 	}
 
@@ -200,7 +198,7 @@ namespace suz
 
 	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const std::unordered_map<Mesh*, std::vector<ModelConstant>>& MeshToDraw, uint32_t ImageIndex)
 	{
-		EngineImGuiRenderEventDelegate& engineDelegate = Engine::GetEngineInstance().GetEngineImGuiRenderEventDelegate();
+		EngineUIRenderEventDelegate& engineDelegate = m_engineInstance.GetEngineUIRenderEventDelegate();
 
 		VkCommandBufferBeginInfo bufferBeginInfo{};
 		bufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -224,7 +222,7 @@ namespace suz
 		std::array<VkClearValue, 2> clearValues{};
 		clearValues[0].color = { {1.0f,1.0f,1.0f,1.0f} };						// 设置颜色清除值 (背景颜色)
 		clearValues[1].depthStencil = { 1.0f,0 };								// 深度 + 模板清除值
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.clearValueCount = static_cast<uint32>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
 		/* 将命令缓冲区和渲染通道绑定 */
@@ -271,6 +269,7 @@ namespace suz
 			}
 		}
 
+		/* 执行引擎全局广播委托 */
 		engineDelegate.Execute(CommandBuffer);
 
 		/* 结束绘制命令 */
@@ -514,7 +513,8 @@ namespace suz
 
 	void BufferArea::CreateCommandPool()
 	{
-		QueueFamilyIndices indices = VulkanInitialize::FindQueueFamilies(m_physicalDevice, m_surface);
+		VulkanInitialize* vulkanInitialize = Engine::GetVulkanResourceManager().GetVulkanInitialize();
+		QueueFamilyIndices indices = vulkanInitialize->FindQueueFamilies();
 
 		/* 创建命令缓冲区用于存储缓冲区的内存并用于分配缓冲区 */
 		VkCommandPoolCreateInfo commandPoolInfo{};

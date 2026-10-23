@@ -5,7 +5,7 @@
 #include "ImageLoaderManager.h"
 #include "ModelLoaderManager.h"
 #include "macros/VkMacro.h"
-#include "GameApplication.h"
+#include "SuzzaApplication.h"
 #include "editor/EditorUI.h"
 
 #include <stdexcept>
@@ -90,7 +90,7 @@ namespace suz
 #endif
 
 
-		return m_gameApplication->Init();
+		return m_suzzaApplication->Init();
 	}
 
 	void Engine::Run()
@@ -98,7 +98,7 @@ namespace suz
 		m_lastTime = std::chrono::high_resolution_clock::now();
 		InputManager& inputManager = Engine::GetEngineInstance().GetMainWindow()->GetInputManager();
 
-		m_gameApplication->BeginPlay();
+		m_suzzaApplication->BeginPlay();
 
 		while (!m_mainWindow->WindowShouldClose())
 		{
@@ -114,7 +114,7 @@ namespace suz
 			float deltaTime = std::chrono::duration<float>(now - m_lastTime).count();
 			m_lastTime = now;
 
-			m_gameApplication->Update(deltaTime);
+			m_suzzaApplication->Update(deltaTime);
 
 			m_render->Draw(deltaTime);
 
@@ -128,7 +128,7 @@ namespace suz
 
 	void Engine::Destroy()
 	{
-		m_gameApplication->Destroy();
+		m_suzzaApplication->Destroy();
 
 #ifdef EDITOR
 		m_editorUI->Destroy();
@@ -144,13 +144,13 @@ namespace suz
 		m_mainWindow->Destroy();
 	}
 
-	void Engine::SetApplication(GameApplication* gameApp)
+	void Engine::SetApplication(SuzzaApplication* gameApp)
 	{
-		m_gameApplication.reset(gameApp);
+		m_suzzaApplication.reset(gameApp);
 	}
 
-	GameApplication* Engine::GetApplication()
+	SuzzaApplication* Engine::GetApplication()
 	{
-		return m_gameApplication.get();
+		return m_suzzaApplication.get();
 	}
 }

@@ -107,23 +107,25 @@ namespace suz
 		}
 	}
 
-	void VulkanInitialize::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& CreateInfo)
+	VkDebugUtilsMessengerCreateInfoEXT VulkanInitialize::PopulateDebugMessengerCreateInfo()
 	{
-		CreateInfo = {};
-		CreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+		debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		/* 设置监听的消息级别 */
-		CreateInfo.messageSeverity =
+		debugCreateInfo.messageSeverity =
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 		/* 设置监听的消息类型 */
-		CreateInfo.messageType =
+		debugCreateInfo.messageType =
 			VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		/* 绑定回调 */
-		CreateInfo.pfnUserCallback = DebugCallback;
-		CreateInfo.pUserData = nullptr;									// 可传入自定义数据指针
+		debugCreateInfo.pfnUserCallback = DebugCallback;
+		debugCreateInfo.pUserData = nullptr;									// 可传入自定义数据指针
+		
+		return debugCreateInfo;
 	}
 
 	bool VulkanInitialize::CheckValidationLayerSupport()
@@ -237,6 +239,48 @@ namespace suz
 		return requiredExtensions.empty();
 	}
 
+	QueueFamilyIndices VulkanInitialize::FindQueueFamilies()
+	{
+		QueueFamilyIndices indices;
+
+		/* 获取设备中队列族成员数量 */
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &queueFamilyCount, nullptr);
+
+		/* 获取设备所有队列族信息 */
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &queueFamilyCount, queueFamilies.data());
+
+		int i = 0;
+		for (const VkQueueFamilyProperties& queueFamily : queueFamilies)
+		{
+			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			{
+				indices.graphicsFamily = i;
+			}
+
+			/* 查找支持绘制到窗口命令的队列族 */
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(m_vkPhysicalDevice, i, m_surface, &presentSupport);
+			if (presentSupport)
+			{
+				indices.presentFamily = i;
+			}
+
+			/* 只要找到可处理的队列族, 跳出循环*/
+			if (indices.IsValid())
+			{
+				break;
+			}
+
+			i++;
+		}
+
+		m_queueFamilyIndices = indices;
+
+		return indices;
+	}
+
 	QueueFamilyIndices VulkanInitialize::FindQueueFamilies(const VkPhysicalDevice& physicalDevice)
 	{
 		QueueFamilyIndices indices;
@@ -341,7 +385,6 @@ namespace suz
 	void VulkanInitialize::SetupDebugMessenger()
 	{
 		/* 注入验证层与调试配置 */
-		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 		if (enableValidationLayers)
 		{
 			if (!CheckValidationLayerSupport())
@@ -355,7 +398,7 @@ namespace suz
 
 			/* 填充调试信使参数 */
 			/* 挂载到pNext扩展链, 捕获实例创建/销毁过程的错误 */
-			PopulateDebugMessengerCreateInfo(debugCreateInfo);
+			VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = PopulateDebugMessengerCreateInfo();
 			m_vkCreateInfo.pNext = &debugCreateInfo;
 		}
 
@@ -370,8 +413,7 @@ namespace suz
 		/* 创建调试信使 */
 		if (enableValidationLayers)
 		{
-			VkDebugUtilsMessengerCreateInfoEXT messengerInfo{};
-			PopulateDebugMessengerCreateInfo(messengerInfo);
+			VkDebugUtilsMessengerCreateInfoEXT messengerInfo = PopulateDebugMessengerCreateInfo();
 			if (CreateDebugUtilsMessengerEXT(m_vkInstance, &messengerInfo, nullptr, &m_debugMessenger) != VK_SUCCESS)
 			{
 				throw std::runtime_error("调试信使创建失败!");

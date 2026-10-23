@@ -8,6 +8,7 @@
 
 namespace suz
 {
+	class Engine;
 	class Pipeline;
 
 	struct ViewportConfigInfo
@@ -21,9 +22,7 @@ namespace suz
 	public:
 		BufferArea(
 			Pipeline& Pipeline,
-			const VkPhysicalDevice& PhysicalDevice,
 			const VkDevice& Device,
-			const VkSurfaceKHR& Surface,
 			const VkExtent2D& SwapChainExtent,
 			const VkRenderPass& RenderPass
 		);
@@ -79,10 +78,10 @@ namespace suz
 		/* 判断选择的深度格式是否包含模板分量 */
 		bool HasStencilComponent(const VkFormat& DepthFormat);
 
+		Engine& m_engineInstance;
+
 		Pipeline& m_pipeline;
-		const VkPhysicalDevice& m_physicalDevice;
 		const VkDevice& m_device;
-		const VkSurfaceKHR& m_surface;
 		const VkRenderPass& m_renderPass;
 		/* 缓存描述符引用集合 */
 		VkDescriptorSet m_bindlessDescriptorSet = {};

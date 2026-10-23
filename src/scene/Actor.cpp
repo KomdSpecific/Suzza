@@ -18,6 +18,11 @@ namespace suz
 		{
 			comp->BeginPlay();
 		}
+
+		for (auto& childActor : m_childActors)
+		{
+			childActor->BeginPlay();
+		}
 	}
 
 	void Actor::Update(float DeltaTime)
@@ -26,10 +31,23 @@ namespace suz
 		{
 			comp->Update(DeltaTime);
 		}
+
+		for (auto& childActor : m_childActors)
+		{
+			childActor->Update(DeltaTime);
+		}
 	}
 
 	void Actor::Destroy()
 	{
+		/* 目前默认销毁子Actor */
+		for (auto& childActor : m_childActors)
+		{
+			childActor->Destroy();
+		}
+		m_childActors.clear();
+
+		/* 销毁Actor下的组件 */
 		for (Component* comp : m_components)
 		{
 			comp->Destroy();
@@ -37,11 +55,14 @@ namespace suz
 			/* 内存回收 */
 			delete comp;
 		}
-
 		m_components.clear();
+
+		SetParentActor(nullptr);
+		SetOwnerScene(nullptr);
+		SetActorStatus(ActorStatus::Destroyed);
 	}
 
-	void Actor::RegisterOwnerScene(Scene* OwnerScene)
+	void Actor::SetOwnerScene(Scene* OwnerScene)
 	{
 		m_scene = OwnerScene;
 	}
@@ -54,6 +75,44 @@ namespace suz
 		}
 	}
 
+	void Actor::SetParentActor(Actor* ParentActor)
+	{
+		m_parentActor = ParentActor;
+	}
+
+	Actor* Actor::GetParentActor()
+	{
+		return m_parentActor;
+	}
+
+	void Actor::SetActorStatus(ActorStatus Status)
+	{
+		m_status = Status;
+	}
+
+	const ActorStatus& Actor::GetActorStatus() const
+	{
+		return m_status;
+	}
+
+	bool Actor::RemoveChildActor(Actor* ChildActor)
+	{
+		for (auto it = m_childActors.begin(); it != m_childActors.end();)
+		{
+			if (*it == ChildActor)
+			{
+				m_childActors.erase(it);
+				return true;
+			}
+			else
+			{
+				it++;
+			}
+		}
+
+		return false;
+	}
+
 	void Actor::SetActorLocation(const glm::vec3& NewLocation)
 	{
 		m_location = NewLocation;
@@ -64,9 +123,23 @@ namespace suz
 		return m_location;
 	}
 
-	const glm::vec3& Actor::GetActorWorldLocation() const
+	void Actor::SetActorWorldLocation(const glm::vec3& NewWorldLocation)
 	{
-		return m_location;
+		if (!m_parentActor)
+		{
+			m_location = NewWorldLocation;
+			return;
+		}
+
+		glm::mat4 parentTransformInverse = glm::inverse(m_parentActor->GetActorWorldTransform());
+		glm::vec4 localLocation = parentTransformInverse * glm::vec4(NewWorldLocation, 1.0f);
+		m_location = glm::vec3(localLocation);
+	}
+
+	const glm::vec3 Actor::GetActorWorldLocation() const
+	{
+		glm::mat4 worldTransform = GetActorWorldTransform();
+		return glm::vec3(worldTransform[3]);
 	}
 
 	void Actor::SetActorRotation(const glm::vec3& NewRotation)
@@ -159,8 +232,22 @@ namespace suz
 		return matTranslate * matRotate * matScale;
 	}
 
+	const glm::mat4 Actor::GetActorWorldTransform() const
+	{
+		if (m_parentActor)
+		{
+			glm::mat4 parentTransform = m_parentActor->GetActorWorldTransform();
+			glm::mat4 localTransform = GetActorLocalTransform();
+			return parentTransform * localTransform;
+		}
+		else
+		{
+			return GetActorLocalTransform();
+		}
+	}
+
 	const glm::mat4 Actor::GetActorModelMatrix() const
 	{
-		return GetActorLocalTransform();
+		return GetActorWorldTransform();
 	}
 }

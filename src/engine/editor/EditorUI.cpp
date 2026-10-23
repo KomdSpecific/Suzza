@@ -19,10 +19,13 @@ namespace suz
 		uiRender->Init(window, Instance, PhysicalDevice, Device, GraphicsFamily, GraphicsQueue, RenderPass, CommandPool);
 		m_uiRender = std::unique_ptr<ImGuiUIRender>(std::move(uiRender));
 
-		EngineImGuiRenderEventDelegate& engineDelegate = Engine::GetEngineInstance().GetEngineImGuiRenderEventDelegate();
+		/* 执行引擎全局广播委托 */
+		EngineUIRenderEventDelegate& engineDelegate = Engine::GetEngineInstance().GetEngineUIRenderEventDelegate();
 		engineDelegate.Bind([this](const VkCommandBuffer& CommandBuffer)
 			{
-				this->DrawSurface();
+				SuzzaApplication* application = Engine::GetEngineInstance().GetApplication();
+
+				this->DrawSurface(application);
 				this->RecordDrawCommandBuffer(CommandBuffer);
 			});
 	}
@@ -32,9 +35,9 @@ namespace suz
 		m_uiRender->BeginFrame();
 	}
 
-	void EditorUI::DrawSurface()
+	void EditorUI::DrawSurface(SuzzaApplication* Application)
 	{
-		m_uiRender->DrawSurface();
+		m_uiRender->DrawSurfacePanels(Application);
 	}
 
 	void EditorUI::RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer)

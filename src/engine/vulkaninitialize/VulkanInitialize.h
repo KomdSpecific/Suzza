@@ -3,7 +3,7 @@
 #include "BaseObject.h"
 #include "SuzzaTypes.h"
 
-#include <vulkan/vulkan.h>
+//#include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include <optional>
@@ -61,7 +61,7 @@ namespace suz
 			const VkAllocationCallbacks* allocator
 		);
 		/* 填充调试信使创建参数 */
-		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& CreateInfo);
+		static VkDebugUtilsMessengerCreateInfoEXT PopulateDebugMessengerCreateInfo();
 
 		/* 工具: 检查验证层是否在系统中可用 */
 		bool CheckValidationLayerSupport();
@@ -75,6 +75,7 @@ namespace suz
 		/* 评估设备是否支持扩展 */
 		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice);
 		/* 再设备中查找所需的所有队列族 */
+		QueueFamilyIndices FindQueueFamilies();
 		QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& physicalDevice);
 		static QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface);
 #pragma endregion

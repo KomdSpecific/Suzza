@@ -7,4 +7,4 @@ public: \
 	ACTOR_NAME(Scene* OwnerScene);
 
 #define CALL_REGISTER_OWNERSCENE_METHOD \
-	RegisterOwnerScene(OwnerScene);
+	SetOwnerScene(OwnerScene);

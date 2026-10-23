@@ -1,6 +1,7 @@
 #include "SwapChain.h"
 #include "Engine.h"
 #include "VulkanInitialize.h"
+#include "VulkanResourceManager.h"
 #include "BufferArea.h"
 #include "MainWindow.h"
 
@@ -12,12 +13,10 @@
 
 namespace suz
 {
-	SwapChain::SwapChain(const VkPhysicalDevice& PhysicalDevice, const VkDevice& Device, const VkSurfaceKHR& Surface)
-		: m_physicalDevice(PhysicalDevice), m_device(Device), m_surface(Surface)
+	SwapChain::SwapChain(const VkDevice& Device)
+		: m_device(Device)
 	{
 		m_mainWindow = Engine::GetEngineInstance().GetMainWindow();
-		CreateSwapChain();
-		CreateImageViews();
 	}
 
 	SwapChain::~SwapChain()
@@ -27,6 +26,12 @@ namespace suz
 			SUZZA_LOG_ERROR("Class SwapChain Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
+	}
+
+	void SwapChain::InitSwapChain()
+	{
+		CreateSwapChain();
+		CreateImageViews();
 	}
 
 	void SwapChain::Destroy()
@@ -134,7 +139,11 @@ namespace suz
 
 	void SwapChain::CreateSwapChain()
 	{
-		SwapChainSupportDetails swapChainSupport = QuerySupportChainSupport(m_physicalDevice, m_surface);
+		VulkanInitialize* vulkanInitialize = Engine::GetVulkanResourceManager().GetVulkanInitialize();
+		const VkPhysicalDevice& physicalDevice = vulkanInitialize->GetPhysicalDevice();
+		const VkSurfaceKHR& surface = vulkanInitialize->GetSurface();
+
+		SwapChainSupportDetails swapChainSupport = QuerySupportChainSupport(physicalDevice, surface);
 
 		VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
 		VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
@@ -153,7 +162,7 @@ namespace suz
 		/* 创建交换链对象 */
 		VkSwapchainCreateInfoKHR swapChainCreateInfo{};
 		swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		swapChainCreateInfo.surface = m_surface;
+		swapChainCreateInfo.surface = surface;
 		/* 指定交换链图像的详细信息 */
 		swapChainCreateInfo.minImageCount = imageCount;
 		swapChainCreateInfo.imageFormat = surfaceFormat.format;
@@ -162,7 +171,7 @@ namespace suz
 		swapChainCreateInfo.imageArrayLayers = 1;									// 指定图像由多少层组成
 		swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;		// 指定交换链中图像的操作类型
 
-		QueueFamilyIndices indices = VulkanInitialize::FindQueueFamilies(m_physicalDevice, m_surface);
+		QueueFamilyIndices indices = vulkanInitialize->FindQueueFamilies();
 		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(),indices.presentFamily.value() };
 
 		if (indices.graphicsFamily != indices.presentFamily)

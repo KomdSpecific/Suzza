@@ -10,14 +10,13 @@ namespace suz
 {
 	bool VulkanResourceManager::InitVulkan()
 	{
-		// TODO: Called And Make Init Function
+		// TODO: Make And Called Init Function
 		/* 初始化并调用Init函数 */
 		m_vkInitialize = std::make_unique<VulkanInitialize>();
-		m_swapChain = std::make_unique<SwapChain>(
-			m_vkInitialize->GetPhysicalDevice(),
-			m_vkInitialize->GetDevice(),
-			m_vkInitialize->GetSurface()
-		);
+
+		m_swapChain = std::make_unique<SwapChain>(m_vkInitialize->GetDevice());
+		m_swapChain->InitSwapChain();
+
 		m_renderPass = std::make_unique<RenderPass>(
 			m_vkInitialize->GetDevice(),
 			m_swapChain->GetSwapChainFormat()
@@ -32,9 +31,7 @@ namespace suz
 		/* BufferArea初始化 */
 		m_bufferArea = std::make_unique<BufferArea>(
 			*m_pipeline,
-			m_vkInitialize->GetPhysicalDevice(),
 			m_vkInitialize->GetDevice(),
-			m_vkInitialize->GetSurface(),
 			m_swapChain->GetSwapChainExtent(),
 			m_renderPass->GetRenderPass()
 		);

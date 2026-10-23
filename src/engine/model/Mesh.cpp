@@ -40,9 +40,19 @@ namespace suz
 
 	Mesh::Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
 	{
-		Engine& engInstance = Engine::GetEngineInstance();
-		BufferArea* bufferarea = engInstance.GetVulkanResourceManager().GetBufferArea();
+		BufferArea* bufferarea = Engine::GetVulkanResourceManager().GetBufferArea();
 		bufferarea->CreateVertexBuffer(Vertices, m_vertexBuffer, m_vertexBufferMemory);
+		m_indexBufferSize = bufferarea->CreateIndexBuffer(Indices, m_indexBuffer, m_indexBufferMemory);
+	}
+
+	Mesh::Mesh(const std::vector<ModelVertexData>& Vertices, const std::vector<uint32>& Indices)
+	{
+		std::vector<Vertex> vertices{};
+		vertices.resize(Vertices.size());
+		memcpy(vertices.data(), Vertices.data(), sizeof(ModelVertexData) * Vertices.size());
+
+		BufferArea* bufferarea = Engine::GetVulkanResourceManager().GetBufferArea();
+		bufferarea->CreateVertexBuffer(vertices, m_vertexBuffer, m_vertexBufferMemory);
 		m_indexBufferSize = bufferarea->CreateIndexBuffer(Indices, m_indexBuffer, m_indexBufferMemory);
 	}
 

@@ -37,7 +37,7 @@ namespace suz
 		ImGui::NewFrame();
 	}
 
-	void ImGuiUIRender::DrawSurface()
+	void ImGuiUIRender::DrawSurfacePanels(SuzzaApplication* Application)
 	{
 		BeginWindow("Suzza Engine Editor");
 		Text("Actor Count: %d", 2);
@@ -47,6 +47,8 @@ namespace suz
 		}
 
 		EndWindow();
+
+		DrawHierarchyPanel(Application);
 	}
 
 	void ImGuiUIRender::RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer)
@@ -100,5 +102,12 @@ namespace suz
 	}
 
 #pragma endregion
+
+	void ImGuiUIRender::DrawHierarchyPanel(SuzzaApplication* Application)
+	{
+		BeginWindow("Hierarchy");
+
+		EndWindow();
+	}
 }
 #endif

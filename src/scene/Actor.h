@@ -14,6 +14,13 @@ namespace suz
 	class Scene;
 	class Mesh;
 
+	enum class ActorStatus
+	{
+		Active,
+		PendingDestroy,
+		Destroyed
+	};
+
 	class Actor
 	{
 	public:
@@ -24,9 +31,19 @@ namespace suz
 		virtual void Update(float DeltaTime);
 		virtual void Destroy();
 
-		void RegisterOwnerScene(Scene* OwnerScene);
+		void SetOwnerScene(Scene* OwnerScene);
 		void BatchRegisterAllSubComponents();
 
+		void SetParentActor(Actor* ParentActor);
+		Actor* GetParentActor();
+
+		void SetActorStatus(ActorStatus Status);
+		const ActorStatus& GetActorStatus() const;
+
+		/* ×¢²á×ÓActor */
+		template<typename Child>
+		bool RegisterChildActor(Child* TargetActor);
+		bool RemoveChildActor(Actor* ChildActor);
 		/* ×¢²áActor×é¼þ */
 		template<typename Comp>
 		bool RegisterComponent(Comp* TargetComponent);
@@ -37,7 +54,8 @@ namespace suz
 #pragma region Transform
 		void SetActorLocation(const glm::vec3& NewLocation);
 		const glm::vec3& GetActorLocation() const;
-		const glm::vec3& GetActorWorldLocation() const;
+		void SetActorWorldLocation(const glm::vec3& NewWorldLocation);
+		const glm::vec3 GetActorWorldLocation() const;
 
 		void SetActorRotation(const glm::vec3& NewRotation);
 		const glm::vec3 GetActorRotation() const;
@@ -52,6 +70,7 @@ namespace suz
 		glm::vec3 GetActorUpVector() const;
 
 		const glm::mat4 GetActorLocalTransform() const;
+		const glm::mat4 GetActorWorldTransform() const;
 #pragma endregion
 
 		const glm::mat4 GetActorModelMatrix() const;
@@ -62,13 +81,33 @@ namespace suz
 	private:
 		std::vector<Component*> m_components = {};
 
+		Actor* m_parentActor = nullptr;
+		std::vector<Actor*> m_childActors = {};
+
+		ActorStatus m_status = ActorStatus::Active;
+
 		glm::vec3 m_location = glm::vec3(0.0f);
 		glm::quat m_rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		glm::vec3 m_scale = glm::vec3(1.0f);
-
-		float m_yaw = -90.0f;								// Æ«º½½Ç ×óÓÒÒ¡Í· Ë®Æ½Ðý×ª
-		float m_pitch = 0.0f;								// ¸©Ñö½Ç Ì§Í·µÍÍ·
 	};
+
+	template<typename Child>
+	inline bool Actor::RegisterChildActor(Child* TargetActor)
+	{
+		if constexpr (!std::is_base_of_v<Actor, Child>) return false;
+
+		Actor* targetActor = static_cast<Actor*>(TargetActor);
+		for (auto it = m_childActors.begin(); it != m_childActors.end(); it++)
+		{
+			if (*it == targetActor)
+			{
+				return false;
+			}
+		}
+
+		m_childActors.push_back(targetActor);
+		return true;
+	}
 
 	template<typename Comp>
 	inline bool Actor::RegisterComponent(Comp* TargetComponent)

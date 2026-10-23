@@ -7,9 +7,9 @@
 #include <memory>
 #include <chrono>
 
-DECLARE_SINGLE_DELEGATE_ONE_PARAM(EngineImGuiRenderEventDelegate, VkCommandBuffer);
+DECLARE_SINGLE_DELEGATE_ONE_PARAM(EngineUIRenderEventDelegate, VkCommandBuffer);
 
-class GameApplication;
+class SuzzaApplication;
 
 namespace suz
 {
@@ -62,14 +62,14 @@ namespace suz
 		/* 引擎窗口 */
 		std::unique_ptr<MainWindow> m_mainWindow = nullptr;
 		/* 游戏应用 */
-		std::unique_ptr<GameApplication> m_gameApplication = nullptr;
+		std::unique_ptr<SuzzaApplication> m_suzzaApplication = nullptr;
 		/* 存储上一次记录的时间 */
 		std::chrono::steady_clock::time_point m_lastTime;
 		/* 渲染每帧 */
 		std::unique_ptr<Render> m_render;
 
-		/* 引擎全局广播委托 */
-		EngineImGuiRenderEventDelegate m_imguiRenderDelegate;
+		/* 引擎全局UI单播委托 */
+		EngineUIRenderEventDelegate m_uiRenderDelegate;
 
 #ifdef EDITOR
 		/* 编辑器UI */
@@ -77,11 +77,11 @@ namespace suz
 #endif
 
 	public:
-		void SetApplication(GameApplication* gameApp);
-		GameApplication* GetApplication();
+		void SetApplication(SuzzaApplication* gameApp);
+		SuzzaApplication* GetApplication();
 
 		inline MainWindow* GetMainWindow() { return m_mainWindow.get(); }
 		inline Render* GetRender() { return m_render.get(); }
-		inline EngineImGuiRenderEventDelegate& GetEngineImGuiRenderEventDelegate() { return m_imguiRenderDelegate; }
+		inline EngineUIRenderEventDelegate& GetEngineUIRenderEventDelegate() { return m_uiRenderDelegate; }
 	};
 }

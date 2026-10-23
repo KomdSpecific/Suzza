@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseObject.h"
+#include "SuzzaApplication.h"
 
 #ifdef EDITOR
 #include <vulkan/vulkan.h>
@@ -21,7 +22,7 @@ namespace suz
 
 		/* ึกษ๚รüึÜฦฺ */
 		virtual void BeginFrame() = 0;
-		virtual void DrawSurface() = 0;
+		virtual void DrawSurfacePanels(SuzzaApplication* Application) = 0;
 		virtual void RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer) = 0;
 	};
 }

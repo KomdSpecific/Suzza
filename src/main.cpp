@@ -1,5 +1,5 @@
 #include "engine/Engine.h"
-#include "GameApplication.h"
+#include "SuzzaApplication.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -7,12 +7,12 @@
 
 int main()
 {
-	GameApplication* gameApp = new GameApplication();
+	SuzzaApplication* suzApp = new SuzzaApplication();
 	suz::Engine& engine = suz::Engine::GetEngineInstance();
 	engine.WIDTH = 800;
 	engine.HEIGHT = 600;
 
-	engine.SetApplication(gameApp);
+	engine.SetApplication(suzApp);
 
 	if (!engine.Init())
 	{

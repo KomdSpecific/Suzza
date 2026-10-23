@@ -11,7 +11,8 @@ namespace suz
 	class Scene
 	{
 	public:
-		void RegisterActor(Actor* TargetActor);
+		bool RegisterActor(Actor* TargetActor);
+		bool RegisterActor(Actor* TargetActor, Actor* ParentActor, bool bRegisterComponents = false);
 		void MarkedActorDestroy(Actor* TargetActor);
 
 		void LoadModel(const std::string& FilePath);
@@ -21,7 +22,12 @@ namespace suz
 		void Destroy();
 
 	private:
-		std::vector<std::unique_ptr<Actor>> m_rootActorList = {};	// 存放场景所有根节点对象
-		std::vector<Actor*> m_actorForDestroy = {};					// 指针所有权仍然在ActorList中
+		bool CheckWouldCreateCycle(Actor* TargetActor, Actor* ParentActor);
+
+		std::vector<std::unique_ptr<Actor>> m_actorList = {};		// 存放场景所有Actor对象
+		std::vector<Actor*> m_rootActorList = {};					// 存放场景所有根Actor对象
+
+	public:
+		inline const std::vector<Actor*>& GetSceneRootActorList() const { return m_rootActorList; }
 	};
 }

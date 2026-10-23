@@ -23,6 +23,7 @@ namespace suz
 	{
 	public:
 		Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
+		Mesh(const std::vector<ModelVertexData>& Vertices, const std::vector<uint32>& Indices);
 		~Mesh();
 
 		virtual void Destroy() override;

@@ -27,7 +27,7 @@ namespace suz
 
 		void BeginFrame();
 
-		void DrawSurface();
+		void DrawSurface(SuzzaApplication* Application);
 
 		void RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer);
 

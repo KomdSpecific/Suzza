@@ -21,7 +21,7 @@ namespace suz
 
 		/* Ö¡ÉúÃüÖÜÆÚ */
 		virtual void BeginFrame() override;
-		virtual void DrawSurface() override;
+		virtual void DrawSurfacePanels(SuzzaApplication* Application) override;
 		virtual void RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer) override;
 
 #pragma region LifeCycle
@@ -35,6 +35,9 @@ namespace suz
 		virtual void Destroy() override;
 
 #pragma endregion
+
+	private:
+		void DrawHierarchyPanel(SuzzaApplication* Application);
 	};
 }
 #endif

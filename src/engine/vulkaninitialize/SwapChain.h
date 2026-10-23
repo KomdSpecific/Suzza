@@ -20,8 +20,10 @@ namespace suz
 	class SwapChain : public BaseObject
 	{
 	public:
-		SwapChain(const VkPhysicalDevice& PhysicalDevice, const VkDevice& Device, const VkSurfaceKHR& Surface);
+		SwapChain(const VkDevice& Device);
 		~SwapChain();
+
+		void InitSwapChain();
 
 		virtual void Destroy() override;
 
@@ -42,9 +44,7 @@ namespace suz
 
 		VkExtent2D GetSwapChainExtent(const VkSurfaceCapabilitiesKHR& Capabilities);
 
-		const VkPhysicalDevice& m_physicalDevice;
 		const VkDevice& m_device;
-		const VkSurfaceKHR& m_surface;
 
 		MainWindow* m_mainWindow = nullptr;
 
