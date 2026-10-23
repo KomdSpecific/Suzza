@@ -2,6 +2,7 @@
 
 #include "Component.h"
 #include "model/Mesh.h"
+#include "model/Material.h"
 #include "commonmacro/GameSceneMacro.h"
 
 #include <memory>
@@ -17,12 +18,15 @@ namespace suz
 		COMPONENT(MeshComponent)
 	public:
 		MeshComponent();
-		MeshComponent(Mesh* mesh);
+		MeshComponent(Mesh* mesh, Material* material);
 		~MeshComponent();
 
 		void CreateMesh(const std::string& MeshId);
 		void CreateMesh(const std::vector<Vertex>& Vertices, const std::vector<uint16_t>& Indices);
 		void CreateMesh(Mesh* mesh);
+
+		void CreateMaterial(const std::string& MaterialId);
+		void CreateMaterial(Material* material);
 
 		virtual void BeginPlay() override;
 		virtual void Update(float DeltaTime) override;
@@ -30,5 +34,6 @@ namespace suz
 
 	private:
 		std::pair<std::string, std::shared_ptr<Mesh>> m_meshPair = {};
+		std::pair<std::string, std::shared_ptr<Material>> m_materialPair = {};
 	};
 }

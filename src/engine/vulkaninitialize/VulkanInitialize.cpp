@@ -2,8 +2,9 @@
 #include "Engine.h"
 #include "MainWindow.h"
 #include "SwapChain.h"
+#include "device/DeviceFunctionLibrary.h"
+#include "commonmacro/VkMacro.h"
 
-#include <cstdint>
 #include <GLFW/glfw3.h>
 #include <stdexcept>
 #include <iostream>
@@ -186,7 +187,7 @@ namespace suz
 		if (m_shouldRequiredDiscreteGPU)
 		{
 			/* 程序应适用于支持几何着色器的独立显卡 */
-			if (!deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader)
+			if (deviceProperties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader)
 			{
 				return false;
 			}
@@ -506,12 +507,17 @@ namespace suz
 		/* 调用接口, 驱动填充全部Features */
 		vkGetPhysicalDeviceFeatures2(physicalDevice, reinterpret_cast<VkPhysicalDeviceFeatures2*>(&deviceFeatures2));
 
+		bool featSupport = descIndexFeatureQuery.shaderSampledImageArrayNonUniformIndexing == VK_TRUE &&
+			descIndexFeatureQuery.descriptorBindingVariableDescriptorCount == VK_TRUE &&
+			descIndexFeatureQuery.descriptorBindingUpdateUnusedWhilePending == VK_TRUE;
+
+		/* 至少预留256个纹理槽位 */
+		bool propSupport = DeviceFunctionLibrary::GetDeviceMaxBindlessImageNum(physicalDevice) >= MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
+
 		/* shader里数组下标可以是变量 */
 		/* 允许描述符集合更新之后, 不重新分配set; 运行时可修改数组中元素 */
 		/* 允许提交后更新元素 */
-		if (descIndexFeatureQuery.shaderSampledImageArrayNonUniformIndexing == VK_TRUE &&
-			descIndexFeatureQuery.descriptorBindingVariableDescriptorCount == VK_TRUE &&
-			descIndexFeatureQuery.descriptorBindingUpdateUnusedWhilePending == VK_TRUE)
+		if (featSupport && propSupport)
 		{
 			return true;
 		}
@@ -533,9 +539,12 @@ namespace suz
 		auto& deviceFeatures2 = featureChain.get<vk::PhysicalDeviceFeatures2>();
 		auto& descIndexFeature = featureChain.get<vk::PhysicalDeviceDescriptorIndexingFeaturesEXT>();
 
+		descIndexFeature.runtimeDescriptorArray = VK_TRUE;
 		descIndexFeature.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
 		descIndexFeature.descriptorBindingVariableDescriptorCount = VK_TRUE;
 		descIndexFeature.descriptorBindingUpdateUnusedWhilePending = VK_TRUE;
+		descIndexFeature.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+		descIndexFeature.descriptorBindingPartiallyBound = VK_TRUE;
 
 		return featureChain;
 	}

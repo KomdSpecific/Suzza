@@ -3,6 +3,7 @@
 layout (push_constant) uniform ModelPush
 {
 	mat4 model;
+	uint texSlot;
 } modelData;
 
 layout (binding = 0) uniform CameraViewportInfo
@@ -17,10 +18,13 @@ layout (location = 2) in vec2 texCoord;
 
 layout (location = 0) out vec3 fragColor;
 layout (location = 1) out vec2 fragTexCoord;
+layout (location = 2) flat out uint textureSlot;
 
 void main()
 {
 	gl_Position = cameraViewport.projection * cameraViewport.view * modelData.model * vec4(position, 1.0);
 	fragColor = color;
 	fragTexCoord = texCoord;
+
+	textureSlot = modelData.texSlot;
 }

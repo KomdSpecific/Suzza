@@ -1,19 +1,21 @@
 #pragma once
 
 #include "BaseObject.h"
+#include "SuzzaTypes.h"
 
 #include <vulkan/vulkan.h>
 #include <cstdint>
+#include <string>
 
 namespace suz
 {
-	class VulkanTexture : public BaseObject
+	class Texture : public BaseObject
 	{
 	public:
-		VulkanTexture(const VkDevice& Device);
-		~VulkanTexture();
+		Texture(const VkDevice& Device);
+		~Texture();
 
-		void InitVulkanTexture();
+		void InitTexture(const std::string FilePath = "");
 
 		virtual void Destroy() override;
 
@@ -27,22 +29,21 @@ namespace suz
 		/* 创建图像视图 */
 		static VkImageView CreateImageView(const VkImage& Image, const VkFormat& Format, const VkImageAspectFlags& AspectFlags);
 
+		void UpdateTextureSlot(uint16 SlotIndex);
+
 	private:
-		void CreateTextureImage();				// 创建纹理图像
-		void CreateTextureImageView();			// 创建纹理图像视图
-		void CreateTextureSampler();			// 创建采样器
+		void CreateTextureImage(const std::string FilePath);		// 创建纹理图像
+		void CreateTextureImageView();								// 创建纹理图像视图
 
 		const VkDevice& m_device;
 
 		VkImage m_textureImage = {};
 		VkDeviceMemory m_textureMemory = {};
 		VkImageView m_textureImageView = {};
-		VkSampler m_textureSampler = {};
 
 	public:
 		inline const VkImage& GetTextureImage() const { return m_textureImage; }
 		inline const VkDeviceMemory& GetTextureMemory() const { return m_textureMemory; }
 		inline const VkImageView& GetTextureImageView() const { return m_textureImageView; }
-		inline const VkSampler& GetTextureSampler() const { return m_textureSampler; }
 	};
 }

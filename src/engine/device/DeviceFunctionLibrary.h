@@ -10,5 +10,7 @@ namespace suz
 	{
 	public:
 		static uint32 GetDeviceMaxBindlessImageNum(const VkPhysicalDevice& PhysicalDevice);
+
+		static VkPhysicalDeviceProperties GetPhysicalDeviceProperties(const VkPhysicalDevice& PhysicalDevice);
 	};
 }

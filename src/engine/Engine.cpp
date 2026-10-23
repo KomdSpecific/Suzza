@@ -18,6 +18,8 @@ namespace suz
 	ModelResourceManager Engine::m_modelResourceManager;
 	/* 图像加载管理器分配内存 */
 	ImageLoaderManager Engine::m_imageLoaderManager;
+	/* 图像Bindless插槽管理器分配内存 */
+	BindlessSlotsAllocator Engine::m_bindlessSlotsAllocator;
 
 	Engine& Engine::GetEngineInstance()
 	{
@@ -38,6 +40,11 @@ namespace suz
 	ImageLoaderManager& Engine::GetImageLoaderManager()
 	{
 		return m_imageLoaderManager;
+	}
+
+	BindlessSlotsAllocator& Engine::GetBindlessSlotsAllocator()
+	{
+		return m_bindlessSlotsAllocator;
 	}
 
 	bool Engine::Init()
@@ -94,6 +101,8 @@ namespace suz
 
 		/* 模型资源管理器统一销毁 */
 		m_modelResourceManager.Destroy();
+		/* 图像Bindless插槽统一释放 */
+		m_bindlessSlotsAllocator.Destroy();
 		/* 调用Vulkan资源管理器统一销毁 */
 		m_vkResourceManager.Destroy();
 

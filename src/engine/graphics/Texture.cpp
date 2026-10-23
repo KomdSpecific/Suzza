@@ -1,42 +1,41 @@
-#include "VulkanTexture.h"
+#include "Texture.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkaninitialize/VulkanInitialize.h"
 #include "vulkaninitialize/BufferArea.h"
 #include "ImageLoaderManager.h"
 #include "io/FileSystem.h"
+#include "device/DeviceFunctionLibrary.h"
+
+#include "debug/SuzzaLog.h"
 
 #include <stdexcept>
-#include <iostream>
 
 namespace suz
 {
-	VulkanTexture::VulkanTexture(const VkDevice& Device)
+	Texture::Texture(const VkDevice& Device)
 		: m_device(Device)
 	{
 	}
 
-	VulkanTexture::~VulkanTexture()
+	Texture::~Texture()
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class VulkanTexture Warning: 未调用Destroy手动销毁!" << std::endl;
+			SUZZA_LOG_ERROR("Class Texture Warning: 未调用Destroy手动销毁!");
 			Destroy();
 		}
 	}
 
-	void VulkanTexture::InitVulkanTexture()
+	void Texture::InitTexture(const std::string FilePath)
 	{
-		CreateTextureImage();
+		CreateTextureImage(FilePath);
 		CreateTextureImageView();
-		CreateTextureSampler();
 	}
 
-	void VulkanTexture::Destroy()
+	void Texture::Destroy()
 	{
 		if (!(*m_isAlive)) return;
-
-		vkDestroySampler(m_device, m_textureSampler, nullptr);
 
 		vkDestroyImageView(m_device, m_textureImageView, nullptr);
 
@@ -46,7 +45,7 @@ namespace suz
 		*m_isAlive = false;
 	}
 
-	void VulkanTexture::CreateImage(uint32_t Width, uint32_t Height,
+	void Texture::CreateImage(uint32_t Width, uint32_t Height,
 		const VkFormat& Format,
 		const VkImageTiling& Tiling,
 		const VkImageUsageFlags& Usage, const VkMemoryPropertyFlags& Properties,
@@ -96,7 +95,7 @@ namespace suz
 		vkBindImageMemory(device, Image, ImageMemory, 0);
 	}
 
-	VkImageView VulkanTexture::CreateImageView(const VkImage& Image, const VkFormat& Format, const VkImageAspectFlags& AspectFlags)
+	VkImageView Texture::CreateImageView(const VkImage& Image, const VkFormat& Format, const VkImageAspectFlags& AspectFlags)
 	{
 		VkImageViewCreateInfo imageCreateInfo{};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -123,13 +122,26 @@ namespace suz
 		return imageView;
 	}
 
-	void VulkanTexture::CreateTextureImage()
+	void Texture::UpdateTextureSlot(uint16 SlotIndex)
+	{
+		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
+		vkManager.GetDescriptor()->UpdateBindlessDescriptor(m_textureImageView, vkManager.GetTextureSampler(), SlotIndex);
+	}
+
+	void Texture::CreateTextureImage(const std::string FilePath)
 	{
 		BufferArea* bufferArea = Engine::GetVulkanResourceManager().GetBufferArea();
-		const VkDevice& device = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetDevice();
 
-		std::filesystem::path filePath = FileSystem::GetAssetsFolder() / "textures" / "brick.png";
-		ImageData image = Engine::GetImageLoaderManager().LoadImage(filePath.string());
+		ImageData image{};
+		if (FilePath.empty())
+		{
+			std::filesystem::path filePath = FileSystem::GetAssetsFolder() / "textures" / "brick.png";
+			image = Engine::GetImageLoaderManager().LoadImage(filePath.string());
+		}
+		else
+		{
+			image = Engine::GetImageLoaderManager().LoadImage(FilePath);
+		}
 
 		VkDeviceSize imageSize = image.texWidth * image.texHeight * 4;
 
@@ -141,9 +153,9 @@ namespace suz
 
 		/* 将显存映射到CPU可读取的内存中 */
 		void* imageData;
-		vkMapMemory(device, stagingMemory, 0, imageSize, 0, &imageData);
+		vkMapMemory(m_device, stagingMemory, 0, imageSize, 0, &imageData);
 		memcpy(imageData, image.pixels, static_cast<size_t>(imageSize));
-		vkUnmapMemory(device, stagingMemory);
+		vkUnmapMemory(m_device, stagingMemory);
 
 		/* 清理原始像素数组 */
 		Engine::GetImageLoaderManager().UnLoadImage(image);
@@ -160,47 +172,12 @@ namespace suz
 		bufferArea->TransitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		/* 销毁临时缓冲区 */
-		vkDestroyBuffer(device, stagingBuffer, nullptr);
-		vkFreeMemory(device, stagingMemory, nullptr);
+		vkDestroyBuffer(m_device, stagingBuffer, nullptr);
+		vkFreeMemory(m_device, stagingMemory, nullptr);
 	}
 
-	void VulkanTexture::CreateTextureImageView()
+	void Texture::CreateTextureImageView()
 	{
 		m_textureImageView = CreateImageView(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-	}
-
-	void VulkanTexture::CreateTextureSampler()
-	{
-		VkPhysicalDeviceProperties deviceProperties = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetPhysicalDeviceProperties();
-
-		VkSamplerCreateInfo samplerInfo{};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		/* 当读取超出图像范围时返回窗口背景纯色 */
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-
-		samplerInfo.anisotropyEnable = VK_TRUE;
-		/* 传入物理设备支持的纹素样本数量最大值 */
-		samplerInfo.maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy;
-
-		/* 采样超出图像时填充的颜色 */
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		/* 开启各向异性过滤 */
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias = 0;
-		samplerInfo.minLod = 0;
-		samplerInfo.maxLod = 0;
-
-		if (vkCreateSampler(m_device, &samplerInfo, nullptr, &m_textureSampler) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建纹理采样器失败!");
-		}
 	}
 }

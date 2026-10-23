@@ -1,7 +1,7 @@
 #include "Pipeline.h"
-#include "model/Mesh.h"
+#include "model/Render.h"
+#include "commonmacro/VkMacro.h"
 
-#include <glm/mat4x4.hpp>
 #include <fstream>
 #include <stdexcept>
 #include <iostream>
@@ -26,7 +26,8 @@ namespace suz
 	) : m_vulkanInitialize(VulkanInitialize),
 		m_renderPass(RenderPass)
 	{
-		CreateDescriptorSetLayout();
+		CreateCameraDescriptorSetLayout();
+		CreateBindlessDescriptorSetLayout();
 		CreatePushConstantRange();
 		CreatePipelineLayout();
 		CreateGraphicsPipeline(VertexFilePath, FragmentFilePath, ConfigInfo);
@@ -47,7 +48,8 @@ namespace suz
 
 		vkDestroyPipeline(m_vulkanInitialize.GetDevice(), m_graphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(m_vulkanInitialize.GetDevice(), m_pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(m_vulkanInitialize.GetDevice(), m_descriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(m_vulkanInitialize.GetDevice(), m_cameraDescriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(m_vulkanInitialize.GetDevice(), m_bindlessDescriptorSetLayout, nullptr);
 
 		*m_isAlive = false;
 	}
@@ -153,7 +155,7 @@ namespace suz
 		return buffer;
 	}
 
-	void Pipeline::CreateDescriptorSetLayout()
+	void Pipeline::CreateCameraDescriptorSetLayout()
 	{
 		/* 定义描述符集绑定信息 */
 		VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -163,25 +165,43 @@ namespace suz
 		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;				// 在顶点着色器阶段被引用
 		uboLayoutBinding.pImmutableSamplers = nullptr;							// 与图像采样相关描述符有关
 
-		/* 定义图像描述符集绑定信息 */
-		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-		samplerLayoutBinding.binding = 1;
-		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		samplerLayoutBinding.descriptorCount = 1;
-		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;			// 在片段着色器阶段被引用
-		samplerLayoutBinding.pImmutableSamplers = nullptr;
-
-		/* 定义Bindless全局集合 */
-		VkDescriptorSetLayoutBinding bindlessTexBinding{};
-
-		std::array<VkDescriptorSetLayoutBinding, 2> descriptorBinding{ uboLayoutBinding,samplerLayoutBinding };
-
 		/* 定义描述符集配置信息 */
 		VkDescriptorSetLayoutCreateInfo uboLayoutInfo{};
 		uboLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		uboLayoutInfo.bindingCount = static_cast<uint32>(descriptorBinding.size());
-		uboLayoutInfo.pBindings = descriptorBinding.data();
-		if (vkCreateDescriptorSetLayout(m_vulkanInitialize.GetDevice(), &uboLayoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS)
+		uboLayoutInfo.bindingCount = 1;
+		uboLayoutInfo.pBindings = &uboLayoutBinding;
+		if (vkCreateDescriptorSetLayout(m_vulkanInitialize.GetDevice(), &uboLayoutInfo, nullptr, &m_cameraDescriptorSetLayout) != VK_SUCCESS)
+		{
+			throw std::runtime_error("创建描述字符集失败!");
+		}
+	}
+
+	void Pipeline::CreateBindlessDescriptorSetLayout()
+	{
+		/* 定义图像描述符集绑定信息 */
+		/* 定义Bindless全局集合 */
+		VkDescriptorSetLayoutBinding bindlessLayoutBinding{};
+		bindlessLayoutBinding.binding = 1;
+		bindlessLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		bindlessLayoutBinding.descriptorCount = MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
+		bindlessLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;			// 在片段着色器阶段被引用
+		bindlessLayoutBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorBindingFlags flags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+		/* 定义Bindless的Flag */
+		VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlags{};
+		bindingFlags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+		bindingFlags.bindingCount = 1;
+		bindingFlags.pBindingFlags = &flags;
+
+		/* 定义描述符集配置信息 */
+		VkDescriptorSetLayoutCreateInfo bindlessLayoutInfo{};
+		bindlessLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		bindlessLayoutInfo.bindingCount = 1;
+		bindlessLayoutInfo.pBindings = &bindlessLayoutBinding;
+		bindlessLayoutInfo.pNext = &bindingFlags;									// 挂载Binding Flags
+		bindlessLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+		if (vkCreateDescriptorSetLayout(m_vulkanInitialize.GetDevice(), &bindlessLayoutInfo, nullptr, &m_bindlessDescriptorSetLayout) != VK_SUCCESS)
 		{
 			throw std::runtime_error("创建描述字符集失败!");
 		}
@@ -189,18 +209,20 @@ namespace suz
 
 	void Pipeline::CreatePushConstantRange()
 	{
-		m_pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;						// 推送常量给顶点着色器使用
+		m_pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;				// 推送常量给顶点着色器使用
 		m_pushConstantRange.offset = 0;
-		m_pushConstantRange.size = sizeof(glm::mat4);
+		m_pushConstantRange.size = sizeof(ModelConstant);
 	}
 
 	void Pipeline::CreatePipelineLayout()
 	{
+		/* camera[0]->(set = 0, ...), bindless[1]->(set = 1, ...) */
+		std::array<VkDescriptorSetLayout, 2> pipelineSetLayouts{ m_cameraDescriptorSetLayout,m_bindlessDescriptorSetLayout };
 		/* 设置管线布局创建信息 */
 		VkPipelineLayoutCreateInfo pipeLayoutInfo{};
 		pipeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipeLayoutInfo.setLayoutCount = 1;
-		pipeLayoutInfo.pSetLayouts = &m_descriptorSetLayout;					// 配置字符集布局信息
+		pipeLayoutInfo.setLayoutCount = static_cast<uint32>(pipelineSetLayouts.size());
+		pipeLayoutInfo.pSetLayouts = pipelineSetLayouts.data();						// 配置字符集布局信息
 		pipeLayoutInfo.pushConstantRangeCount = 1;
 		pipeLayoutInfo.pPushConstantRanges = &m_pushConstantRange;
 
@@ -247,8 +269,8 @@ namespace suz
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());// 顶点属性描述数量
 		vertexInputInfo.vertexBindingDescriptionCount = 1;									// 顶点绑定描述数量
-		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();		// 顶点属性读取方式
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;					// 顶点在数组中的读取方式
 
 		/* 创建图形管线对象 */
 		VkGraphicsPipelineCreateInfo pipelineInfo{};

@@ -28,10 +28,7 @@ namespace suz
 		Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint16_t>& Indices);
 		~Mesh();
 
-		void Destroy();
-
-		template<typename Comp>
-		bool RegisterOwnerComponent(Comp* OwnerComponent);
+		virtual void Destroy() override;
 
 	private:
 		VkBuffer m_vertexBuffer = {};
@@ -41,27 +38,9 @@ namespace suz
 		VkDeviceMemory m_indexBufferMemory = {};
 		uint32_t m_indexBufferSize = 0;
 
-		std::unordered_set<Component*> m_ownerComponent;
-
 	public:
 		inline VkBuffer& GetMeshVertexBuffer() { return m_vertexBuffer; }
 		inline VkBuffer& GetMeshIndexBuffer() { return m_indexBuffer; }
 		inline const uint32_t& GetIndexBufferSize() const { return m_indexBufferSize; }
-		inline std::unordered_set<Component*>& GetOwnerComponent() { return m_ownerComponent; }
 	};
-
-	template<typename Comp>
-	inline bool Mesh::RegisterOwnerComponent(Comp* OwnerComponent)
-	{
-		if constexpr (!std::is_base_of_v<Component, Comp>) return false;
-
-		if (OwnerComponent)
-		{
-			m_ownerComponent.insert(OwnerComponent);
-
-			return true;
-		}
-
-		return false;
-	}
 }

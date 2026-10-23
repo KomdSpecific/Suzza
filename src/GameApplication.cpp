@@ -3,6 +3,7 @@
 #include "model/ModelResourceManager.h"
 #include "actor/PlayerController.h"
 #include "components/MeshComponent.h"
+#include "io/FileSystem.h"
 
 #include <vector>
 #include <iostream>
@@ -10,6 +11,7 @@
 bool GameApplication::Init()
 {
 	const std::vector<suz::Vertex> vertices = {
+		/* 纹理读取从左上角开始画N字 */
 		// -------- 面1：+X面（向前面，X=+0.5f）4顶点
 		{{ 0.5f, -0.5f, -0.5f }, {1,1,1}, {0,0}},
 		{{ 0.5f,  0.5f, -0.5f }, {1,1,1}, {1,0}},
@@ -17,10 +19,10 @@ bool GameApplication::Init()
 		{{ 0.5f, -0.5f,  0.5f }, {1,1,1}, {0,1}},
 
 		// -------- 面2：‑X面（朝后，X=-0.5f）
-		{{-0.5f, -0.5f, -0.5f }, {1,1,1}, {0,0}},
-		{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {1,0}},
-		{{-0.5f,  0.5f,  0.5f }, {1,1,1}, {1,1}},
-		{{-0.5f, -0.5f,  0.5f }, {1,1,1}, {0,1}},
+		{{-0.5f, -0.5f, -0.5f }, {1,1,1}, {0,1}},
+		{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {1,1}},
+		{{-0.5f,  0.5f,  0.5f }, {1,1,1}, {1,0}},
+		{{-0.5f, -0.5f,  0.5f }, {1,1,1}, {0,0}},
 
 		// -------- 面3：+Y面（向右，Y=+0.5f）
 		{{-0.5f,  0.5f, -0.5f }, {1,1,1}, {0,0}},
@@ -65,10 +67,19 @@ bool GameApplication::Init()
 
 	m_scene = std::make_unique<suz::Scene>();
 
+	suz::ModelResourceManager& modelManager = suz::Engine::GetModelResourceManager();
+
 	/* 加载Mesh */
 	suz::Mesh* mesh = new suz::Mesh(vertices, indices);
-	suz::ModelResourceManager& modelManager = suz::Engine::GetModelResourceManager();
 	const std::string& meshId = modelManager.LoadMesh(mesh);
+
+	/* 加载Material */
+	suz::Material* material1 = new suz::Material();
+	const std::string& materialId1 = modelManager.LoadMaterial(material1);
+
+	std::filesystem::path filePath = FileSystem::GetAssetsFolder() / "textures" / "1275469.jpg";
+	suz::Material* material2 = new suz::Material(filePath.string());
+	const std::string& materialId2 = modelManager.LoadMaterial(material2);
 
 	/* 创建Actor */
 	suz::Actor* actor1 = new suz::Actor();
@@ -79,14 +90,16 @@ bool GameApplication::Init()
 
 	suz::MeshComponent* meshComponentActor1 = new suz::MeshComponent();
 	meshComponentActor1->CreateMesh(meshId);
+	meshComponentActor1->CreateMaterial(materialId1);
 	actor1->RegisterComponent<suz::MeshComponent>(meshComponentActor1);
 	actor1->SetActorLocation({ 3.0f,0.0f,0.0f });
 
 	suz::MeshComponent* meshComponentActor2 = new suz::MeshComponent();
 	meshComponentActor2->CreateMesh(meshId);
+	meshComponentActor2->CreateMaterial(materialId2);
 	actor2->RegisterComponent<suz::MeshComponent>(meshComponentActor2);
-	actor2->SetActorLocation({ 3.0f,2.0f,0.0f });
-	actor2->SetActorRotation({ 0.0f,0.0f,45.0f });
+	actor2->SetActorLocation({ 3.0f,1.2f,0.0f });
+	actor2->SetActorRotation({ 0.0f,0.0f,0.0f });
 
 	/* 定义玩家Actor */
 	suz::PlayerController* player = new suz::PlayerController(m_scene.get());

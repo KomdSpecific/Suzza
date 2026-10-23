@@ -1,6 +1,7 @@
 #include "Render.h"
 #include "Engine.h"
 #include "commonmacro/VkMacro.h"
+#include "ModelResourceManager.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkanInitialize/Pipeline.h"
 #include "vulkanInitialize/VulkanInitialize.h"
@@ -17,6 +18,7 @@
 namespace suz
 {
 	Render::Render()
+		: m_bindlessSlotsAllocator(Engine::GetBindlessSlotsAllocator())
 	{
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
 		m_pipeline = vkManager.GetPipeline();
@@ -26,9 +28,11 @@ namespace suz
 		m_bufferArea = vkManager.GetBufferArea();
 		m_descriptor = vkManager.GetDescriptor();
 		m_syncObject = vkManager.GetSyncObject();
-	}
 
-	void Render::SubmitMesh(Mesh* TargetMesh, const glm::mat4& ModelMatrix)
+		m_bufferArea->RegisterBindlessDescriptorSet(m_descriptor->GetBindlessDescriptorSets());
+	};
+
+	void Render::SubmitMesh(Mesh* TargetMesh, const ModelConstant& ModelMatrix)
 	{
 		m_meshQueue[TargetMesh].push_back(ModelMatrix);
 	}
@@ -42,6 +46,8 @@ namespace suz
 	{
 		/* 1. 等待上一帧完成接收到围栏(Fence)信号, 并设置超时阙值 */
 		vkWaitForFences(m_vkInitialize->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame], VK_TRUE, UINT64_MAX);
+
+		m_bindlessSlotsAllocator.ReleaseSlots();
 
 		/* 2. 从交换链获取图像 */
 		uint32 imageIndex;
@@ -65,7 +71,7 @@ namespace suz
 		vkResetCommandBuffer(m_bufferArea->GetCommandBuffer()[m_currentFrame], 0);
 		m_bufferArea->RecordCommandBuffer(
 			m_bufferArea->GetCommandBuffer()[m_currentFrame],
-			m_descriptor->GetDescriptorSetElement(m_currentFrame),
+			m_descriptor->GetCameraDescriptorSetElement(m_currentFrame),
 			m_meshQueue,
 			imageIndex
 		);

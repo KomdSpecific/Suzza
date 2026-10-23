@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseObject.h"
-#include "model/Mesh.h"
+#include "model/Render.h"
 
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -33,6 +33,8 @@ namespace suz
 
 		virtual void Destroy() override;
 
+		void RegisterBindlessDescriptorSet(const VkDescriptorSet& TargetDescriptorSet);
+
 #pragma region BUFFER_HELPER_FUNCTION
 		static void CreateBuffer(const VkDeviceSize& Buffersize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Properties, VkBuffer& BufferToCreate, VkDeviceMemory& AllocatedMemory);
 		void CreateVertexBuffer(const std::vector<Vertex>& Vertices, VkBuffer& VertexBuffer, VkDeviceMemory& VertexBufferMemory);
@@ -44,10 +46,7 @@ namespace suz
 
 #pragma endregion
 
-		void CreateDescriptorPool();
-		void CreateDescriptorSets();
-
-		void RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& Descriptor, const std::unordered_map<Mesh*, std::vector<glm::mat4>>& MeshToDraw, uint32_t ImageIndex);
+		void RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const std::unordered_map<Mesh*, std::vector<ModelConstant>>& MeshToDraw, uint32_t ImageIndex);
 
 		void ReCreateBufferArea(const VkExtent2D& NewSwapChainExtent);
 		void CleanupBufferArea();
@@ -85,6 +84,8 @@ namespace suz
 		const VkDevice& m_device;
 		const VkSurfaceKHR& m_surface;
 		const VkRenderPass& m_renderPass;
+		/* 缓存描述符引用集合 */
+		VkDescriptorSet m_bindlessDescriptorSet = {};
 
 		VkExtent2D m_swapChainExtent = {};
 

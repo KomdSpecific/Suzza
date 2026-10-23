@@ -13,6 +13,7 @@ namespace suz
 	class VulkanResourceManager;
 	class ModelResourceManager;
 	class ImageLoaderManager;
+	class BindlessSlotsAllocator;
 
 	class Engine
 	{
@@ -21,6 +22,7 @@ namespace suz
 		static VulkanResourceManager& GetVulkanResourceManager();
 		static ModelResourceManager& GetModelResourceManager();
 		static ImageLoaderManager& GetImageLoaderManager();
+		static BindlessSlotsAllocator& GetBindlessSlotsAllocator();
 
 	private:
 		Engine() = default;
@@ -46,6 +48,8 @@ namespace suz
 		static ModelResourceManager m_modelResourceManager;
 		/* 图像加载管理器 */
 		static ImageLoaderManager m_imageLoaderManager;
+		/* 图像Bindless插槽管理器 */
+		static BindlessSlotsAllocator m_bindlessSlotsAllocator;
 		/* 引擎窗口 */
 		std::unique_ptr<MainWindow> m_mainWindow = nullptr;
 		/* 游戏应用 */

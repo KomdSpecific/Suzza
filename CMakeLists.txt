@@ -123,6 +123,7 @@ target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/engine"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/scene"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/common"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/core"
 )
 # Include Binary Files
 target_include_directories("${PROJECT_NAME}" PRIVATE "${PROJECT_BINARY_DIR}")

@@ -8,4 +8,11 @@ namespace suz
 		vkGetPhysicalDeviceProperties(PhysicalDevice, &deviceProp);
 		return deviceProp.limits.maxDescriptorSetSampledImages;
 	}
+
+	VkPhysicalDeviceProperties DeviceFunctionLibrary::GetPhysicalDeviceProperties(const VkPhysicalDevice& PhysicalDevice)
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties{};
+		vkGetPhysicalDeviceProperties(PhysicalDevice, &physicalDeviceProperties);
+		return physicalDeviceProperties;
+	}
 }

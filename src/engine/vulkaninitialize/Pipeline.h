@@ -41,7 +41,8 @@ namespace suz
 	private:
 		static std::vector<char> ReadFile(const std::string& FilePath);
 
-		void CreateDescriptorSetLayout();
+		void CreateCameraDescriptorSetLayout();
+		void CreateBindlessDescriptorSetLayout();
 		void CreatePushConstantRange();
 		void CreatePipelineLayout();
 
@@ -55,7 +56,10 @@ namespace suz
 		VkViewport m_viewport = {};
 		VkRect2D m_scissor = {};
 		VkPipeline m_graphicsPipeline = {};
-		VkDescriptorSetLayout m_descriptorSetLayout = {};
+
+		VkDescriptorSetLayout m_cameraDescriptorSetLayout = {};
+		VkDescriptorSetLayout m_bindlessDescriptorSetLayout = {};
+
 		VkPushConstantRange m_pushConstantRange = {};
 		VkPipelineLayout m_pipelineLayout = {};
 		VkShaderModule m_vertShaderMoudle = {};
@@ -65,7 +69,8 @@ namespace suz
 		inline const VkPipeline& GetGraphicsPipeline() const { return m_graphicsPipeline; }
 		inline const VkViewport& GetViewport() const { return m_viewport; }
 		inline const VkRect2D& GetScissor() const { return m_scissor; }
-		inline const VkDescriptorSetLayout& GetDescriptorSetLayout() const { return m_descriptorSetLayout; }
+		inline const VkDescriptorSetLayout& GetCameraDescriptorSetLayout() const { return m_cameraDescriptorSetLayout; }
+		inline const VkDescriptorSetLayout& GetBindlessDescriptorSetLayout() const { return m_bindlessDescriptorSetLayout; }
 		inline const VkPipelineLayout& GetPipelineLayout() const { return m_pipelineLayout; }
 	};
 }

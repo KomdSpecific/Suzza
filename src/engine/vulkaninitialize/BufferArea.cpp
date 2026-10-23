@@ -4,7 +4,7 @@
 #include "VulkanInitialize.h"
 #include "Pipeline.h"
 #include "commonmacro/VkMacro.h"
-#include "VulkanTexture.h"
+#include "graphics/Texture.h"
 #include "scene/Actor.h"
 
 #include <stdexcept>
@@ -40,7 +40,6 @@ namespace suz
 		CreateCommandBuffer();
 		InitViewportConfig();
 		CreateUniformBuffers();
-		//CreateDescriptorPool();
 	}
 
 	void BufferArea::Destroy()
@@ -48,8 +47,6 @@ namespace suz
 		if (!(*m_isAlive)) return;
 
 		CleanupBufferArea();
-
-		//vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -60,6 +57,11 @@ namespace suz
 		vkDestroyCommandPool(m_device, m_commandPool, nullptr);
 
 		*m_isAlive = false;
+	}
+
+	void BufferArea::RegisterBindlessDescriptorSet(const VkDescriptorSet& TargetDescriptorSet)
+	{
+		m_bindlessDescriptorSet = TargetDescriptorSet;
 	}
 
 	void BufferArea::CreateBuffer(const VkDeviceSize& Buffersize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Properties, VkBuffer& BufferToCreate, VkDeviceMemory& AllocatedMemory)
@@ -196,68 +198,7 @@ namespace suz
 		}
 	}
 
-	void BufferArea::CreateDescriptorPool()
-	{
-		std::array<VkDescriptorPoolSize, 2> poolSizes{};
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-		VkDescriptorPoolCreateInfo poolCreateInfo{};
-		poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolCreateInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-		poolCreateInfo.pPoolSizes = poolSizes.data();
-
-		poolCreateInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-		if (vkCreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建描述符池失败!");
-		}
-	}
-
-	void BufferArea::CreateDescriptorSets()
-	{
-		m_descriptorSet.resize(MAX_FRAMES_IN_FLIGHT);
-
-		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_pipeline.GetDescriptorSetLayout());
-		VkDescriptorSetAllocateInfo allocateInfo{};
-		allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocateInfo.descriptorPool = m_descriptorPool;
-		allocateInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-		allocateInfo.pSetLayouts = layouts.data();
-
-		if (vkAllocateDescriptorSets(m_device, &allocateInfo, m_descriptorSet.data()) != VK_SUCCESS)
-		{
-			throw std::runtime_error("分配描述符集合失败!");
-		}
-
-		/* 配置集合中的每一个描述符 */
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			/* 告诉描述符绑定buffer、偏移量、占用大小 */
-			VkDescriptorBufferInfo descriptorInfo{};
-			descriptorInfo.buffer = m_uniformBuffers[i];
-			descriptorInfo.offset = 0;
-			descriptorInfo.range = sizeof(CameraViewportInfo);
-
-			VkWriteDescriptorSet writeDescriptor{};
-			writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptor.dstSet = m_descriptorSet[i];
-			writeDescriptor.dstBinding = 0;
-			writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeDescriptor.descriptorCount = 1;
-
-			writeDescriptor.pBufferInfo = &descriptorInfo;
-			writeDescriptor.pImageInfo = nullptr;
-			writeDescriptor.pTexelBufferView = nullptr;
-
-			vkUpdateDescriptorSets(m_device, 1, &writeDescriptor, 0, nullptr);
-		}
-	}
-
-	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& Descriptor, const std::unordered_map<Mesh*, std::vector<glm::mat4>>& MeshToDraw, uint32_t ImageIndex)
+	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const std::unordered_map<Mesh*, std::vector<ModelConstant>>& MeshToDraw, uint32_t ImageIndex)
 	{
 		VkCommandBufferBeginInfo bufferBeginInfo{};
 		bufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -299,10 +240,16 @@ namespace suz
 		vkCmdSetViewport(CommandBuffer, 0, 1, &m_viewConfigInfo.viewport);
 		vkCmdSetScissor(CommandBuffer, 0, 1, &m_viewConfigInfo.scissor);
 
-		/* 绑定描述符集合 */
-		vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.GetPipelineLayout(), 0, 1, &Descriptor, 0, nullptr);
+		std::array<VkDescriptorSet, 2> descriptorSets = { CameraDescriptor,m_bindlessDescriptorSet };
 
-		for (const auto& [mesh, modelMatrixList] : MeshToDraw)
+		/* 绑定描述符集合, 并从映射内存读取数据 */
+		/* 绑定摄像机描述符和Bindless描述符 */
+		vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.GetPipelineLayout(),
+			0, static_cast<uint32>(descriptorSets.size()), &descriptorSets[0],
+			0, nullptr
+		);
+
+		for (const auto& [mesh, modelConstants] : MeshToDraw)
 		{
 			/* 绑定顶点缓冲 */
 			VkDeviceSize offsets[] = { 0 };											// 定义读取顶点数据的字节偏移量
@@ -312,9 +259,9 @@ namespace suz
 				vkCmdBindIndexBuffer(CommandBuffer, mesh->GetMeshIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
 			}
 
-			for (const glm::mat4& modelMatrix : modelMatrixList)
+			for (const ModelConstant& modelConstant : modelConstants)
 			{
-				vkCmdPushConstants(CommandBuffer, m_pipeline.GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &modelMatrix);
+				vkCmdPushConstants(CommandBuffer, m_pipeline.GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ModelConstant), &modelConstant);
 
 				/* 发出绘制命令 */
 				/* 告诉Vulkan使用索引缓冲区 */
@@ -583,7 +530,7 @@ namespace suz
 		VkFormat depthFormat = FindDepthFormat();
 
 		/* 创建深度缓冲图像并分配设备本地显存 */
-		VulkanTexture::CreateImage(
+		Texture::CreateImage(
 			m_swapChainExtent.width, m_swapChainExtent.height,
 			depthFormat,
 			VK_IMAGE_TILING_OPTIMAL,						// 最优平铺 GPU访问性能最高
@@ -594,7 +541,7 @@ namespace suz
 		);
 
 		/* 创建深度图像视图, 只可见深度面 */
-		m_depthImageView = VulkanTexture::CreateImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+		m_depthImageView = Texture::CreateImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 		/* 将图像从未定义转换为 "深度附件最优" 布局 */
 		/* 未定义布局: 新建图像无有效数据, 转换时不保留旧内容, 性能最优 */

@@ -14,12 +14,20 @@ namespace suz
 	class Descriptor;
 	class SyncObject;
 
+	class BindlessSlotsAllocator;
+
+	struct ModelConstant
+	{
+		glm::mat4 modelMatrix;
+		uint16 slotIndex;
+	};
+
 	class Render
 	{
 	public:
 		Render();
 
-		void SubmitMesh(Mesh* TargetMesh, const glm::mat4& ModelMatrix);
+		void SubmitMesh(Mesh* TargetMesh, const ModelConstant& ModelMatrix);
 		void SubmitCameraViewport(const CameraViewportInfo& ViewportInfo);
 
 		void Draw(float DeltaTime);
@@ -35,7 +43,9 @@ namespace suz
 		Descriptor* m_descriptor;
 		SyncObject* m_syncObject;
 
-		std::unordered_map<Mesh*, std::vector<glm::mat4>> m_meshQueue = {};
+		BindlessSlotsAllocator& m_bindlessSlotsAllocator;
+
+		std::unordered_map<Mesh*, std::vector<ModelConstant>> m_meshQueue = {};
 		CameraViewportInfo m_cameraViewportInfo = {};
 
 		uint32 m_currentFrame = 0;
