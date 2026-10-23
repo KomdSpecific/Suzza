@@ -19,6 +19,7 @@ The engine adopts Actor + Component architecture and has a built-in lightweight 
 - cgltf for glTF model loading
 - Separate reflection code generator tool
   - The reflection tool is an independent project.
+  - Repository: [https://github.com/KomdSpecific/suzza-reflect-tool]
   - It depends on external LLVM/Clang libraries for AST parsing and code generation.
   - LLVM source code is **not included** in this repository.
 
@@ -36,7 +37,7 @@ See [`NOTICE`](./NOTICE) for complete copyright and license information of third
 - C++20 or newer
 - CMake3.8+
 - Vulkan SDK
-- A C++ compiler supporting Vulkan (MSVC / GCC / Clang)
+- MSVC compiler (**Only MSVC is verified and supported for now; GCC / Clang compatibility is not tested**)
 - For reflection tool: prebuilt LLVM + Clang development packages (external dependency)
 
 ## Build Instructions
