@@ -1,0 +1,5 @@
+#pragma once
+
+#define SHADERS_ROOT "@SHADER_OUTPUT_DIR@"
+
+#define ASSETS_ROOT "@ASSETS_DIR@"
