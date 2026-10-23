@@ -19,6 +19,7 @@
 - cgltf 用于 glTF 模型解析加载
 - 独立反射代码生成工具
   - 反射工具是一个独立项目
+  - 仓库地址: [https://github.com/KomdSpecific/suzza-reflect-tool]
   - 依赖外部 LLVM/Clang 库进行AST解析与代码生成
   - 本仓库**不包含 LLVM 源码**
 
@@ -36,7 +37,7 @@
 - C++20 及以上标准编译器
 - CMake3.8+
 - Vulkan SDK
-- 支持 Vulkan 的编译器（MSVC / GCC / Clang）
+- MSVC 编译器（**目前仅验证支持 MSVC，GCC / Clang 兼容性尚未测试**）
 - 反射工具：需要预先部署好外部 LLVM + Clang 开发库
 
 ## 编译步骤
