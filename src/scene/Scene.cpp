@@ -23,6 +23,9 @@ namespace suz
 		/* 默认注册根Actor */
 		m_actorList.push_back(std::unique_ptr<Actor>(TargetActor));
 		m_rootActorList.push_back(TargetActor);
+
+		TargetActor->SetOwnerScene(this);
+
 		return true;
 	}
 
@@ -40,7 +43,7 @@ namespace suz
 				TargetActor->SetParentActor(nullptr);
 				oldParentActor->RemoveChildActor(TargetActor);
 
-				m_actorList.push_back(std::unique_ptr<Actor>(TargetActor));
+				m_rootActorList.push_back(TargetActor);
 				return true;
 			}
 			/* 2. 当前Actor刚刚创建 */
@@ -56,6 +59,10 @@ namespace suz
 				}
 
 				m_actorList.push_back(std::unique_ptr<Actor>(TargetActor));
+				m_rootActorList.push_back(TargetActor);
+				
+				TargetActor->SetOwnerScene(this);
+
 				return true;
 			}
 		}
@@ -98,6 +105,11 @@ namespace suz
 				{
 					TargetActor->SetParentActor(ParentActor);
 					ParentActor->RegisterChildActor<Actor>(TargetActor);
+
+					TargetActor->SetOwnerScene(this);
+
+					m_actorList.push_back(std::unique_ptr<Actor>(TargetActor));
+
 					return true;
 				}
 			}
@@ -141,10 +153,12 @@ namespace suz
 		{
 			/* 给Actor注册组件 */
 			actor->BatchRegisterAllSubComponents();
-			if (actor->GetParentActor() == nullptr)
-			{
-				actor->BeginPlay();
-			}
+		}
+
+		/* 仅对根节点进行Update逻辑 */
+		for (Actor* actor : m_rootActorList)
+		{
+			actor->BeginPlay();
 		}
 	}
 

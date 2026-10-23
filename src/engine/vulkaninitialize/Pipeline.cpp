@@ -235,7 +235,7 @@ namespace suz
 
 	void Pipeline::CreateGraphicsPipeline(const std::string& VertexFilePath, const std::string& FragmentFilePath, const PipelineConfigInfo& ConfigInfo)
 	{
-		assert(m_renderPass != VK_NULL_HANDLE && "无法创建图形管线: 没有合适的队列renderPass!");
+		//assert(m_renderPass != VK_NULL_HANDLE && "无法创建图形管线: 没有合适的队列renderPass!");
 
 		std::vector<char> vertexShader = ReadFile(VertexFilePath);
 		std::vector<char> fragmentShader = ReadFile(FragmentFilePath);

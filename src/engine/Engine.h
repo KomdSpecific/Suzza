@@ -18,6 +18,7 @@ namespace suz
 	class ImageLoaderManager;
 	class ModelLoaderManager;
 	class BindlessSlotsAllocator;
+	class ReflectionSystem;
 
 	class EditorUI;
 
@@ -30,6 +31,7 @@ namespace suz
 		static ImageLoaderManager& GetImageLoaderManager();
 		static ModelLoaderManager& GetModelLoaderManager();
 		static BindlessSlotsAllocator& GetBindlessSlotsAllocator();
+		static ReflectionSystem& GetReflectionSystem();
 
 	private:
 		Engine() = default;
@@ -59,6 +61,8 @@ namespace suz
 		static ModelLoaderManager m_modelLoaderManager;
 		/* 图像Bindless插槽管理器 */
 		static BindlessSlotsAllocator m_bindlessSlotsAllocator;
+		/* 反射系统 */
+		static ReflectionSystem m_reflectionSystem;
 		/* 引擎窗口 */
 		std::unique_ptr<MainWindow> m_mainWindow = nullptr;
 		/* 游戏应用 */

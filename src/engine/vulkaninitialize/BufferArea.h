@@ -8,7 +8,7 @@
 
 namespace suz
 {
-	class Engine;
+	class EngineUIRenderEventDelegate;
 	class Pipeline;
 
 	struct ViewportConfigInfo
@@ -45,6 +45,7 @@ namespace suz
 
 #pragma endregion
 
+		/* 绘制画面的核心! 录制命令缓冲区靠它不断执行 */
 		void RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const std::unordered_map<Mesh*, std::vector<ModelConstant>>& MeshToDraw, uint32_t ImageIndex);
 
 		void ReCreateBufferArea(const VkExtent2D& NewSwapChainExtent);
@@ -78,7 +79,7 @@ namespace suz
 		/* 判断选择的深度格式是否包含模板分量 */
 		bool HasStencilComponent(const VkFormat& DepthFormat);
 
-		Engine& m_engineInstance;
+		EngineUIRenderEventDelegate& m_engineUIDelegate;
 
 		Pipeline& m_pipeline;
 		const VkDevice& m_device;

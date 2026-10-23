@@ -1,16 +1,17 @@
 #pragma once
 
 #include "Actor.h"
-#include "macros/GameSceneMacro.h"
+#include "macros/ReflectMacros.h"
+#include "PlayerController.generated.h"
 
 namespace suz
 {
 	class PlayerController : public Actor
 	{
-		DECLARE_CLASS(PlayerController, Actor)
-		ACTOR_REGISTER_SCENE_CONSTRUCT_METHOD(PlayerController)
+		SUZZA_REFLECT_CLASS();
 	public:
 		PlayerController();
+		PlayerController(Scene* OwnerScene);
 
 		virtual void BeginPlay() override;
 		virtual void Update(float DeltaTime) override;

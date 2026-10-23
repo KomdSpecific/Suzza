@@ -4,8 +4,14 @@ set(CMAKE_CXX_STANDARD 20)
 
 project (Suzza_Shared_Moudle)
 
-add_library("${PROJECT_NAME}" INTERFACE)
+file(GLOB_RECURSE SHARED_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/file/*.cpp")
 
-target_include_directories("${PROJECT_NAME}" INTERFACE
+add_library("${PROJECT_NAME}")
+target_sources("${PROJECT_NAME}" PRIVATE ${SHARED_SOURCES})
+
+# Include Binary Files
+target_include_directories("${PROJECT_NAME}" PRIVATE "${PROJECT_BINARY_DIR}")
+
+target_include_directories("${PROJECT_NAME}" PUBLIC
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 )

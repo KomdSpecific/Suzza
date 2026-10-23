@@ -1,5 +1,5 @@
 #include "Engine.h"
-#include "Filesystem.h"
+#include "file/Filesystem.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "model/ModelResourceManager.h"
 #include "ImageLoaderManager.h"
@@ -7,6 +7,7 @@
 #include "macros/VkMacro.h"
 #include "SuzzaApplication.h"
 #include "editor/EditorUI.h"
+#include "ReflectionInfo.h"
 
 #include <stdexcept>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,6 +25,8 @@ namespace suz
 	ModelLoaderManager Engine::m_modelLoaderManager;
 	/* 图像Bindless插槽管理器分配内存 */
 	BindlessSlotsAllocator Engine::m_bindlessSlotsAllocator;
+	/* 反射系统分配内存 */
+	ReflectionSystem Engine::m_reflectionSystem;
 
 	Engine& Engine::GetEngineInstance()
 	{
@@ -56,8 +59,15 @@ namespace suz
 		return m_bindlessSlotsAllocator;
 	}
 
+	ReflectionSystem& Engine::GetReflectionSystem()
+	{
+		return m_reflectionSystem;
+	}
+
 	bool Engine::Init()
 	{
+		/* 注册全部反射类的元数据 */
+		ReflectionSystem::RegisterAllReflectionClass();
 		/* 图像加载管理器创建调度器 */
 		m_imageLoaderManager.CreateImageDispatcher();
 		/* 模型加载管理器创建调度器 */

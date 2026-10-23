@@ -7,7 +7,12 @@
 namespace suz
 {
 	MovementComponent::MovementComponent()
-		: m_inputManager(Engine::GetEngineInstance().GetMainWindow()->GetInputManager())
+		: Super(), m_inputManager(Engine::GetEngineInstance().GetMainWindow()->GetInputManager())
+	{
+	}
+
+	MovementComponent::MovementComponent(const std::string& ComponentName)
+		: Super(ComponentName), m_inputManager(Engine::GetEngineInstance().GetMainWindow()->GetInputManager())
 	{
 	}
 

@@ -7,8 +7,13 @@ namespace suz
 	{
 	}
 
-	Actor::Actor(Scene* OwnerScene)
-		: m_scene(OwnerScene)
+	Actor::Actor(const std::string& Name)
+		: m_actorName(Name)
+	{
+	}
+
+	Actor::Actor(Scene* OwnerScene, const std::string& Name)
+		: m_scene(OwnerScene), m_actorName(Name)
 	{
 	}
 
@@ -62,6 +67,16 @@ namespace suz
 		SetActorStatus(ActorStatus::Destroyed);
 	}
 
+	void Actor::SetActorName(const std::string& Name)
+	{
+		m_actorName = Name;
+	}
+
+	const std::string& Actor::GetActorName() const
+	{
+		return m_actorName;
+	}
+
 	void Actor::SetOwnerScene(Scene* OwnerScene)
 	{
 		m_scene = OwnerScene;
@@ -111,6 +126,16 @@ namespace suz
 		}
 
 		return false;
+	}
+
+	const std::vector<Actor*>& Actor::GetChildActorList() const
+	{
+		return m_childActors;
+	}
+
+	std::vector<Component*>& Actor::GetAllActorComponents()
+	{
+		return m_components;
 	}
 
 	void Actor::SetActorLocation(const glm::vec3& NewLocation)

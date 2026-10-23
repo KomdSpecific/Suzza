@@ -1,0 +1,59 @@
+Suzza
+
+Copyright (c) 2026 KomdSpecific
+
+This project is licensed under the MIT License.
+See the LICENSE file in the root directory for the full license text.
+
+This repository contains vendored source code of open-source libraries.
+Non-essential files such as examples, tests, benchmarks, documentation, CI configuration and unused backends have been removed for brevity.
+Original license files and copyright headers in source files are preserved.
+
+================================================================================
+Dear ImGui (Docking branch)
+Repository: https://github.com/ocornut/imgui
+License: MIT
+Retained: Core source files + GLFW + Vulkan backend
+Removed: examples, tests, docs, CI, unrelated platform/renderer backends
+License file: thirdparty/imgui/misc/LICENSE.txt
+
+================================================================================
+GLFW
+Repository: https://github.com/glfw/glfw
+License: zlib/libpng License
+Retained: public headers and core source code
+Removed: examples, tests, documentation, CI, IDE project files
+License file: thirdparty/glfw/LICENSE
+
+================================================================================
+GLM
+Repository: https://github.com/g-truc/glm
+License: MIT
+Retained: header-only library source
+Removed: tests, documentation, CI
+License file: thirdparty/glm/copying.txt
+
+================================================================================
+stb_image (stb)
+Repository: https://github.com/nothings/stb
+License: Public Domain / MIT (dual license)
+Retained: stb_image.h (license text embedded inside this header)
+Removed: other unused stb headers, tests, docs, security.txt, CI files
+Reference license file: thirdparty/stb/LICENSE
+
+================================================================================
+cgltf
+Repository: https://github.com/jkuhlmann/cgltf
+License: MIT
+Retained: cgltf.h, cgltf.c
+Removed: examples, tests, documentation, CI
+License file: thirdparty/cgltf/LICENSE
+
+================================================================================
+LLVM / Clang
+Repository: https://github.com/llvm/llvm-project
+License: Apache License 2.0 WITH LLVM-exception
+Note: LLVM source code is NOT vendored in this repository.
+A separate reflection code generator tool links against externally installed / prebuilt LLVM and Clang libraries at build time.
+The reflection generator is maintained as an independent project.
+

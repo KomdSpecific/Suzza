@@ -6,6 +6,12 @@
 namespace suz
 {
 	MeshComponent::MeshComponent()
+		: Super()
+	{
+	}
+
+	MeshComponent::MeshComponent(const std::string& ComponentName)
+		: Super(ComponentName)
 	{
 	}
 

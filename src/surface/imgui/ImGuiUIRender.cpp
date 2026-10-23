@@ -17,6 +17,41 @@ namespace suz
 		ImGui::End();
 	}
 
+	bool ImGuiUIRender::TreeNodeEx(const char* Label, uint32 flags)
+	{
+		return ImGui::TreeNodeEx(Label, flags);
+	}
+
+	void ImGuiUIRender::TreePop()
+	{
+		ImGui::TreePop();
+	}
+
+	bool ImGuiUIRender::IsItemLeftClicked()
+	{
+		return ImGui::IsItemClicked(ImGuiMouseButton_Left);
+	}
+
+	bool ImGuiUIRender::IsItemRightClicked()
+	{
+		return ImGui::IsItemClicked(ImGuiMouseButton_Right);
+	}
+
+	bool ImGuiUIRender::BeginPopupContextItem()
+	{
+		return ImGui::BeginPopupContextItem();
+	}
+
+	void ImGuiUIRender::EndPopup()
+	{
+		ImGui::EndPopup();
+	}
+
+	bool ImGuiUIRender::MenuItem(const char* Label)
+	{
+		return ImGui::MenuItem(Label);
+	}
+
 	void ImGuiUIRender::Text(const char* Format, ...)
 	{
 		va_list valueList{};
@@ -25,9 +60,36 @@ namespace suz
 		va_end(valueList);
 	}
 
+	void ImGuiUIRender::SeparatorText(const char* Label)
+	{
+		ImGui::SeparatorText(Label);
+	}
+
 	bool ImGuiUIRender::Button(const char* Label)
 	{
 		return ImGui::Button(Label);
+	}
+
+	bool ImGuiUIRender::ShowFloat(const char* Label, float* Value, const float Speed)
+	{
+		return ImGui::DragFloat(Label, Value, Speed);
+	}
+
+	bool ImGuiUIRender::ShowVector2Float(const char* Label, const glm::vec2& Vector, const float Speed)
+	{
+		float v[2] = { Vector.x,Vector.y };
+		return ImGui::DragFloat2(Label, v, Speed);
+	}
+
+	bool ImGuiUIRender::ShowVector3Float(const char* Label, const glm::vec3& Vector, const float Speed)
+	{
+		float v[3] = { Vector.x,Vector.y,Vector.z };
+		return ImGui::DragFloat3(Label, v, Speed);
+	}
+
+	bool ImGuiUIRender::ShowVector3Float(const char* Label, float* Vector, const float Speed)
+	{
+		return ImGui::DragFloat3(Label, Vector, Speed);
 	}
 
 	void ImGuiUIRender::BeginFrame()
@@ -35,20 +97,6 @@ namespace suz
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-	}
-
-	void ImGuiUIRender::DrawSurfacePanels(SuzzaApplication* Application)
-	{
-		BeginWindow("Suzza Engine Editor");
-		Text("Actor Count: %d", 2);
-		if (Button("Spawn Actor"))
-		{
-			printf("Spawn Actor Success!");
-		}
-
-		EndWindow();
-
-		DrawHierarchyPanel(Application);
 	}
 
 	void ImGuiUIRender::RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer)
@@ -102,12 +150,5 @@ namespace suz
 	}
 
 #pragma endregion
-
-	void ImGuiUIRender::DrawHierarchyPanel(SuzzaApplication* Application)
-	{
-		BeginWindow("Hierarchy");
-
-		EndWindow();
-	}
 }
 #endif

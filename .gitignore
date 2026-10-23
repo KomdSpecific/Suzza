@@ -8,6 +8,8 @@ build/
 /assets/textures/1275469.jpg
 /assets/textures/brick.png
 
+/tool/ReflectGenerated/generated
+
 /.vs
 .idea/
 CMakeSettings.json

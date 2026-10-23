@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "imgui/ImGuiUIRender.h"
 #include "macros/VkMacro.h"
+#include "ReflectionInfo.h"
 
 #ifdef EDITOR
 
@@ -37,7 +38,9 @@ namespace suz
 
 	void EditorUI::DrawSurface(SuzzaApplication* Application)
 	{
-		m_uiRender->DrawSurfacePanels(Application);
+		DrawHierarchyPanel(Application);
+		DrawInspectorPanel();
+		DrawDetailsPanel();
 	}
 
 	void EditorUI::RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer)
@@ -54,43 +57,134 @@ namespace suz
 		*m_isAlive = false;
 	}
 
-	VkCommandBuffer EditorUI::BeginSingleTimeCommands(const VkDevice& Device, const VkCommandPool& CommandPool)
+	void EditorUI::DrawHierarchyPanel(SuzzaApplication* Application)
 	{
-		/* 命令缓冲区分配 */
-		VkCommandBufferAllocateInfo allocateInfo{};
-		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocateInfo.commandPool = CommandPool;
-		allocateInfo.commandBufferCount = 1;
+		m_uiRender->BeginWindow("Hierarchy");
 
-		VkCommandBuffer commandBuffer{};
-		vkAllocateCommandBuffers(Device, nullptr, &commandBuffer);
+		Scene* scene = Application->GetScene();
+		for (Actor* rootActor : scene->GetSceneRootActorList())
+		{
+			DrawActorTreeNode(rootActor);
+		}
 
-		/* 定义命令缓冲信息 */
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;					// 该命令缓冲只提交一次
-
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-		return commandBuffer;
+		m_uiRender->EndWindow();
 	}
 
-	void EditorUI::EndSingleTimeCommands(const VkDevice& Device, const VkCommandPool& CommandPool, const VkQueue& GraphicsQueue, const VkCommandBuffer& CommandBuffer)
+	void EditorUI::DrawInspectorPanel()
 	{
-		vkEndCommandBuffer(CommandBuffer);
+		if (m_uiRender->BeginWindow("Inspector"))
+		{
+			if (m_selectedActor)
+			{
+				for (Component* comp : m_selectedActor->GetAllActorComponents())
+				{
+					ClassInfo classInfo = comp->GetClassInfo();
+					m_uiRender->SeparatorText(classInfo.className.c_str());
 
-		/* 执行命令缓冲提交 */
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &CommandBuffer;
+					if (!classInfo.fields.empty())
+					{
+						for (const FieldInfo& field : classInfo.fields)
+						{
+							DrawComponentField(comp, field);
+						}
+					}
+				}
+			}
+		}
 
-		vkQueueSubmit(GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(GraphicsQueue);
+		m_uiRender->EndWindow();
+	}
 
-		/* 清理临时命令缓冲 */
-		vkFreeCommandBuffers(Device, CommandPool, 1, &CommandBuffer);
+	void EditorUI::DrawDetailsPanel()
+	{
+		if (m_uiRender->BeginWindow("DetailsPanel"))
+		{
+			if (m_selectedActor)
+			{
+				m_uiRender->Text("%s Transform", m_selectedActor->GetActorName().c_str());
+				m_uiRender->ShowVector3Float("Location: ", m_selectedActor->GetActorLocation());
+				m_uiRender->ShowVector3Float("Rotation: ", m_selectedActor->GetActorRotation());
+				m_uiRender->ShowVector3Float("Scale: ", m_selectedActor->GetActorScale());
+			}
+		}
+
+		m_uiRender->EndWindow();
+	}
+
+	void EditorUI::DrawActorTreeNode(Actor* TargetActor)
+	{
+		bool isSelected = (TargetActor == m_selectedActor);
+
+		uint32 flags = UITreeNodeFlags_OpenOnArrow | UITreeNodeFlags_SpanAvailWidth | UITreeNodeFlags_Framed;
+		if (isSelected)
+		{
+			/* 标记为已选 */
+			flags |= UITreeNodeFlags_Selected;
+		}
+
+		if (TargetActor->GetChildActorList().empty())
+		{
+			/* 标记为叶子节点, 叶子节点会自动展开节点信息 */
+			//flags |= UITreeNodeFlags_Leaf;
+		}
+
+		/* 绘制TreeNode */
+		bool nodeOpen = m_uiRender->TreeNodeEx(TargetActor->GetActorName().c_str(), flags);
+
+		/* 业务: 点击事件处理, 选中菜单中的Actor */
+		if (m_uiRender->IsItemLeftClicked()) m_selectedActor = TargetActor;
+
+		/* 右键菜单 */
+		if (m_uiRender->BeginPopupContextItem())
+		{
+			if (m_uiRender->MenuItem("Delete Actor"))
+			{
+				if (m_selectedActor == TargetActor)
+				{
+					m_selectedActor = nullptr;
+				}
+				TargetActor->Destroy();
+			}
+
+			m_uiRender->EndPopup();
+		}
+
+		if (nodeOpen)
+		{
+			for (const FieldInfo& field : TargetActor->GetClassInfo().fields)
+			{
+				if (field.typeName == "glm::vec3")
+				{
+					glm::vec3 location{};
+					(field.getterFunc(TargetActor, &location));
+					float loc[3] = { location.x,location.y,location.z };
+					if (m_uiRender->ShowVector3Float(field.name.c_str(), loc))
+					{
+						field.setterFunc(TargetActor, loc);
+					}
+				}
+			}
+
+			for (Actor* childActor : TargetActor->GetChildActorList())
+			{
+				DrawActorTreeNode(childActor);
+			}
+
+			m_uiRender->TreePop();
+		}
+	}
+
+	void EditorUI::DrawComponentField(Component* CurrentComponent, const FieldInfo& TargetField)
+	{
+		if (TargetField.typeName == "float")
+		{
+			float value = 0;
+			(TargetField.getterFunc(CurrentComponent, &value));
+			if (m_uiRender->ShowFloat(TargetField.name.c_str(), &value, 0.1f))
+			{
+				TargetField.setterFunc(CurrentComponent, &value);
+			}
+		}
 	}
 }
 #endif

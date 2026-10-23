@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Component.h"
-#include "macros/GameSceneMacro.h"
+#include "macros/ReflectMacros.h"
+#include "CameraComponent.generated.h"
 
 #include <glm/glm.hpp>
 
@@ -15,10 +16,11 @@ namespace suz
 
 	class CameraComponent : public Component
 	{
-		DECLARE_CLASS(CameraComponent, Component)
+		SUZZA_REFLECT_CLASS();
 		COMPONENT(CameraComponent)
 	public:
 		CameraComponent();
+		CameraComponent(const std::string& ComponentName);
 
 		void UpdateWindowAspect(int Width, int Height);
 
@@ -30,6 +32,7 @@ namespace suz
 		glm::mat4 GetProjectionMatrix(float Aspect) const;	// Aspect为宽高比
 
 	private:
+		SUZZA_PROPERTY(Editability::Editable)
 		float m_fovRad = 70.0f;								// 视场角 物体放大
 		float m_nearClip = 0.1f;
 		float m_farClip = 1000.0f;

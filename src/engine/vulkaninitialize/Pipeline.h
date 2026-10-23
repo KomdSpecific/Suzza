@@ -11,14 +11,14 @@ namespace suz
 	/* 存储所有的管线配置信息 */
 	struct PipelineConfigInfo
 	{
-		VkPipelineViewportStateCreateInfo viewportInfo;
-		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-		VkPipelineRasterizationStateCreateInfo rasterizationInfo;
-		VkPipelineMultisampleStateCreateInfo multisampleInfo;
-		VkPipelineColorBlendAttachmentState colorBlendAttachment;
-		VkPipelineColorBlendStateCreateInfo colorBlendInfo;
-		VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
-		VkPipelineDynamicStateCreateInfo dynamicStateInfo;
+		VkPipelineViewportStateCreateInfo viewportInfo = {};
+		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo = {};
+		VkPipelineRasterizationStateCreateInfo rasterizationInfo = {};
+		VkPipelineMultisampleStateCreateInfo multisampleInfo = {};
+		VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+		VkPipelineColorBlendStateCreateInfo colorBlendInfo = {};
+		VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
+		VkPipelineDynamicStateCreateInfo dynamicStateInfo = {};
 		uint32 subpass = 0;
 	};
 

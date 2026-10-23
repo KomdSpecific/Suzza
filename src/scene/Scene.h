@@ -28,6 +28,7 @@ namespace suz
 		std::vector<Actor*> m_rootActorList = {};					// 存放场景所有根Actor对象
 
 	public:
+		inline const std::vector<std::unique_ptr<Actor>>& GetSceneActorList() const { return m_actorList; }
 		inline const std::vector<Actor*>& GetSceneRootActorList() const { return m_rootActorList; }
 	};
 }

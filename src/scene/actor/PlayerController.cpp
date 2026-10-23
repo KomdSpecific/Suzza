@@ -9,6 +9,10 @@ namespace suz
 	PlayerController::PlayerController()
 	{
 		MovementComponent* movementComponent = new MovementComponent();
+		if (GetActorName().empty())
+		{
+			SetActorName("DefaultPlayer");
+		}
 
 		if (!RegisterComponent<MovementComponent>(movementComponent))
 		{
@@ -18,7 +22,11 @@ namespace suz
 
 	PlayerController::PlayerController(Scene* OwnerScene)
 	{
-		CALL_REGISTER_OWNERSCENE_METHOD;
+		SetOwnerScene(OwnerScene);
+		if (GetActorName().empty())
+		{
+			SetActorName("DefaultPlayer");
+		}
 
 		MovementComponent* movementComponent = new MovementComponent();
 

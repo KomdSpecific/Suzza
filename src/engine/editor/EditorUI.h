@@ -2,7 +2,7 @@
 
 #include "BaseObject.h"
 #include "SuzzaTypes.h"
-#include "macros/SuzzaMacros.h"
+#include "SuzzaApplication.h"
 #include "UIRender.h"
 
 #include <memory>
@@ -13,9 +13,10 @@
 
 namespace suz
 {
+	struct FieldInfo;
+	
 	class EditorUI : public BaseObject
 	{
-		DECLARE_CLASS(EditorUI, BaseObject);
 	public:
 		void Init(
 			GLFWwindow* window,
@@ -34,10 +35,16 @@ namespace suz
 		virtual void Destroy() override;
 
 	private:
-		VkCommandBuffer BeginSingleTimeCommands(const VkDevice& Device, const VkCommandPool& CommandPool);
-		void EndSingleTimeCommands(const VkDevice& Device, const VkCommandPool& CommandPool, const VkQueue& GraphicsQueue, const VkCommandBuffer& CommandBuffer);
+		void DrawHierarchyPanel(SuzzaApplication* Application);
+		void DrawInspectorPanel();
+		void DrawDetailsPanel();
+
+		void DrawActorTreeNode(Actor* TargetActor);
+
+		void DrawComponentField(Component* CurrentComponent, const FieldInfo& TargetField);
 
 		std::unique_ptr<IUIRender> m_uiRender = nullptr;
+		Actor* m_selectedActor = nullptr;
 	};
 }
 #endif

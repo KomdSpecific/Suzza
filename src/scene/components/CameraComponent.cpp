@@ -11,6 +11,12 @@
 namespace suz
 {
 	CameraComponent::CameraComponent()
+		: Super()
+	{
+	}
+
+	CameraComponent::CameraComponent(const std::string& ComponentName)
+		: Super(ComponentName)
 	{
 	}
 

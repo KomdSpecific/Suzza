@@ -10,6 +10,11 @@ namespace suz
 	{
 	}
 
+	Component::Component(const std::string& ComponentName)
+		: m_componentName(ComponentName), m_isAlive(std::make_shared<bool>(true))
+	{
+	}
+
 	Component::~Component()
 	{
 		*m_isAlive = false;

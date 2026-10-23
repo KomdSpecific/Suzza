@@ -17,7 +17,8 @@ namespace suz
 		const VkDevice& Device,
 		const VkExtent2D& SwapChainExtent,
 		const VkRenderPass& RenderPass
-	) : m_engineInstance(Engine::GetEngineInstance()), m_pipeline(Pipeline), m_device(Device), m_swapChainExtent(SwapChainExtent), m_renderPass(RenderPass)
+	) : m_engineUIDelegate(Engine::GetEngineInstance().GetEngineUIRenderEventDelegate()),
+		m_pipeline(Pipeline), m_device(Device), m_swapChainExtent(SwapChainExtent), m_renderPass(RenderPass)
 	{
 	}
 
@@ -198,8 +199,6 @@ namespace suz
 
 	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const std::unordered_map<Mesh*, std::vector<ModelConstant>>& MeshToDraw, uint32_t ImageIndex)
 	{
-		EngineUIRenderEventDelegate& engineDelegate = m_engineInstance.GetEngineUIRenderEventDelegate();
-
 		VkCommandBufferBeginInfo bufferBeginInfo{};
 		bufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		bufferBeginInfo.flags = 0;
@@ -270,7 +269,7 @@ namespace suz
 		}
 
 		/* 执行引擎全局广播委托 */
-		engineDelegate.Execute(CommandBuffer);
+		m_engineUIDelegate.Execute(CommandBuffer);
 
 		/* 结束绘制命令 */
 		vkCmdEndRenderPass(CommandBuffer);

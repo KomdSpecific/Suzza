@@ -3,7 +3,8 @@
 #include "Component.h"
 #include "model/Mesh.h"
 #include "model/Material.h"
-#include "macros/GameSceneMacro.h"
+#include "macros/ReflectMacros.h"
+#include "MeshComponent.generated.h"
 
 #include <memory>
 #include <vector>
@@ -14,10 +15,11 @@ namespace suz
 {
 	class MeshComponent : public Component
 	{
-		DECLARE_CLASS(MeshComponent, Component)
+		SUZZA_REFLECT_CLASS()
 		COMPONENT(MeshComponent)
 	public:
 		MeshComponent();
+		MeshComponent(const std::string& ComponentName);
 		MeshComponent(Mesh* mesh, Material* material);
 		~MeshComponent();
 

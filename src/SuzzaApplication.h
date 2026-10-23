@@ -25,5 +25,5 @@ private:
 	std::unique_ptr<suz::Scene> m_scene = nullptr;
 
 public:
-	//inline suz::Scene* GetScene() const { return m_scene.get(); }
+	inline suz::Scene* GetScene() const { return m_scene.get(); }
 };

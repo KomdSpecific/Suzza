@@ -1,7 +1,8 @@
 #include "engine/Engine.h"
 #include "SuzzaApplication.h"
 
-#include <iostream>
+#include "debug/SuzzaLog.h"
+
 #include <cstdlib>
 #include <stdexcept>
 
@@ -9,14 +10,14 @@ int main()
 {
 	SuzzaApplication* suzApp = new SuzzaApplication();
 	suz::Engine& engine = suz::Engine::GetEngineInstance();
-	engine.WIDTH = 800;
-	engine.HEIGHT = 600;
+	engine.WIDTH = 1600;
+	engine.HEIGHT = 1200;
 
 	engine.SetApplication(suzApp);
 
 	if (!engine.Init())
 	{
-		std::cerr << "程序初始化失败!" << std::endl;
+		SUZZA_LOG_ERROR("程序初始化失败!");
 		return EXIT_FAILURE;
 	}
 
@@ -26,7 +27,7 @@ int main()
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << e.what() << std::endl;
+		SUZZA_LOG_ERROR(e.what());
 		return EXIT_FAILURE;
 	}
 
