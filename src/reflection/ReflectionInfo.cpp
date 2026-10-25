@@ -6,7 +6,7 @@
 
 namespace suz
 {
-	const FieldInfo FieldInfo::CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, Editability EditEnum)
+	FieldInfo FieldInfo::CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, Editability EditEnum)
 	{
 		FieldInfo fieldInfo{};
 		fieldInfo.name = Name;

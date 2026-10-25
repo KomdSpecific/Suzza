@@ -135,7 +135,7 @@ namespace suz
 		ImageData image{};
 		if (FilePath.empty())
 		{
-			std::filesystem::path filePath = FileSystem::GetAssetsFolder() / "textures" / "brick.png";
+			std::filesystem::path filePath = FileSystem::GetAssetsFolder() / "textures" / "brick.jpg";
 			image = Engine::GetImageLoaderManager().LoadImage(filePath.string());
 		}
 		else
@@ -151,7 +151,7 @@ namespace suz
 
 		BufferArea::CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
 
-		/* 将显存映射到CPU可读取的内存中 */
+		/* 将显存拷贝到CPU可读取的内存中 */
 		void* imageData;
 		vkMapMemory(m_device, stagingMemory, 0, imageSize, 0, &imageData);
 		memcpy(imageData, image.pixels, static_cast<size_t>(imageSize));

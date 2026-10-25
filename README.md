@@ -1,20 +1,25 @@
-[ÖÐÎÄ](./README_zh.md)
+[Chinese](./README_zh.md)
 
 # Suzza
 
-A small 3D rendering engine implemented with Vulkan backend, written in C++.
+A small 3D rendering engine written in C++ with Vulkan rendering backend.
+The engine adopts Actor + Component architecture and has a built-in lightweight reflection system.
 
-> This is a learning-focused mini engine, not intended for production use.
+> Targeted at engine development learners and students, suitable for study, research and secondary development based on this framework.
 
 ## Features
 - Vulkan rendering backend
 - GLFW window & input
 - ImGui (Docking branch) for debug UI and editor panels
+- Support **modifying actor and component data at runtime in editor**
+- Actor + Component entity component framework
+- Lightweight reflection system: implemented by an independent LLVM reflection code generator
 - GLM for mathematics
 - stb_image for texture image loading
 - cgltf for glTF model loading
 - Separate reflection code generator tool
   - The reflection tool is an independent project.
+  - Repository: [https://github.com/KomdSpecific/suzza-reflect-tool]
   - It depends on external LLVM/Clang libraries for AST parsing and code generation.
   - LLVM source code is **not included** in this repository.
 
@@ -32,12 +37,14 @@ See [`NOTICE`](./NOTICE) for complete copyright and license information of third
 - C++20 or newer
 - CMake3.8+
 - Vulkan SDK
-- A C++ compiler supporting Vulkan (MSVC / GCC / Clang)
+- MSVC compiler (**Only MSVC is verified and supported for now; GCC / Clang compatibility is not tested**)
 - For reflection tool: prebuilt LLVM + Clang development packages (external dependency)
 
 ## Build Instructions
 ```bash
 # Example
-cmake -S . -B build
-cmake --build build
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
 

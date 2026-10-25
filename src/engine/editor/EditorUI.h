@@ -37,7 +37,6 @@ namespace suz
 	private:
 		void DrawHierarchyPanel(SuzzaApplication* Application);
 		void DrawInspectorPanel();
-		void DrawDetailsPanel();
 
 		void DrawActorTreeNode(Actor* TargetActor);
 

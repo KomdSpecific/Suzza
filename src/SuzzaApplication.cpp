@@ -76,8 +76,8 @@ bool SuzzaApplication::Init()
 	suz::Material* material1 = new suz::Material();
 	const std::string& materialId1 = modelManager.LoadMaterial(material1);
 
-	std::filesystem::path filePath = suz::FileSystem::GetAssetsFolder() / "textures" / "1275469.jpg";
-	suz::Material* material2 = new suz::Material(filePath.string());
+	//std::filesystem::path filePath = suz::FileSystem::GetAssetsFolder() / "textures" / "1275469.jpg";
+	suz::Material* material2 = new suz::Material();
 	const std::string& materialId2 = modelManager.LoadMaterial(material2);
 
 

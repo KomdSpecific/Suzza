@@ -40,7 +40,6 @@ namespace suz
 	{
 		DrawHierarchyPanel(Application);
 		DrawInspectorPanel();
-		DrawDetailsPanel();
 	}
 
 	void EditorUI::RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer)
@@ -72,39 +71,34 @@ namespace suz
 
 	void EditorUI::DrawInspectorPanel()
 	{
+		if (!m_selectedActor) return;
+
 		if (m_uiRender->BeginWindow("Inspector"))
 		{
-			if (m_selectedActor)
+			for (const FieldInfo& field : m_selectedActor->GetClassInfo().fields)
 			{
-				for (Component* comp : m_selectedActor->GetAllActorComponents())
+				if (field.typeName == "glm::vec3")
 				{
-					ClassInfo classInfo = comp->GetClassInfo();
-					m_uiRender->SeparatorText(classInfo.className.c_str());
-
-					if (!classInfo.fields.empty())
+					glm::vec3 location{};
+					(field.getterFunc(m_selectedActor, &location));
+					float loc[3] = { location.x,location.y,location.z };
+					if (m_uiRender->ShowVector3Float(field.name.c_str(), loc))
 					{
-						for (const FieldInfo& field : classInfo.fields)
-						{
-							DrawComponentField(comp, field);
-						}
+						field.setterFunc(m_selectedActor, loc);
 					}
 				}
 			}
-		}
 
-		m_uiRender->EndWindow();
-	}
-
-	void EditorUI::DrawDetailsPanel()
-	{
-		if (m_uiRender->BeginWindow("DetailsPanel"))
-		{
-			if (m_selectedActor)
+			/* 遍历所有的Actor组件信息 */
+			for (Component* comp : m_selectedActor->GetAllActorComponents())
 			{
-				m_uiRender->Text("%s Transform", m_selectedActor->GetActorName().c_str());
-				m_uiRender->ShowVector3Float("Location: ", m_selectedActor->GetActorLocation());
-				m_uiRender->ShowVector3Float("Rotation: ", m_selectedActor->GetActorRotation());
-				m_uiRender->ShowVector3Float("Scale: ", m_selectedActor->GetActorScale());
+				ClassInfo classInfo = comp->GetClassInfo();
+				m_uiRender->SeparatorText(classInfo.className.c_str());
+
+				for (const FieldInfo& field : classInfo.fields)
+				{
+					DrawComponentField(comp, field);
+				}
 			}
 		}
 
@@ -151,20 +145,6 @@ namespace suz
 
 		if (nodeOpen)
 		{
-			for (const FieldInfo& field : TargetActor->GetClassInfo().fields)
-			{
-				if (field.typeName == "glm::vec3")
-				{
-					glm::vec3 location{};
-					(field.getterFunc(TargetActor, &location));
-					float loc[3] = { location.x,location.y,location.z };
-					if (m_uiRender->ShowVector3Float(field.name.c_str(), loc))
-					{
-						field.setterFunc(TargetActor, loc);
-					}
-				}
-			}
-
 			for (Actor* childActor : TargetActor->GetChildActorList())
 			{
 				DrawActorTreeNode(childActor);
@@ -178,9 +158,9 @@ namespace suz
 	{
 		if (TargetField.typeName == "float")
 		{
-			float value = 0;
+			float value = 50;
 			(TargetField.getterFunc(CurrentComponent, &value));
-			if (m_uiRender->ShowFloat(TargetField.name.c_str(), &value, 0.1f))
+			if (m_uiRender->ShowFloat(TargetField.name.c_str(), &value))
 			{
 				TargetField.setterFunc(CurrentComponent, &value);
 			}

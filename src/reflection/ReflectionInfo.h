@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SuzzaTypes.h"
+#include "ContainerAccessor.h"
 
 #include <string>
 #include <vector>
@@ -39,16 +40,18 @@ namespace suz
 		std::function<void(void*, void*)> getterFunc;
 		std::function<void(void*, void*)> setterFunc;
 
+		std::shared_ptr<IContainerAccessor> accessor = nullptr;
+
 		const bool IsValid() const
 		{
 			return !name.empty() && !typeName.empty() && getterFunc;
 		}
 
 		/* 偏移量方案构造 */
-		static const FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, Editability EditEnum);
+		static FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, Editability EditEnum);
 		/* 类成员函数构造 */
 		template<typename ClassT, typename MemberT>
-		static const FieldInfo CreateFieldInfo(
+		static FieldInfo CreateFieldInfo(
 			const std::string& Name,
 			const std::string& TypeName,
 			const std::string& ParentClassName,
@@ -58,7 +61,7 @@ namespace suz
 		);
 
 		template<typename ClassT, typename MemberT>
-		static const FieldInfo CreateFieldInfo(
+		static FieldInfo CreateFieldInfo(
 			const std::string& Name,
 			const std::string& TypeName,
 			const std::string& ParentClassName,
@@ -107,7 +110,7 @@ namespace suz
 
 
 	template<typename ClassT, typename MemberT>
-	inline const FieldInfo FieldInfo::CreateFieldInfo(
+	inline FieldInfo FieldInfo::CreateFieldInfo(
 		const std::string& Name,
 		const std::string& TypeName,
 		const std::string& ParentClassName,
@@ -142,7 +145,7 @@ namespace suz
 	}
 
 	template<typename ClassT, typename MemberT>
-	inline const FieldInfo FieldInfo::CreateFieldInfo(
+	inline FieldInfo FieldInfo::CreateFieldInfo(
 		const std::string& Name, const std::string& TypeName, const std::string& ParentClassName,
 		const MemberT(ClassT::* GetterFunc)() const,
 		void(ClassT::* SetterFunc)(const MemberT&),
