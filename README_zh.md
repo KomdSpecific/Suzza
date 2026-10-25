@@ -11,7 +11,11 @@
 - Vulkan 渲染后端
 - GLFW 窗口管理与输入处理
 - ImGui（Docking分支），用于调试UI与简易编辑器面板
+<<<<<<< HEAD
 - 简单支持**编辑器运行时修改实体、组件数据**
+=======
+- 支持**编辑器运行时修改实体、组件数据**
+>>>>>>> e0296767f16442568f96729e260ccc53ae29db1d
 - Actor + Component 实体组件框架
 - 简易反射系统：由独立 LLVM 反射代码生成器实现
 - GLM 数学库，提供向量、矩阵运算
@@ -43,7 +47,12 @@
 ## 编译步骤
 ```bash
 # 示例命令
+<<<<<<< HEAD
 mkdir build
 cd build
 cmake ..
 cmake --build . --config Release
+=======
+cmake -S . -B build
+cmake --build build
+>>>>>>> e0296767f16442568f96729e260ccc53ae29db1d
