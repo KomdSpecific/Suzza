@@ -1,10 +1,11 @@
 [English](./README.md)
-(CodeReader)(./docs/codeReader.pdf)
 
 # Suzza
 
 一个基于 Vulkan 渲染后端、使用 C++ 编写的小型3D渲染引擎。
 引擎采用 Actor + Component 架构，内置简易反射系统。
+
+想熟悉、阅读源码的详情见docs/codeReader.docx、docs/codeReader.pdf文件
 
 > 面向引擎开发学习者、学生群体，适合学习研究以及基于该框架二次开发。
 
