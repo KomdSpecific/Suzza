@@ -11,9 +11,41 @@
 
 namespace suz
 {
-	enum class EFieldType
+	enum class ETypeCategory : uint8
 	{
-		Bool, Int, Float, String, Array, Quat, Vec3, Vec4, ObjPtr
+		Primitive,
+		Enum,
+		Struct,
+		Array,
+		Pointer,
+		Reference,
+		Container,
+		Unknown
+	};
+
+	enum class EContainerType : uint8
+	{
+		Vector3,
+		Vector4,
+		Quat,
+		Matrix3,
+		Matrix4,
+		String,
+		Vector,
+		Map,
+		Set,
+		Unknown
+	};
+
+	enum class EPrimitiveType : uint8
+	{
+		Bool,
+		Int8, UInt8,
+		Int16, UInt16,
+		Int32, UInt32,
+		Int64, UInt64,
+		Float,
+		Unknown
 	};
 
 	enum class EFunctionType : uint8
@@ -35,10 +67,13 @@ namespace suz
 		std::string parentClassName{};				// 父类名(如果字段在父类被定义则不为空)
 		usize offset;								// 类内偏移量
 		Editability editable;						// 是否可更改
-		//FieldType type;
 
 		std::function<void(void*, void*)> getterFunc;
 		std::function<void(void*, void*)> setterFunc;
+
+		ETypeCategory category = ETypeCategory::Unknown;				// 变量分类
+		EPrimitiveType primitiveType = EPrimitiveType::Unknown;			// 变量具体类型(仅当category==Primitive才有效)
+		EContainerType containerType = EContainerType::Unknown;			// 容器类型(仅当category==Container才有效)
 
 		std::shared_ptr<IContainerAccessor> accessor = nullptr;
 

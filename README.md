@@ -5,6 +5,8 @@
 A small 3D rendering engine written in C++ with Vulkan rendering backend.
 The engine adopts Actor + Component architecture and has a built-in lightweight reflection system.
 
+For more information on familiarizing oneself with and reading the source code, please refer to the docs/codeReader_en.docx or docs/codeReader_en.pdf
+
 > Targeted at engine development learners and students, suitable for study, research and secondary development based on this framework.
 
 ## Features

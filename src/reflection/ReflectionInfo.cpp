@@ -14,8 +14,9 @@ namespace suz
 		fieldInfo.offset = Offset;
 		fieldInfo.editable = EditEnum;
 
-		fieldInfo.getterFunc = [Offset](void* obj, void* outValue) {
-			outValue = (char*)obj + Offset;
+		fieldInfo.getterFunc = [Offset, TypeSize](void* obj, void* outValue) {
+			void* memberPtr = (char*)obj + Offset;
+			memcpy(outValue, memberPtr, TypeSize);
 			};
 
 		if (EditEnum == Editability::Editable)

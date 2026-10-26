@@ -158,8 +158,8 @@ namespace suz
 	{
 		if (TargetField.typeName == "float")
 		{
-			float value = 50;
-			(TargetField.getterFunc(CurrentComponent, &value));
+			float value = 0;
+			TargetField.getterFunc(CurrentComponent, &value);
 			if (m_uiRender->ShowFloat(TargetField.name.c_str(), &value))
 			{
 				TargetField.setterFunc(CurrentComponent, &value);
