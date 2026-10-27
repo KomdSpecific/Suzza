@@ -40,7 +40,9 @@ namespace suz
 
 		void DrawActorTreeNode(Actor* TargetActor);
 
-		void DrawComponentField(Component* CurrentComponent, const FieldInfo& TargetField);
+		void DrawObjField(void* TargetObj, const FieldInfo& TargetField);
+		void DrawPrimitiveField(void* TargetObj, const FieldInfo& TargetField);
+		void DrawContainerField(void* TargetObj, const FieldInfo& TargetField);
 
 		std::unique_ptr<IUIRender> m_uiRender = nullptr;
 		Actor* m_selectedActor = nullptr;

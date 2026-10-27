@@ -87,6 +87,11 @@ namespace suz
 		return ImGui::DragFloat3(Label, v, Speed);
 	}
 
+	bool ImGuiUIRender::ShowVector2Float(const char* Label, float* Vector, const float Speed)
+	{
+		return ImGui::DragFloat2(Label, Vector, Speed);
+	}
+
 	bool ImGuiUIRender::ShowVector3Float(const char* Label, float* Vector, const float Speed)
 	{
 		return ImGui::DragFloat3(Label, Vector, Speed);

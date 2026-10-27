@@ -43,6 +43,7 @@ namespace suz
 		virtual bool ShowFloat(const char* Label, float* Value, const float Speed = 1.0f) = 0;
 		virtual bool ShowVector2Float(const char* Label, const glm::vec2& Vector, const float Speed = 1.0f) = 0;
 		virtual bool ShowVector3Float(const char* Label, const glm::vec3& Vector, const float Speed = 1.0f) = 0;
+		virtual bool ShowVector2Float(const char* Label, float* Vector, const float Speed = 1.0f) = 0;
 		virtual bool ShowVector3Float(const char* Label, float* Vector, const float Speed = 1.0f) = 0;
 
 		/* Ö¡ÉúÃüÖÜÆÚ */

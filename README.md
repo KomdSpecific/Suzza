@@ -2,30 +2,35 @@
 
 # Suzza
 
-A small 3D rendering engine written in C++ with Vulkan rendering backend.
-The engine adopts Actor + Component architecture and has a built-in lightweight reflection system.
+A small 3D rendering engine written in C++ with a Vulkan rendering backend.
+It uses an Actor + Component architecture and ships a lightweight reflection system.
 
-For more information on familiarizing oneself with and reading the source code, please refer to the docs/codeReader_en.docx or docs/codeReader_en.pdf
+> Aimed at engine-development learners and students; suitable for study, research and building on top of this framework.
 
-> Targeted at engine development learners and students, suitable for study, research and secondary development based on this framework.
+## Documentation
+
+| Document | Contents |
+| --- | --- |
+| [Build & run guide](docs/BUILD_en.md) | From a clean machine to a running window, step by step, including Windows 10 / 11 differences and troubleshooting ([中文](docs/BUILD_zh.md)) |
+| [Source reading guide](docs/codeReader_en.docx) | 25-page reading map: a seven-stop route through the code, the core mechanisms, hands-on exercises ([PDF](docs/codeReader_en.pdf) / [中文](docs/codeReader.docx)) |
 
 ## Features
 - Vulkan rendering backend
 - GLFW window & input
-- ImGui (Docking branch) for debug UI and editor panels
-- Support **modifying actor and component data at runtime in editor**
-- Actor + Component entity component framework
-- Lightweight reflection system: implemented by an independent LLVM reflection code generator
+- ImGui (Docking branch) for the debug UI and editor panels
+- **Edit actor and component data at runtime in the editor**
+- Actor + Component entity framework
+- Lightweight reflection system, implemented by a stand-alone LLVM-based code generator
 - GLM for mathematics
 - stb_image for texture image loading
 - cgltf for glTF model loading
 - Separate reflection code generator tool
   - The reflection tool is an independent project.
-  - Repository: [https://github.com/KomdSpecific/suzza-reflect-tool]
-  - It depends on external LLVM/Clang libraries for AST parsing and code generation.
-  - LLVM source code is **not included** in this repository.
+  - Repository: [https://github.com/KomdSpecific/suzza-reflect-tool](https://github.com/KomdSpecific/suzza-reflect-tool)
+  - Its **source** depends on external LLVM/Clang libraries for AST parsing and code generation.
+  - A prebuilt generator is committed under `tool/ReflectGenerated/`, so building this repository does **not** require LLVM.
 
-## Third-party Libraries
+## Third-party libraries
 All libraries below are vendored under `thirdparty/` with non-essential files stripped (examples, tests, docs etc.).
 - Dear ImGui (Docking, MIT)
 - GLFW (zlib/libpng)
@@ -33,20 +38,26 @@ All libraries below are vendored under `thirdparty/` with non-essential files st
 - stb_image (Public Domain / MIT dual license)
 - cgltf (MIT)
 
-See [`NOTICE`](./NOTICE) for complete copyright and license information of third-party libraries.
+See [`NOTICE.txt`](./NOTICE.txt) for complete copyright and license information of third-party libraries.
 
-## Build Requirements
-- C++20 or newer
-- CMake3.8+
-- Vulkan SDK
-- MSVC compiler (**Only MSVC is verified and supported for now; GCC / Clang compatibility is not tested**)
-- For reflection tool: prebuilt LLVM + Clang development packages (external dependency)
+## Requirements
+- Windows 10 / 11 on x64
+- **Visual Studio 2026 or 2022** (Community or Build Tools) with the bundled MSVC compiler
+- CMake 3.21+ (VS 2026 ships 4.1, which is fine) and Ninja
+- Vulkan SDK 1.3.x, including `glslc`
+- MSVC is the only verified toolchain; **GCC and Clang are untested**
 
-## Build Instructions
-```bash
-# Example
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
+## Build
+Run this in an **x64 Native Tools Command Prompt** (the 2026 entry is *... for VS*, the 2022 one is *... for VS 2022*).
+A Ninja build is required: the reflection step reads `compile_commands.json`, which only Ninja / Makefile-style generators produce.
 
+```bat
+git clone https://github.com/KomdSpecific/Suzza.git
+cd Suzza
+cmake -S . -B out/build/x64-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake --build out/build/x64-debug
+```
+
+The result is `out/build/x64-debug/SuzzaEngine.exe`, with `assets/` copied next to it after the build.
+
+Full setup instructions, a self-check script and a troubleshooting table live in [docs/BUILD_en.md](docs/BUILD_en.md).

@@ -77,7 +77,7 @@ namespace suz
 		{
 			for (const FieldInfo& field : m_selectedActor->GetClassInfo().fields)
 			{
-				if (field.typeName == "glm::vec3")
+				/*if (field.typeName == "glm::vec3")
 				{
 					glm::vec3 location{};
 					(field.getterFunc(m_selectedActor, &location));
@@ -86,7 +86,8 @@ namespace suz
 					{
 						field.setterFunc(m_selectedActor, loc);
 					}
-				}
+				}*/
+				DrawObjField(m_selectedActor, field);
 			}
 
 			/* 遍历所有的Actor组件信息 */
@@ -97,7 +98,7 @@ namespace suz
 
 				for (const FieldInfo& field : classInfo.fields)
 				{
-					DrawComponentField(comp, field);
+					DrawObjField(comp, field);
 				}
 			}
 		}
@@ -154,16 +155,128 @@ namespace suz
 		}
 	}
 
-	void EditorUI::DrawComponentField(Component* CurrentComponent, const FieldInfo& TargetField)
+	void EditorUI::DrawObjField(void* TargetObj, const FieldInfo& TargetField)
 	{
-		if (TargetField.typeName == "float")
+		switch (TargetField.category)
+		{
+		case suz::ETypeCategory::Primitive:
+		{
+			DrawPrimitiveField(TargetObj, TargetField);
+			break;
+		}
+
+		case suz::ETypeCategory::Enum:
+			break;
+		case suz::ETypeCategory::Struct:
+			break;
+		case suz::ETypeCategory::Array:
+			break;
+		case suz::ETypeCategory::Pointer:
+			break;
+		case suz::ETypeCategory::Reference:
+			break;
+		case suz::ETypeCategory::Container:
+		{
+			DrawContainerField(TargetObj, TargetField);
+			break;
+		}
+
+		case suz::ETypeCategory::Unknown:
+			break;
+		default:
+			break;
+		}
+	}
+
+	void EditorUI::DrawPrimitiveField(void* TargetObj, const FieldInfo& TargetField)
+	{
+		switch (TargetField.primitiveType)
+		{
+		case suz::EPrimitiveType::Bool:
+			break;
+		case suz::EPrimitiveType::Int8:
+			break;
+		case suz::EPrimitiveType::UInt8:
+			break;
+		case suz::EPrimitiveType::Int16:
+			break;
+		case suz::EPrimitiveType::UInt16:
+			break;
+		case suz::EPrimitiveType::Int32:
+			break;
+		case suz::EPrimitiveType::UInt32:
+			break;
+		case suz::EPrimitiveType::Int64:
+			break;
+		case suz::EPrimitiveType::UInt64:
+			break;
+		case suz::EPrimitiveType::Float:
 		{
 			float value = 0;
-			TargetField.getterFunc(CurrentComponent, &value);
-			if (m_uiRender->ShowFloat(TargetField.name.c_str(), &value))
+			TargetField.getterFunc(TargetObj, &value);
+			if (m_uiRender->ShowFloat(TargetField.name.c_str(), &value, 0.1f))
 			{
-				TargetField.setterFunc(CurrentComponent, &value);
+				TargetField.setterFunc(TargetObj, &value);
 			}
+			break;
+		}
+
+		case suz::EPrimitiveType::Unknown:
+			break;
+		default:
+			break;
+		}
+	}
+
+	void EditorUI::DrawContainerField(void* TargetObj, const FieldInfo& TargetField)
+	{
+		switch (TargetField.containerType)
+		{
+		case suz::EContainerType::Vector3:
+		{
+			glm::vec3 vector3{};
+			TargetField.getterFunc(TargetObj, &vector3);
+			float v[3] = { vector3.x,vector3.y,vector3.z };
+
+			if (m_uiRender->ShowVector3Float(TargetField.name.c_str(), v))
+			{
+				TargetField.setterFunc(TargetObj, v);
+			}
+			break;
+		}
+
+		case suz::EContainerType::Vector4:
+			break;
+
+		case suz::EContainerType::Quat:
+		{
+			glm::vec3 vector3{};
+			TargetField.getterFunc(TargetObj, &vector3);
+			float v[3] = { vector3.x,vector3.y,vector3.z };
+
+			if (m_uiRender->ShowVector3Float(TargetField.name.c_str(), v))
+			{
+				TargetField.setterFunc(TargetObj, v);
+			}
+			break;
+		}
+
+		case suz::EContainerType::Matrix3:
+			break;
+		case suz::EContainerType::Matrix4:
+			break;
+		case suz::EContainerType::String:
+			break;
+		case suz::EContainerType::Vector:
+			break;
+		case suz::EContainerType::Map:
+			break;
+		case suz::EContainerType::Set:
+			break;
+		case suz::EContainerType::Unknown:
+			break;
+		default:
+			break;
 		}
 	}
 }

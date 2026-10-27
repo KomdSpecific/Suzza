@@ -83,8 +83,12 @@ namespace suz
 		}
 
 		/* 偏移量方案构造 */
-		static FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, Editability EditEnum);
+		static FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, ETypeCategory TypeCategory, Editability EditEnum);
+		static FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, ETypeCategory TypeCategory, EPrimitiveType PrimitiveType, Editability EditEnum);
+		static FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, ETypeCategory TypeCategory, EContainerType ContainerType, Editability EditEnum);
+		
 		/* 类成员函数构造 */
+		/* 1.基础类型注册函数 */
 		template<typename ClassT, typename MemberT>
 		static FieldInfo CreateFieldInfo(
 			const std::string& Name,
@@ -92,6 +96,8 @@ namespace suz
 			const std::string& ParentClassName,
 			const MemberT& (ClassT::* GetterFunc)() const,
 			void(ClassT::* SetterFunc)(const MemberT&),
+			ETypeCategory TypeCategory,
+			EPrimitiveType PrimitiveType,
 			Editability EditEnum
 		);
 
@@ -100,8 +106,35 @@ namespace suz
 			const std::string& Name,
 			const std::string& TypeName,
 			const std::string& ParentClassName,
-			const MemberT (ClassT::* GetterFunc)() const,
+			const MemberT(ClassT::* GetterFunc)() const,
 			void(ClassT::* SetterFunc)(const MemberT&),
+			ETypeCategory TypeCategory,
+			EPrimitiveType PrimitiveType,
+			Editability EditEnum
+		);
+
+		/* 2.容器注册函数 */
+		template<typename ClassT, typename MemberT>
+		static FieldInfo CreateFieldInfo(
+			const std::string& Name,
+			const std::string& TypeName,
+			const std::string& ParentClassName,
+			const MemberT& (ClassT::* GetterFunc)() const,
+			void(ClassT::* SetterFunc)(const MemberT&),
+			ETypeCategory TypeCategory,
+			EContainerType ContainerType,
+			Editability EditEnum
+		);
+
+		template<typename ClassT, typename MemberT>
+		static FieldInfo CreateFieldInfo(
+			const std::string& Name,
+			const std::string& TypeName,
+			const std::string& ParentClassName,
+			const MemberT(ClassT::* GetterFunc)() const,
+			void(ClassT::* SetterFunc)(const MemberT&),
+			ETypeCategory TypeCategory,
+			EContainerType ContainerType,
 			Editability EditEnum
 		);
 	};
@@ -144,6 +177,7 @@ namespace suz
 
 
 
+#pragma region PrimitiveTypeFunc
 	template<typename ClassT, typename MemberT>
 	inline FieldInfo FieldInfo::CreateFieldInfo(
 		const std::string& Name,
@@ -151,39 +185,8 @@ namespace suz
 		const std::string& ParentClassName,
 		const MemberT& (ClassT::* GetterFunc)() const,
 		void(ClassT::* SetterFunc)(const MemberT&),
-		Editability EditEnum
-	)
-	{
-		static_assert(std::is_same_v<std::remove_cv_t<MemberT>, MemberT>, "MemberT不能带 const/volatile, 请传字段本身的类型!");
-
-		FieldInfo fieldInfo{};
-		fieldInfo.name = Name;
-		fieldInfo.typeName = TypeName;
-		fieldInfo.parentClassName = ParentClassName;
-		fieldInfo.editable = EditEnum;
-
-		fieldInfo.getterFunc = [GetterFunc](void* obj, void* outValue) {
-			ClassT* classObj = static_cast<ClassT*>(obj);
-			*static_cast<MemberT*>(outValue) = (classObj->*GetterFunc)();
-			};
-
-		if (EditEnum == Editability::Editable)
-		{
-			fieldInfo.setterFunc = [SetterFunc](void* obj, void* inValue) {
-				ClassT* classObj = static_cast<ClassT*>(obj);
-				MemberT member = *static_cast<MemberT*>(inValue);
-				(classObj->*SetterFunc)(member);
-				};
-		}
-
-		return fieldInfo;
-	}
-
-	template<typename ClassT, typename MemberT>
-	inline FieldInfo FieldInfo::CreateFieldInfo(
-		const std::string& Name, const std::string& TypeName, const std::string& ParentClassName,
-		const MemberT(ClassT::* GetterFunc)() const,
-		void(ClassT::* SetterFunc)(const MemberT&),
+		ETypeCategory TypeCategory,
+		EPrimitiveType PrimitiveType,
 		Editability EditEnum
 	)
 	{
@@ -192,6 +195,8 @@ namespace suz
 		fieldInfo.typeName = TypeName;
 		fieldInfo.parentClassName = ParentClassName;
 		fieldInfo.editable = EditEnum;
+		fieldInfo.category = TypeCategory;
+		fieldInfo.primitiveType = PrimitiveType;
 
 		fieldInfo.getterFunc = [GetterFunc](void* obj, void* outValue) {
 			const ClassT* classObj = static_cast<const ClassT*>(obj);
@@ -209,4 +214,121 @@ namespace suz
 
 		return fieldInfo;
 	}
+
+	template<typename ClassT, typename MemberT>
+	inline FieldInfo FieldInfo::CreateFieldInfo(
+		const std::string& Name,
+		const std::string& TypeName,
+		const std::string& ParentClassName,
+		const MemberT(ClassT::* GetterFunc)() const,
+		void(ClassT::* SetterFunc)(const MemberT&),
+		ETypeCategory TypeCategory,
+		EPrimitiveType PrimitiveType,
+		Editability EditEnum
+	)
+	{
+		FieldInfo fieldInfo{};
+		fieldInfo.name = Name;
+		fieldInfo.typeName = TypeName;
+		fieldInfo.parentClassName = ParentClassName;
+		fieldInfo.editable = EditEnum;
+		fieldInfo.category = TypeCategory;
+		fieldInfo.primitiveType = PrimitiveType;
+
+		fieldInfo.getterFunc = [GetterFunc](void* obj, void* outValue) {
+			const ClassT* classObj = static_cast<const ClassT*>(obj);
+			*static_cast<MemberT*>(outValue) = (classObj->*GetterFunc)();
+			};
+
+		if (EditEnum == Editability::Editable)
+		{
+			fieldInfo.setterFunc = [SetterFunc](void* obj, void* inValue) {
+				ClassT* classObj = static_cast<ClassT*>(obj);
+				MemberT member = *static_cast<MemberT*>(inValue);
+				(classObj->*SetterFunc)(member);
+				};
+		}
+
+		return fieldInfo;
+	}
+
+#pragma endregion
+
+
+#pragma region ContainerTypeFunc
+	template<typename ClassT, typename MemberT>
+	inline FieldInfo FieldInfo::CreateFieldInfo(
+		const std::string& Name,
+		const std::string& TypeName,
+		const std::string& ParentClassName,
+		const MemberT& (ClassT::* GetterFunc)() const,
+		void(ClassT::* SetterFunc)(const MemberT&),
+		ETypeCategory TypeCategory,
+		EContainerType ContainerType,
+		Editability EditEnum
+	)
+	{
+		FieldInfo fieldInfo{};
+		fieldInfo.name = Name;
+		fieldInfo.typeName = TypeName;
+		fieldInfo.parentClassName = ParentClassName;
+		fieldInfo.editable = EditEnum;
+		fieldInfo.category = TypeCategory;
+		fieldInfo.containerType = ContainerType;
+
+		fieldInfo.getterFunc = [GetterFunc](void* obj, void* outValue) {
+			const ClassT* classObj = static_cast<const ClassT*>(obj);
+			*static_cast<MemberT*>(outValue) = (classObj->*GetterFunc)();
+			};
+
+		if (EditEnum == Editability::Editable)
+		{
+			fieldInfo.setterFunc = [SetterFunc](void* obj, void* inValue) {
+				ClassT* classObj = static_cast<ClassT*>(obj);
+				MemberT member = *static_cast<MemberT*>(inValue);
+				(classObj->*SetterFunc)(member);
+				};
+		}
+
+		return fieldInfo;
+	}
+
+	template<typename ClassT, typename MemberT>
+	inline FieldInfo FieldInfo::CreateFieldInfo(
+		const std::string& Name,
+		const std::string& TypeName,
+		const std::string& ParentClassName,
+		const MemberT(ClassT::* GetterFunc)() const,
+		void(ClassT::* SetterFunc)(const MemberT&),
+		ETypeCategory TypeCategory,
+		EContainerType ContainerType,
+		Editability EditEnum
+	)
+	{
+		FieldInfo fieldInfo{};
+		fieldInfo.name = Name;
+		fieldInfo.typeName = TypeName;
+		fieldInfo.parentClassName = ParentClassName;
+		fieldInfo.editable = EditEnum;
+		fieldInfo.category = TypeCategory;
+		fieldInfo.containerType = ContainerType;
+
+		fieldInfo.getterFunc = [GetterFunc](void* obj, void* outValue) {
+			const ClassT* classObj = static_cast<const ClassT*>(obj);
+			*static_cast<MemberT*>(outValue) = (classObj->*GetterFunc)();
+			};
+
+		if (EditEnum == Editability::Editable)
+		{
+			fieldInfo.setterFunc = [SetterFunc](void* obj, void* inValue) {
+				ClassT* classObj = static_cast<ClassT*>(obj);
+				MemberT member = *static_cast<MemberT*>(inValue);
+				(classObj->*SetterFunc)(member);
+				};
+		}
+
+		return fieldInfo;
+	}
+
+#pragma endregion
 }
