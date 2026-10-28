@@ -77,16 +77,6 @@ namespace suz
 		{
 			for (const FieldInfo& field : m_selectedActor->GetClassInfo().fields)
 			{
-				/*if (field.typeName == "glm::vec3")
-				{
-					glm::vec3 location{};
-					(field.getterFunc(m_selectedActor, &location));
-					float loc[3] = { location.x,location.y,location.z };
-					if (m_uiRender->ShowVector3Float(field.name.c_str(), loc))
-					{
-						field.setterFunc(m_selectedActor, loc);
-					}
-				}*/
 				DrawObjField(m_selectedActor, field);
 			}
 

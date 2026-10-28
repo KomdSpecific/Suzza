@@ -75,18 +75,6 @@ namespace suz
 		return ImGui::DragFloat(Label, Value, Speed);
 	}
 
-	bool ImGuiUIRender::ShowVector2Float(const char* Label, const glm::vec2& Vector, const float Speed)
-	{
-		float v[2] = { Vector.x,Vector.y };
-		return ImGui::DragFloat2(Label, v, Speed);
-	}
-
-	bool ImGuiUIRender::ShowVector3Float(const char* Label, const glm::vec3& Vector, const float Speed)
-	{
-		float v[3] = { Vector.x,Vector.y,Vector.z };
-		return ImGui::DragFloat3(Label, v, Speed);
-	}
-
 	bool ImGuiUIRender::ShowVector2Float(const char* Label, float* Vector, const float Speed)
 	{
 		return ImGui::DragFloat2(Label, Vector, Speed);

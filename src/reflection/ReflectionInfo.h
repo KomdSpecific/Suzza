@@ -48,10 +48,10 @@ namespace suz
 		Unknown
 	};
 
-	enum class EFunctionType : uint8
+	enum class EFunctionType
 	{
-		GetterFunc = 1 << 0,
-		SetterFunc = 1 << 1
+		GetterFunc,
+		SetterFunc
 	};
 
 	enum class Editability : uint8
@@ -64,7 +64,6 @@ namespace suz
 	{
 		std::string name{};							// 变量名
 		std::string typeName{};						// 类型名(如果类型是别名则显示类型别名)
-		std::string parentClassName{};				// 父类名(如果字段在父类被定义则不为空)
 		usize offset;								// 类内偏移量
 		Editability editable;						// 是否可更改
 
@@ -93,7 +92,6 @@ namespace suz
 		static FieldInfo CreateFieldInfo(
 			const std::string& Name,
 			const std::string& TypeName,
-			const std::string& ParentClassName,
 			const MemberT& (ClassT::* GetterFunc)() const,
 			void(ClassT::* SetterFunc)(const MemberT&),
 			ETypeCategory TypeCategory,
@@ -105,7 +103,6 @@ namespace suz
 		static FieldInfo CreateFieldInfo(
 			const std::string& Name,
 			const std::string& TypeName,
-			const std::string& ParentClassName,
 			const MemberT(ClassT::* GetterFunc)() const,
 			void(ClassT::* SetterFunc)(const MemberT&),
 			ETypeCategory TypeCategory,
@@ -118,7 +115,6 @@ namespace suz
 		static FieldInfo CreateFieldInfo(
 			const std::string& Name,
 			const std::string& TypeName,
-			const std::string& ParentClassName,
 			const MemberT& (ClassT::* GetterFunc)() const,
 			void(ClassT::* SetterFunc)(const MemberT&),
 			ETypeCategory TypeCategory,
@@ -130,7 +126,6 @@ namespace suz
 		static FieldInfo CreateFieldInfo(
 			const std::string& Name,
 			const std::string& TypeName,
-			const std::string& ParentClassName,
 			const MemberT(ClassT::* GetterFunc)() const,
 			void(ClassT::* SetterFunc)(const MemberT&),
 			ETypeCategory TypeCategory,
@@ -182,7 +177,6 @@ namespace suz
 	inline FieldInfo FieldInfo::CreateFieldInfo(
 		const std::string& Name,
 		const std::string& TypeName,
-		const std::string& ParentClassName,
 		const MemberT& (ClassT::* GetterFunc)() const,
 		void(ClassT::* SetterFunc)(const MemberT&),
 		ETypeCategory TypeCategory,
@@ -193,7 +187,6 @@ namespace suz
 		FieldInfo fieldInfo{};
 		fieldInfo.name = Name;
 		fieldInfo.typeName = TypeName;
-		fieldInfo.parentClassName = ParentClassName;
 		fieldInfo.editable = EditEnum;
 		fieldInfo.category = TypeCategory;
 		fieldInfo.primitiveType = PrimitiveType;
@@ -219,7 +212,6 @@ namespace suz
 	inline FieldInfo FieldInfo::CreateFieldInfo(
 		const std::string& Name,
 		const std::string& TypeName,
-		const std::string& ParentClassName,
 		const MemberT(ClassT::* GetterFunc)() const,
 		void(ClassT::* SetterFunc)(const MemberT&),
 		ETypeCategory TypeCategory,
@@ -230,7 +222,6 @@ namespace suz
 		FieldInfo fieldInfo{};
 		fieldInfo.name = Name;
 		fieldInfo.typeName = TypeName;
-		fieldInfo.parentClassName = ParentClassName;
 		fieldInfo.editable = EditEnum;
 		fieldInfo.category = TypeCategory;
 		fieldInfo.primitiveType = PrimitiveType;
@@ -260,7 +251,6 @@ namespace suz
 	inline FieldInfo FieldInfo::CreateFieldInfo(
 		const std::string& Name,
 		const std::string& TypeName,
-		const std::string& ParentClassName,
 		const MemberT& (ClassT::* GetterFunc)() const,
 		void(ClassT::* SetterFunc)(const MemberT&),
 		ETypeCategory TypeCategory,
@@ -271,7 +261,6 @@ namespace suz
 		FieldInfo fieldInfo{};
 		fieldInfo.name = Name;
 		fieldInfo.typeName = TypeName;
-		fieldInfo.parentClassName = ParentClassName;
 		fieldInfo.editable = EditEnum;
 		fieldInfo.category = TypeCategory;
 		fieldInfo.containerType = ContainerType;
@@ -297,7 +286,6 @@ namespace suz
 	inline FieldInfo FieldInfo::CreateFieldInfo(
 		const std::string& Name,
 		const std::string& TypeName,
-		const std::string& ParentClassName,
 		const MemberT(ClassT::* GetterFunc)() const,
 		void(ClassT::* SetterFunc)(const MemberT&),
 		ETypeCategory TypeCategory,
@@ -308,7 +296,6 @@ namespace suz
 		FieldInfo fieldInfo{};
 		fieldInfo.name = Name;
 		fieldInfo.typeName = TypeName;
-		fieldInfo.parentClassName = ParentClassName;
 		fieldInfo.editable = EditEnum;
 		fieldInfo.category = TypeCategory;
 		fieldInfo.containerType = ContainerType;

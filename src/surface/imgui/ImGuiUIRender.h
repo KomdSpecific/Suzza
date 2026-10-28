@@ -29,9 +29,8 @@ namespace suz
 		virtual void Text(const char* Format, ...) override;
 		virtual void SeparatorText(const char* Label) override;
 		virtual bool Button(const char* Label) override;
+
 		virtual bool ShowFloat(const char* Label, float* Value, const float Speed = 1.0f) override;
-		virtual bool ShowVector2Float(const char* Label, const glm::vec2& Vector, const float Speed = 1.0f) override;
-		virtual bool ShowVector3Float(const char* Label, const glm::vec3& Vector, const float Speed = 1.0f) override;
 		virtual bool ShowVector2Float(const char* Label, float* Vector, const float Speed = 1.0f) override;
 		virtual bool ShowVector3Float(const char* Label, float* Vector, const float Speed = 1.0f) override;
 		/* Ö¡ÉúÃüÖÜÆÚ */
