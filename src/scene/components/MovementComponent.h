@@ -20,8 +20,6 @@ namespace suz
 		virtual void Destroy() override;
 
 	private:
-		float NormalizeAngle(float Angle);
-
 		suz::InputManager& m_inputManager;
 
 		SUZZA_PROPERTY(Editability::Editable)

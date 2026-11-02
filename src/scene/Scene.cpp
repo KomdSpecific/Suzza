@@ -123,10 +123,21 @@ namespace suz
 		TargetActor->SetActorStatus(ActorStatus::PendingDestroy);
 	}
 
+	bool Scene::RegisterDefaultPlayer(PlayerController* DefaultPlayer)
+	{
+		if (!DefaultPlayer) return false;
+
+		if (m_defaultPlayer.get() == DefaultPlayer) return false;
+
+		m_defaultPlayer = std::unique_ptr<PlayerController>(DefaultPlayer);
+		m_defaultPlayer->SetOwnerScene(this);
+
+		return true;
+	}
+
 	void Scene::LoadModel(const std::string& FilePath)
 	{
 		std::vector<ModelData> modelData = Engine::GetModelLoaderManager().LoadModel(FilePath);
-		ModelResourceManager& resourceManager = Engine::GetModelResourceManager();
 
 		for (const ModelData& model : modelData)
 		{
@@ -152,8 +163,11 @@ namespace suz
 		for (std::unique_ptr<Actor>& actor : m_actorList)
 		{
 			/* 给Actor注册组件 */
+			m_defaultPlayer->BatchRegisterAllSubComponents();
 			actor->BatchRegisterAllSubComponents();
 		}
+
+		m_defaultPlayer->BeginPlay();
 
 		/* 仅对根节点进行Update逻辑 */
 		for (Actor* actor : m_rootActorList)
@@ -164,6 +178,8 @@ namespace suz
 
 	void Scene::Update(float DeltaTime)
 	{
+		m_defaultPlayer->Update(DeltaTime);
+
 		for (auto it = m_actorList.begin(); it != m_actorList.end(); it++)
 		{
 			/* 仅对根节点进行Update逻辑 */
@@ -193,6 +209,8 @@ namespace suz
 		{
 			actor->Destroy();
 		}
+
+		m_defaultPlayer->Destroy();
 
 		m_rootActorList.clear();
 		m_actorList.clear();

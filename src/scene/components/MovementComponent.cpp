@@ -1,6 +1,7 @@
 #include "MovementComponent.h"
 #include "Actor.h"
 #include "Engine.h"
+#include "math/Math.h"
 
 #include <iostream>
 
@@ -39,11 +40,11 @@ namespace suz
 			rotationDeg.y -= deltaY * m_sensitivity;
 
 			/* 限制俯仰, 防止过渡旋转 */
-			const float maxPitch = 89.0f;
+			const float maxPitch = 89.5f;
 			rotationDeg.y = glm::clamp(rotationDeg.y, -maxPitch, maxPitch);
 
 			/* Yaw角度归一化, 防止数值无线累积 */
-			rotationDeg.z = NormalizeAngle(rotationDeg.z);
+			rotationDeg.z = Math::NormalizeAngle(rotationDeg.z);
 			/* 设置欧拉角旋转 */
 			m_actorOwner->SetActorRotation(rotationDeg);
 		}
@@ -80,20 +81,5 @@ namespace suz
 
 	void MovementComponent::Destroy()
 	{
-	}
-
-	float MovementComponent::NormalizeAngle(float Angle)
-	{
-		Angle = fmodf(Angle, 360.0f);
-		if (Angle > 180.0f)
-		{
-			Angle -= 360.0f;
-		}
-		else if (Angle < -180.0f)
-		{
-			Angle += 360.0f;
-		}
-
-		return Angle;
 	}
 }

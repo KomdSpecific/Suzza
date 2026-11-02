@@ -1,10 +1,7 @@
 #pragma once
 
-#include "BaseObject.h"
+#include "VulkanResourceBase.h"
 #include "VulkanInitialize.h"
-
-#include <vector>
-#include <string>
 
 namespace suz
 {
@@ -19,58 +16,77 @@ namespace suz
 		VkPipelineColorBlendStateCreateInfo colorBlendInfo = {};
 		VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 		VkPipelineDynamicStateCreateInfo dynamicStateInfo = {};
+		VkPipelineVertexInputStateCreateInfo vertexInputState{};
 		uint32 subpass = 0;
 	};
 
-	class Pipeline : public BaseObject
+	struct PipelineLayoutSpec
 	{
-	public:
-		Pipeline(
-			VulkanInitialize& VulkanInitialize,
-			const VkRenderPass& renderPass,
-			const std::string& VertexFilePath,
-			const std::string& FragmentFilePath,
-			const PipelineConfigInfo& ConfigInfo
-		);
-		~Pipeline();
+		PipelineLayoutSpec(const VkDevice& Device)
+			: device(Device) {
+		}
 
-		virtual void Destroy() override;
+		const VkDevice& device;
+
+		Vector<VkDescriptorSetLayout> descriptorSetLayout{};
+		Vector<VkPushConstantRange> constantRage{};
+
+		static VkPipelineLayoutCreateInfo DefaultPipelineLayoutCreateInfo(const PipelineLayoutSpec& Spec);
+	};
+
+	struct PipelineSpec
+	{
+		PipelineSpec(
+			const VkDevice& Device,
+			const VkRenderPass& RenderPass,
+			const VkPipelineLayout& Layout)
+			: device(Device), renderPass(RenderPass), layout(Layout) {
+		}
+
+		const VkDevice& device;
+		const VkRenderPass& renderPass;
+		const VkPipelineLayout& layout;
+
+		/* 管线着色器信息 */
+		Vector<VkPipelineShaderStageCreateInfo> shaderStages{};
+
+		VkShaderModule vertShaderMoudle{};
+		VkShaderModule fragShaderMoudle{};
+
+		/* 顶点绑定和顶点属性描述信息 */
+		Vector<VkVertexInputBindingDescription> bindingDescriptions{};
+		Vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+
+		PipelineConfigInfo pipelineConfigInfo{};
 
 		static PipelineConfigInfo DefaultPipelineConfigInfo();
+		static VkPipelineVertexInputStateCreateInfo DefaultVertexInputStateCreateInfo(const PipelineSpec& Spec);
+		static VkGraphicsPipelineCreateInfo DefaultGraphicsPipelineCreateInfo(const PipelineSpec& Spec);
+	};
+
+	class Pipeline : public VulkanResourceBase
+	{
+	public:
+		Pipeline() = default;
+		~Pipeline();
+
+		bool Create(PipelineLayoutSpec& Spec);
+		bool Create(PipelineSpec& Spec);
+		bool CreatePipelineLayout(PipelineLayoutSpec& Spec);
+		bool CreateGraphicsPipeline(PipelineSpec& Spec);
+
+		void Destroy();
+
+		static void CreateShaderMoudle(const std::vector<char>& ShaderCode, VkShaderModule* ShaderMoudle);
 
 	private:
-		static std::vector<char> ReadFile(const std::string& FilePath);
+		VkDevice m_device = {};
 
-		void CreateCameraDescriptorSetLayout();
-		void CreateBindlessDescriptorSetLayout();
-		void CreatePushConstantRange();
-		void CreatePipelineLayout();
-
-		void CreateGraphicsPipeline(const std::string& VertexFilePath, const std::string& FragmentFilePath, const PipelineConfigInfo& ConfigInfo);
-
-		void CreateShaderMoudle(const std::vector<char>& ShaderCode, VkShaderModule* ShaderMoudle);
-
-		VulkanInitialize& m_vulkanInitialize;
-		const VkRenderPass& m_renderPass;
-
-		VkViewport m_viewport = {};
-		VkRect2D m_scissor = {};
 		VkPipeline m_graphicsPipeline = {};
-
-		VkDescriptorSetLayout m_cameraDescriptorSetLayout = {};
-		VkDescriptorSetLayout m_bindlessDescriptorSetLayout = {};
-
-		VkPushConstantRange m_pushConstantRange = {};
 		VkPipelineLayout m_pipelineLayout = {};
-		VkShaderModule m_vertShaderMoudle = {};
-		VkShaderModule m_fragShaderMoudle = {};
 
 	public:
 		inline const VkPipeline& GetGraphicsPipeline() const { return m_graphicsPipeline; }
-		inline const VkViewport& GetViewport() const { return m_viewport; }
-		inline const VkRect2D& GetScissor() const { return m_scissor; }
-		inline const VkDescriptorSetLayout& GetCameraDescriptorSetLayout() const { return m_cameraDescriptorSetLayout; }
-		inline const VkDescriptorSetLayout& GetBindlessDescriptorSetLayout() const { return m_bindlessDescriptorSetLayout; }
 		inline const VkPipelineLayout& GetPipelineLayout() const { return m_pipelineLayout; }
 	};
 }

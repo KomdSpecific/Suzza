@@ -3,9 +3,9 @@
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkaninitialize/VulkanInitialize.h"
 #include "vulkaninitialize/BufferArea.h"
+#include "vulkaninitialize/functionLibrary/DeviceFunctionLibrary.h"
 #include "ImageLoaderManager.h"
 #include "file/FileSystem.h"
-#include "device/DeviceFunctionLibrary.h"
 
 #include "debug/SuzzaLog.h"
 
@@ -68,7 +68,7 @@ namespace suz
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;		// 单队列独占: 性能最优
 
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		VkDevice device = vkManager.GetVulkanInitialize()->GetDevice();
+		VkDevice device = vkManager.GetDevice()->GetDevice();
 		if (vkCreateImage(device, &imageInfo, nullptr, &Image) != VK_SUCCESS)
 		{
 			throw std::runtime_error("创建图像失败!");
@@ -111,7 +111,7 @@ namespace suz
 		imageCreateInfo.subresourceRange.layerCount = 1;				// 图层数量
 
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		VkDevice device = vkManager.GetVulkanInitialize()->GetDevice();
+		VkDevice device = vkManager.GetDevice()->GetDevice();
 
 		VkImageView imageView{};
 		if (vkCreateImageView(device, &imageCreateInfo, nullptr, &imageView) != VK_SUCCESS)

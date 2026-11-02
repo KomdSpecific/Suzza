@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "Scene.h"
+#include "math/Math.h"
 
 namespace suz
 {
@@ -169,9 +170,14 @@ namespace suz
 
 	void Actor::SetActorRotation(const glm::vec3& NewRotation)
 	{
-		float roll = glm::radians(NewRotation.x);
-		float pitch = glm::radians(NewRotation.y);
-		float yaw = glm::radians(NewRotation.z);
+		/* 限制旋转设置范围 */
+		float rotX = Math::NormalizeAngle(NewRotation.x);
+		float rotY = glm::clamp(NewRotation.y, -89.5f, 89.5f);
+		float rotZ = Math::NormalizeAngle(NewRotation.z);
+
+		float roll = glm::radians(rotX);
+		float pitch = glm::radians(rotY);
+		float yaw = glm::radians(rotZ);
 
 		/* 使用游戏坐标轴构造四元数 */
 		glm::quat qRoll = glm::angleAxis(-roll, glm::vec3(1, 0, 0));

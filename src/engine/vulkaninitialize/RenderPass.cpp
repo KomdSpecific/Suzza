@@ -38,8 +38,8 @@ namespace suz
 		colorAttachment.format = m_swapChainImageFormat;
 		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		/* 确定渲染前后如何处理附件中的数据 */
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;					// 设置颜色, 在开始时清除为常量
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;					// 设置深度数据, 渲染内容存储在内存中
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;					// (重要)设置颜色, 在开始时清除为常量
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;					// (重要)设置深度数据, 渲染内容存储在内存中
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;		// 不关心模板缓冲
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
@@ -51,8 +51,8 @@ namespace suz
 		VkAttachmentDescription depthAttachment{};
 		depthAttachment.format = depthFormat;									// 深度格式
 		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;						// 无多重采样
-		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;					// 每帧开始清除深度值
-		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;				// 绘制结束不保留深度数据
+		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;					// (重要)每帧开始清除深度值
+		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;				// (重要)绘制结束不保留深度数据
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;		// 不使用模板加载
 		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;		// 不使用模板存储
 		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;				// 初始布局: 丢弃旧数据

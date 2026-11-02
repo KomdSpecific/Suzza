@@ -1,6 +1,13 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include <vector>
+#include <set>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <memory>
 
 namespace suz
 {
@@ -17,4 +24,27 @@ namespace suz
 	using usize = size_t;
 	using intptr = std::intptr_t;
 	using uintptr = std::uintptr_t;
+
+	using String = std::string;
+
+	template<typename T>
+	using Vector = std::vector<T>;
+
+	template<typename T>
+	using Set = std::set<T>;
+	template<typename T>
+	using UnorderedSet = std::unordered_set<T>;
+
+	template<typename First, typename Second>
+	using Pair = std::pair<First, Second>;
+
+	template<typename Key, typename Value>
+	using Map = std::map<Key, Value>;
+	template<typename Key, typename Value>
+	using UnorderedMap = std::unordered_map<Key, Value>;
+
+	template<typename T>
+	using UniquePtr = std::unique_ptr<T>;
+	template<typename T>
+	using SharedPtr = std::shared_ptr<T>;
 }

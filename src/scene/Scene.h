@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Actor.h"
+#include "actor/PlayerController.h"
 
 #include <vector>
 #include <memory>
@@ -15,6 +15,8 @@ namespace suz
 		bool RegisterActor(Actor* TargetActor, Actor* ParentActor, bool bRegisterComponents = false);
 		void MarkedActorDestroy(Actor* TargetActor);
 
+		bool RegisterDefaultPlayer(PlayerController* DefaultPlayer);
+
 		void LoadModel(const std::string& FilePath);
 
 		void BeginPlay();
@@ -27,8 +29,12 @@ namespace suz
 		std::vector<std::unique_ptr<Actor>> m_actorList = {};		// 存放场景所有Actor对象
 		std::vector<Actor*> m_rootActorList = {};					// 存放场景所有根Actor对象
 
+		std::unique_ptr<PlayerController> m_defaultPlayer = nullptr;
+
 	public:
 		inline const std::vector<std::unique_ptr<Actor>>& GetSceneActorList() const { return m_actorList; }
 		inline const std::vector<Actor*>& GetSceneRootActorList() const { return m_rootActorList; }
+
+		inline PlayerController* GetDefaultPlayer() { return m_defaultPlayer.get(); }
 	};
 }

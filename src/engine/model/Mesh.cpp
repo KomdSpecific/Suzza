@@ -17,9 +17,9 @@ namespace suz
 		return bindingDescription;
 	}
 
-	std::array<VkVertexInputAttributeDescription, 3> Vertex::GetAttributeDescription()
+	Vector<VkVertexInputAttributeDescription> Vertex::GetAttributeDescription()
 	{
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+		Vector<VkVertexInputAttributeDescription> attributeDescriptions(3);
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;							// 对应着色器的location指令
 		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;	// 描述属性的所有分量, 此处3个32位浮点分量
@@ -38,16 +38,16 @@ namespace suz
 		return attributeDescriptions;
 	}
 
-	Mesh::Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
+	Mesh::Mesh(const Vector<Vertex>& Vertices, const Vector<uint32>& Indices)
 	{
 		BufferArea* bufferarea = Engine::GetVulkanResourceManager().GetBufferArea();
 		bufferarea->CreateVertexBuffer(Vertices, m_vertexBuffer, m_vertexBufferMemory);
 		m_indexBufferSize = bufferarea->CreateIndexBuffer(Indices, m_indexBuffer, m_indexBufferMemory);
 	}
 
-	Mesh::Mesh(const std::vector<ModelVertexData>& Vertices, const std::vector<uint32>& Indices)
+	Mesh::Mesh(const Vector<ModelVertexData>& Vertices, const Vector<uint32>& Indices)
 	{
-		std::vector<Vertex> vertices{};
+		Vector<Vertex> vertices{};
 		vertices.resize(Vertices.size());
 		memcpy(vertices.data(), Vertices.data(), sizeof(ModelVertexData) * Vertices.size());
 
@@ -69,7 +69,7 @@ namespace suz
 	{
 		if (!(*m_isAlive)) return;
 
-		VkDevice device = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetDevice();
+		VkDevice device = Engine::GetVulkanResourceManager().GetDevice()->GetDevice();
 		vkDestroyBuffer(device, m_vertexBuffer, nullptr);
 		vkFreeMemory(device, m_vertexBufferMemory, nullptr);
 

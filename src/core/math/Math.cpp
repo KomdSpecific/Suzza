@@ -19,4 +19,19 @@ namespace suz
 		view[3][2] = glm::dot(forward, Eye);
 		return view;
 	}
+
+	float Math::NormalizeAngle(float Angle)
+	{
+		Angle = fmodf(Angle, 360.0f);
+		if (Angle > 180.0f)
+		{
+			Angle -= 360.0f;
+		}
+		else if (Angle < -180.0f)
+		{
+			Angle += 360.0f;
+		}
+
+		return Angle;
+	}
 }

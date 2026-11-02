@@ -1,9 +1,8 @@
 #pragma once
 
-#include "BaseObject.h"
+#include "VulkanResourceBase.h"
 #include "SuzzaTypes.h"
 
-//#include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include <optional>
@@ -23,7 +22,7 @@ namespace suz
 		}
 	};
 
-	class VulkanInitialize : public BaseObject
+	class VulkanInitialize : public VulkanResourceBase
 	{
 		/* 验证层启用控制 */
 #ifdef NDEBUG
@@ -36,7 +35,7 @@ namespace suz
 		VulkanInitialize();
 		~VulkanInitialize();
 
-		virtual void Destroy() override;
+		void Destroy();
 
 #pragma region HelperFunction
 		/* 调试回调函数 */
@@ -86,15 +85,6 @@ namespace suz
 		void CreateVulkanInstance();								// 创建Vulkan实例
 		void CreateSurface();										// 创建窗口表面
 		void PickPhysicalDevice();									// 获取物理设备
-		void CreateLogicalDevice();									// 创建逻辑设备
-
-		/* 查询并添加设备对硬件能力的支持 */
-		bool CheckDeviceFeatureSupport(const VkPhysicalDevice& physicalDevice);
-		/* 创建设备硬件能力的链表 */
-		vk::StructureChain<
-			vk::PhysicalDeviceFeatures2,
-			vk::PhysicalDeviceDescriptorIndexingFeaturesEXT
-		> CreateDeviceFeaturesChain();
 
 		MainWindow* m_mainWindow;
 
@@ -105,29 +95,13 @@ namespace suz
 		VkSurfaceKHR m_surface = {};
 
 		VkPhysicalDevice m_vkPhysicalDevice = {};
-		VkDevice m_device = {};
-
-		QueueFamilyIndices m_queueFamilyIndices = {};
-		VkQueue m_graphicsQueue = {};
-		VkQueue m_presentQueue = {};
 
 		/* 程序是否要求独显开关 */
 		bool m_shouldRequiredDiscreteGPU = false;
-		/* 缓存设备硬件能力的链表 */
-		vk::StructureChain<
-			vk::PhysicalDeviceFeatures2,
-			vk::PhysicalDeviceDescriptorIndexingFeaturesEXT
-		> m_deviceFeaturesChain = {};
 
 	public:
 		inline const VkInstance& GetVulkanInstance() const { return m_vkInstance; }
 		inline const VkSurfaceKHR& GetSurface() const { return m_surface; }
 		inline const VkPhysicalDevice& GetPhysicalDevice() const { return m_vkPhysicalDevice; }
-		inline const VkDevice& GetDevice() const { return m_device; }
-		
-		inline const uint32& GetGraphicsFamily() const { return m_queueFamilyIndices.graphicsFamily.value(); }
-		inline const uint32& GetPresentFamily() const { return m_queueFamilyIndices.presentFamily.value(); }
-		inline const VkQueue& GetGraphicsQueue() const { return m_graphicsQueue; }
-		inline const VkQueue& GetPresentQueue() const { return m_presentQueue; }
 	};
 }

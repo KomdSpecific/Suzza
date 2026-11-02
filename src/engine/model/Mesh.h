@@ -7,7 +7,6 @@
 
 #include <vulkan/vulkan.h>
 #include <array>
-#include <vector>
 #include <unordered_set>
 
 namespace suz
@@ -16,14 +15,14 @@ namespace suz
 	{
 		static VkVertexInputBindingDescription GetBindingDescription();
 
-		static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescription();
+		static Vector<VkVertexInputAttributeDescription> GetAttributeDescription();
 	};
 
 	class Mesh : public BaseObject
 	{
 	public:
-		Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
-		Mesh(const std::vector<ModelVertexData>& Vertices, const std::vector<uint32>& Indices);
+		Mesh(const Vector<Vertex>& Vertices, const Vector<uint32>& Indices);
+		Mesh(const Vector<ModelVertexData>& Vertices, const Vector<uint32>& Indices);
 		~Mesh();
 
 		virtual void Destroy() override;

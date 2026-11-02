@@ -1,7 +1,6 @@
 #include "MeshComponent.h"
 #include "Engine.h"
 #include "Actor.h"
-#include "model/ModelResourceManager.h"
 
 namespace suz
 {
@@ -20,27 +19,28 @@ namespace suz
 		if (!mesh || !material) return;
 
 		/* 注册网格 */
-		ModelResourceManager& modelManager = Engine::GetModelResourceManager();
-		const std::string& meshId = modelManager.LoadMesh(mesh);
+		MeshResourceManager& meshManager = Engine::GetMeshResourceManager();
+		MeshHandle handle = meshManager.LoadMesh(mesh);
 
-		m_meshPair.first = meshId;
-		m_meshPair.second = modelManager.GetLoadedMesh(meshId);
+		m_meshPair.first = handle;
+		m_meshPair.second = meshManager.GetLoadedMesh(handle);
 
 		/* 注册材质 */
-		const std::string& materialId = modelManager.LoadMaterial(material);
+		MaterialResourceManager& materialManager = Engine::GetMaterialResourceManager();
+		MaterialHandle materialHandle = materialManager.LoadMaterial(material);
 
-		m_materialPair.first = materialId;
-		m_materialPair.second = modelManager.GetLoadedMaterial(materialId);
+		m_materialPair.first = materialHandle;
+		m_materialPair.second = materialManager.GetLoadedMaterial(materialHandle);
 	}
 
 	MeshComponent::~MeshComponent()
 	{
 	}
 
-	void MeshComponent::CreateMesh(const std::string& MeshId)
+	void MeshComponent::CreateMesh(const MeshHandle& MeshId)
 	{
-		ModelResourceManager& modelManager = Engine::GetModelResourceManager();
-		std::shared_ptr<Mesh> meshPtr = modelManager.GetLoadedMesh(MeshId);
+		MeshResourceManager& meshManager = Engine::GetMeshResourceManager();
+		Mesh* meshPtr = meshManager.GetLoadedMesh(MeshId);
 
 		if(meshPtr)
 		{
@@ -51,32 +51,32 @@ namespace suz
 
 	void MeshComponent::CreateMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
 	{
-		ModelResourceManager& modelManager = Engine::GetModelResourceManager();
-		const std::string& meshId = modelManager.LoadMesh(Vertices, Indices);
+		MeshResourceManager& meshManager = Engine::GetMeshResourceManager();
+		MeshHandle handle = meshManager.LoadMesh(Vertices, Indices);
 
-		m_meshPair.first = meshId;
-		m_meshPair.second = modelManager.GetLoadedMesh(meshId);
+		m_meshPair.first = handle;
+		m_meshPair.second = meshManager.GetLoadedMesh(handle);
 	}
 
 	void MeshComponent::CreateMesh(Mesh* mesh)
 	{
 		if (!mesh) return;
 
-		ModelResourceManager& modelManager = Engine::GetModelResourceManager();
-		const std::string& meshId = modelManager.LoadMesh(mesh);
+		MeshResourceManager& meshManager = Engine::GetMeshResourceManager();
+		MeshHandle handle = meshManager.LoadMesh(mesh);
 
-		m_meshPair.first = meshId;
-		m_meshPair.second = modelManager.GetLoadedMesh(meshId);
+		m_meshPair.first = handle;
+		m_meshPair.second = meshManager.GetLoadedMesh(handle);
 	}
 
-	void MeshComponent::CreateMaterial(const std::string& MaterialId)
+	void MeshComponent::CreateMaterial(const MaterialHandle& MaterialHandle)
 	{
-		ModelResourceManager& modelManager = Engine::GetModelResourceManager();
-		std::shared_ptr<Material> materialPtr = modelManager.GetLoadedMaterial(MaterialId);
+		MaterialResourceManager& materialManager = Engine::GetMaterialResourceManager();
+		Material* materialPtr = materialManager.GetLoadedMaterial(MaterialHandle);
 
 		if (materialPtr)
 		{
-			m_materialPair.first = MaterialId;
+			m_materialPair.first = MaterialHandle;
 			m_materialPair.second = materialPtr;
 		}
 	}
@@ -85,35 +85,34 @@ namespace suz
 	{
 		if (!material) return;
 
-		ModelResourceManager& modelManager = Engine::GetModelResourceManager();
-		const std::string& materialId = modelManager.LoadMaterial(material);
+		MaterialResourceManager& materialManager = Engine::GetMaterialResourceManager();
+		MaterialHandle materialHandle = materialManager.LoadMaterial(material);
 
-		m_materialPair.first = materialId;
-		m_materialPair.second = modelManager.GetLoadedMaterial(materialId);
+		m_materialPair.first = materialHandle;
+		m_materialPair.second = materialManager.GetLoadedMaterial(materialHandle);
 	}
 
 	void MeshComponent::BeginPlay()
 	{
 		if (!m_meshPair.second)
 		{
-			m_meshPair.second = Engine::GetModelResourceManager().GetLoadedMesh(m_meshPair.first);
+			m_meshPair.second = Engine::GetMeshResourceManager().GetLoadedMesh(m_meshPair.first);
 		}
 
 		if (!m_materialPair.second)
 		{
-			m_materialPair.second = Engine::GetModelResourceManager().GetLoadedMaterial(m_materialPair.first);
+			m_materialPair.second = Engine::GetMaterialResourceManager().GetLoadedMaterial(m_materialPair.first);
 		}
+	}
 
+	void MeshComponent::Update(float DeltaTime)
+	{
 		ModelConstant modelConstant{};
 		modelConstant.modelMatrix = m_actorOwner->GetActorModelMatrix();
 		modelConstant.slotIndex = m_materialPair.second->GetMaterialSlot();
 
 		/* 提交Mesh到渲染队列, 能够获取顶点、索引缓冲区 */
-		Engine::GetEngineInstance().GetRender()->SubmitMesh(m_meshPair.second.get(), modelConstant);
-	}
-
-	void MeshComponent::Update(float DeltaTime)
-	{
+		Engine::GetEngineInstance().GetRender()->SubmitMesh(m_meshPair.second, modelConstant);
 	}
 
 	void MeshComponent::Destroy()

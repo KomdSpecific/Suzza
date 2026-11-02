@@ -5,61 +5,72 @@
 #include "Material.h"
 #include "macros/VkMacro.h"
 #include "SuzzaTypes.h"
-
-#include <string>
-#include <memory>
-#include <unordered_map>
+#include "ObjectManagerBase.h"
 
 namespace suz
 {
+	struct MeshHandle : public HandleBase
+	{
+		using HandleBase::HandleBase;
+	};
+
 	/* 负责全局管理Mesh */
-	class ModelResourceManager : public BaseObject
+	class MeshResourceManager : public PointerPoolBase<Mesh>
 	{
 	public:
-		ModelResourceManager() = default;
+		MeshResourceManager() = default;
 
-		virtual void Destroy() override;
+		void Destroy();
 
 	private:
-		ModelResourceManager(const ModelResourceManager&) = delete;
-		ModelResourceManager& operator=(const ModelResourceManager&) = delete;
+		MeshResourceManager(const MeshResourceManager&) = delete;
+		MeshResourceManager& operator=(const MeshResourceManager&) = delete;
 
 	public:
-#pragma region Mesh
-		const std::string LoadMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
-		const std::string LoadMesh(Mesh* MeshToLoad);
+		MeshHandle LoadMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
+		MeshHandle LoadMesh(Mesh* MeshToLoad);
 
-		void UnLoadMesh(const std::string& MeshId);
+		void UnLoadMesh(MeshHandle Handle);
 
-		std::shared_ptr<Mesh> GetLoadedMesh(const std::string& MeshId);
+		Mesh* GetLoadedMesh(MeshHandle Handle);
+	};
 
-#pragma endregion
 
-#pragma region Material
-		const std::string LoadMaterial(Material* MaterialToLoad);
+	/* 负责全局管理Material */
+	struct MaterialHandle : public HandleBase
+	{
+		using HandleBase::HandleBase;
+	};
 
-		void UnLoadMaterial(const std::string& MaterialId);
+	class MaterialResourceManager : public PointerPoolBase<Material>
+	{
+	public:
+		MaterialResourceManager() = default;
 
-		std::shared_ptr<Material> GetLoadedMaterial(const std::string& MaterialId);
-
-#pragma endregion
+		void Destroy();
 
 	private:
-		const std::string GenerateRandomMeshId() const;
+		MaterialResourceManager(const MaterialResourceManager&) = delete;
+		MaterialResourceManager& operator=(const MaterialResourceManager&) = delete;
 
-		const std::string GemerateRandomMaterialId() const;
+	public:
+		MaterialHandle LoadMaterial(Material* MaterialToLoad);
 
-		std::unordered_map<std::string, std::shared_ptr<Mesh>> m_cacheMesh = {};
-		std::unordered_map<Mesh*, std::string> m_meshPtrToId = {};
+		void UnLoadMaterial(const MaterialHandle& MaterialId);
 
-		std::unordered_map<std::string, std::shared_ptr<Material>> m_cacheMaterial = {};
-		std::unordered_map<Material*, std::string> m_materialPtrToId = {};
+		Material* GetLoadedMaterial(const MaterialHandle& MaterialId);
 	};
 
 
 
 	class BindlessSlotsAllocator : public BaseObject
 	{
+		struct SlotInfo
+		{
+			uint16 slotIndex = 0;
+			uint32 generation = 0;
+		};
+
 	public:
 		BindlessSlotsAllocator() = default;
 
@@ -70,20 +81,20 @@ namespace suz
 		BindlessSlotsAllocator& operator=(const BindlessSlotsAllocator&) = delete;
 
 	public:
-		uint16 AllocateBindlessSlots(const std::string& MaterialId);
-		uint16 GetMaterialBindlessSlots(const std::string& MaterialId);
+		uint16 AllocateBindlessSlots(const MaterialHandle& Handle);
+		uint16 GetMaterialBindlessSlots(const MaterialHandle& Handle);
 
-		void MarkedTargetSlotsRelease(const std::string& MaterialId);
+		void MarkedTargetSlotsRelease(const MaterialHandle& Handle);
 		void MarkedTargetSlotsRelease(const uint16& SlotIndex);
 
 		void ReleaseSlots();
 
 	private:
-		std::unordered_map<std::string, uint16> m_textureSlots = {};
+		std::unordered_map<uint32, SlotInfo> m_textureSlots = {};
 		std::array<bool, MAX_SAMPLED_TEXTURE_IMAGES_SLOTS> m_slotsStatus = { false };
 
 		/* 等待释放纹理资源的插槽 */
-		std::unordered_map<std::string, byte> m_waitReleaseSlots = {};
+		std::unordered_map<uint32, byte> m_waitReleaseSlots = {};
 
 		uint16 m_slotsIndex = 0;
 	};

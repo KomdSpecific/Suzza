@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SuzzaTypes.h"
+
 #include <filesystem>
 
 namespace suz
@@ -10,9 +12,9 @@ namespace suz
 		static std::filesystem::path GetExecutableFolder();
 
 		static std::filesystem::path GetSourceFolder();
-
 		static std::filesystem::path GetShadersFolder();
-
 		static std::filesystem::path GetAssetsFolder();
+
+		static Vector<char> ReadFile(const std::string& FilePath);
 	};
 }

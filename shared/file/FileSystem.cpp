@@ -78,4 +78,26 @@ namespace suz
 
 		return std::filesystem::weakly_canonical(GetExecutableFolder() / "assets");
 	}
+
+	Vector<char> FileSystem::ReadFile(const std::string& FilePath)
+	{
+		/* 打开文件时跳转到文件末尾, 并以二进制读取 */
+		std::ifstream file(FilePath, std::ios::ate | std::ios::binary);
+		if (!file.is_open())
+		{
+			return {};
+		}
+
+		/* 初始化文件缓冲区大小 */
+		usize fileSize = static_cast<usize>(file.tellg());
+		std::vector<char> buffer(fileSize);
+
+		/* 跳转到文件开头并读取文件 */
+		file.seekg(0);
+		file.read(buffer.data(), fileSize);
+
+		file.close();
+
+		return buffer;
+	}
 }

@@ -8,5 +8,7 @@ namespace suz
 	{
 	public:
 		static const glm::mat4 GameSceneLookAt(const glm::vec3& Eye, const glm::vec3& Target, const glm::vec3 Up);
+
+		static float NormalizeAngle(float Angle);
 	};
 }

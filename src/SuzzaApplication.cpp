@@ -66,19 +66,20 @@ bool SuzzaApplication::Init()
 
 	m_scene = std::make_unique<suz::Scene>();
 
-	suz::ModelResourceManager& modelManager = suz::Engine::GetModelResourceManager();
+	suz::MeshResourceManager& meshManager = suz::Engine::GetMeshResourceManager();
+	suz::MaterialResourceManager& materialManager = suz::Engine::GetMaterialResourceManager();
 
 	/* 加载Mesh */
 	suz::Mesh* mesh = new suz::Mesh(vertices, indices);
-	const std::string& meshId = modelManager.LoadMesh(mesh);
+	suz::MeshHandle meshHandle = meshManager.LoadMesh(mesh);
 
 	/* 加载Material */
 	suz::Material* material1 = new suz::Material();
-	const std::string& materialId1 = modelManager.LoadMaterial(material1);
+	suz::MaterialHandle materialHandle1 = materialManager.LoadMaterial(material1);
 
 	//std::filesystem::path filePath = suz::FileSystem::GetAssetsFolder() / "textures" / "1275469.jpg";
 	suz::Material* material2 = new suz::Material();
-	const std::string& materialId2 = modelManager.LoadMaterial(material2);
+	suz::MaterialHandle materialHandle2 = materialManager.LoadMaterial(material2);
 
 
 	/*std::filesystem::path filePath = suz::FileSystem::GetAssetsFolder() / "model" / "pony_cartoon" / "scene.gltf";
@@ -95,27 +96,27 @@ bool SuzzaApplication::Init()
 	m_scene->RegisterActor(actor3, actor2);
 
 	suz::MeshComponent* meshComponentActor1 = new suz::MeshComponent();
-	meshComponentActor1->CreateMesh(meshId);
-	meshComponentActor1->CreateMaterial(materialId1);
+	meshComponentActor1->CreateMesh(meshHandle);
+	meshComponentActor1->CreateMaterial(materialHandle1);
 	actor1->RegisterComponent<suz::MeshComponent>(meshComponentActor1);
 	actor1->SetActorLocation({ 3.0f,0.0f,0.0f });
 
 	suz::MeshComponent* meshComponentActor2 = new suz::MeshComponent();
-	meshComponentActor2->CreateMesh(meshId);
-	meshComponentActor2->CreateMaterial(materialId2);
+	meshComponentActor2->CreateMesh(meshHandle);
+	meshComponentActor2->CreateMaterial(materialHandle2);
 	actor2->RegisterComponent<suz::MeshComponent>(meshComponentActor2);
 	actor2->SetActorWorldLocation({ 3.0f,1.2f,0.0f });
 	actor2->SetActorRotation({ 0.0f,0.0f,0.0f });
 
 	suz::MeshComponent* meshComponentActor3 = new suz::MeshComponent();
-	meshComponentActor3->CreateMesh(meshId);
-	meshComponentActor3->CreateMaterial(materialId1);
+	meshComponentActor3->CreateMesh(meshHandle);
+	meshComponentActor3->CreateMaterial(materialHandle1);
 	actor3->RegisterComponent<suz::MeshComponent>(meshComponentActor3);
 	actor3->SetActorWorldLocation({ 3.0f,0.0f,1.5f });
 
 	/* 定义玩家Actor */
 	suz::PlayerController* player = new suz::PlayerController(m_scene.get());
-	m_scene->RegisterActor(player);
+	m_scene->RegisterDefaultPlayer(player);
 
 	suz::CameraComponent* camera = new suz::CameraComponent();
 	player->RegisterComponent<suz::CameraComponent>(camera);

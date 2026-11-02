@@ -3,242 +3,108 @@
 
 #include "debug/SuzzaLog.h"
 
-#include <random>
-#include <sstream>
-#include <iomanip>
-
 namespace suz
 {
-	void ModelResourceManager::Destroy()
+	void MeshResourceManager::Destroy()
 	{
-		if (!(*m_isAlive)) return;
-
-		for (auto& pair : m_cacheMesh)
+		for (uint32 i = 0; i < m_ptrSlots.size(); i++)
 		{
-			pair.second->Destroy();
-		}
+			ObjectPtrInfo& ptrInfo = m_ptrSlots[i];
+			if (!ptrInfo.isAlive)
+				continue;
 
-		for (auto& pair : m_cacheMaterial)
-		{
-			pair.second->Destroy();
-		}
+			ptrInfo.isAlive = false;
+			ptrInfo.generation += 1;
 
-		m_meshPtrToId.clear();
-		m_cacheMesh.clear();
+			ptrInfo.ptr->Destroy();
+			delete ptrInfo.ptr;
+			ptrInfo.ptr = nullptr;
 
-		m_materialPtrToId.clear();
-		m_cacheMaterial.clear();
-
-		*m_isAlive = false;
-	}
-
-	const std::string ModelResourceManager::LoadMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
-	{
-		std::shared_ptr<Mesh> loadedMesh = std::make_shared<Mesh>(Vertices, Indices);
-
-		const std::string& meshId = GenerateRandomMeshId();
-
-		if (loadedMesh && !meshId.empty())
-		{
-			/* 加入id映射表和裸指针映射表 */
-			m_cacheMesh[meshId] = loadedMesh;
-			m_meshPtrToId[loadedMesh.get()] = meshId;
-
-			return meshId;
-		}
-
-		SUZZA_LOG_ERROR("分配网格失败!");
-
-		return {};
-	}
-
-	const std::string ModelResourceManager::LoadMesh(Mesh* MeshToLoad)
-	{
-		if (!MeshToLoad) return {};
-
-		/* 如果映射表中查找到相同Mesh即返回对应的Id */
-		auto it = m_meshPtrToId.find(MeshToLoad);
-		if (it != m_meshPtrToId.end())
-		{
-			SUZZA_LOG_WARN("该网格已存在!");
-			return it->second;
-		}
-
-		std::shared_ptr<Mesh> loadedMesh = std::shared_ptr<Mesh>(MeshToLoad);
-
-		const std::string& meshId = GenerateRandomMeshId();
-
-		if (!meshId.empty())
-		{
-			m_cacheMesh[meshId] = loadedMesh;
-			m_meshPtrToId[loadedMesh.get()] = meshId;				// 记录对象指针id映射
-
-			return meshId;
-		}
-
-		SUZZA_LOG_ERROR("分配网格失败!");
-
-		return {};
-	}
-
-	void ModelResourceManager::UnLoadMesh(const std::string& MeshId)
-	{
-		auto it = m_cacheMesh.find(MeshId);
-		if (it != m_cacheMesh.end())
-		{
-			m_cacheMesh[MeshId]->Destroy();
-
-			/* 销毁映射表和管理的Mesh实例 */
-			m_meshPtrToId.erase(it->second.get());
-			m_cacheMesh.erase(it);
-		}
-
-		SUZZA_LOG_WARN("不存在需要销毁的网格!");
-	}
-
-	std::shared_ptr<Mesh> ModelResourceManager::GetLoadedMesh(const std::string& MeshId)
-	{
-		auto it = m_cacheMesh.find(MeshId);
-		if (it != m_cacheMesh.end())
-		{
-			return m_cacheMesh[MeshId];
-		}
-		else
-		{
-			SUZZA_LOG_WARN("不存在目标网格!");
-			return nullptr;
+			m_freeIndices.push_back(i);
 		}
 	}
 
-	const std::string ModelResourceManager::LoadMaterial(Material* MaterialToLoad)
+	MeshHandle MeshResourceManager::LoadMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
 	{
-		if (!MaterialToLoad) return {};
+		Mesh* mesh = new Mesh(Vertices, Indices);
+		HandleBase base = Allocate(mesh);
 
-		auto it = m_materialPtrToId.find(MaterialToLoad);
-		if (it != m_materialPtrToId.end())
-		{
-			SUZZA_LOG_WARN("该材质已存在!");
-			return it->second;
-		}
-
-		std::shared_ptr<Material> material = std::shared_ptr<Material>(MaterialToLoad);
-
-		std::string materialId = GemerateRandomMaterialId();
-
-		if (!materialId.empty())
-		{
-			m_cacheMaterial[materialId] = material;
-			m_materialPtrToId[material.get()] = materialId;
-
-			/* 给材质分配纹理插槽 */
-			uint16 slotIndex = Engine::GetBindlessSlotsAllocator().AllocateBindlessSlots(materialId);
-			material->SetMaterialSlot(slotIndex);
-
-			return materialId;
-		}
-
-		SUZZA_LOG_ERROR("分配材质失败!");
-
-		return {};
+		return MeshHandle(base.index, base.generation);
 	}
 
-	void ModelResourceManager::UnLoadMaterial(const std::string& MaterialId)
+	MeshHandle MeshResourceManager::LoadMesh(Mesh* MeshToLoad)
 	{
-		auto it = m_cacheMaterial.find(MaterialId);
-		if (it != m_cacheMaterial.end())
-		{
-			it->second->Destroy();
+		HandleBase base = Allocate(MeshToLoad);
 
-			/* 标记纹理插槽待释放 */
-			Engine::GetBindlessSlotsAllocator().MarkedTargetSlotsRelease(MaterialId);
-			/* 重置材质纹理插槽为默认值 */
-			it->second->SetMaterialSlot(MAX_SAMPLED_TEXTURE_IMAGES_SLOTS);
-
-			m_materialPtrToId.erase(it->second.get());
-			m_cacheMaterial.erase(it);
-		}
-
-		SUZZA_LOG_WARN("不存在需要销毁的材质!");
+		return MeshHandle(base.index, base.generation);
 	}
 
-	std::shared_ptr<Material> ModelResourceManager::GetLoadedMaterial(const std::string& MaterialId)
+	void MeshResourceManager::UnLoadMesh(MeshHandle Handle)
 	{
-		auto it = m_cacheMaterial.find(MaterialId);
-		if (it != m_cacheMaterial.end())
+		Free({ Handle.index,Handle.generation });
+	}
+
+	Mesh* MeshResourceManager::GetLoadedMesh(MeshHandle Handle)
+	{
+		return Find({ Handle.index,Handle.generation });
+	}
+
+
+
+	void MaterialResourceManager::Destroy()
+	{
+		for (uint32 i = 0; i < m_ptrSlots.size(); i++)
 		{
-			return it->second;
-		}
-		else
-		{
-			SUZZA_LOG_WARN("不存在目标材质!");
-			return nullptr;
+			ObjectPtrInfo& ptrInfo = m_ptrSlots[i];
+			if (!ptrInfo.isAlive)
+				continue;
+
+			ptrInfo.isAlive = false;
+			ptrInfo.generation += 1;
+
+			ptrInfo.ptr->Destroy();
+			delete ptrInfo.ptr;
+			ptrInfo.ptr = nullptr;
+
+			m_freeIndices.push_back(i);
 		}
 	}
 
-	const std::string ModelResourceManager::GenerateRandomMeshId() const
+	MaterialHandle MaterialResourceManager::LoadMaterial(Material* MaterialToLoad)
 	{
-		static std::random_device randomDevice;
-		static std::mt19937 gen(randomDevice());
-		static std::uniform_int_distribution<uint32> dist;
+		if (!MaterialToLoad) return MaterialHandle();
 
-		/* 生成不同片段的32位字符串 */
-		uint32 data[4];
-		data[0] = dist(gen);
-		data[1] = dist(gen);
-		data[2] = dist(gen);
-		data[3] = dist(gen);
+		HandleBase base = Allocate(MaterialToLoad);
 
-		/* 设置版本4: 第三组的第一个4bit = 0x4 */
-		data[1] = (data[1] & 0xFFFF0FFF) | 0x00004000;
-		/* 设置variant: 第四组第一个2bit = 0b10 */
-		data[2] = (data[2] & 0x3FFFFFFF) | 0x80000000;
+		MaterialHandle handle(base.index, base.generation);
+		/* 给材质分配纹理插槽 */
+		uint16 slotIndex = Engine::GetBindlessSlotsAllocator().AllocateBindlessSlots(handle);
+		if (slotIndex == MAX_SAMPLED_TEXTURE_IMAGES_SLOTS)
+		{
+			SUZZA_LOG_ERROR("分配纹理插槽失败, 插槽正在被旧资源占用!");
+		}
 
-		std::ostringstream oss;
-		oss << std::hex << std::setfill('0');
-		oss << std::setw(8) << data[0] << "-";
+		MaterialToLoad->SetMaterialSlot(slotIndex);
 
-		oss << std::setw(4) << ((data[1] >> 16) & 0xFFFF) << "-";
-		oss << std::setw(4) << (data[1] & 0xFFFF) << "-";
-
-		oss << std::setw(4) << ((data[2] >> 16) & 0xFFFF) << "-";
-		oss << std::setw(4) << (data[2] & 0xFFFF);
-
-		oss << std::setw(8) << data[3];
-
-		return oss.str();
+		return handle;
 	}
 
-	const std::string ModelResourceManager::GemerateRandomMaterialId() const
+	void MaterialResourceManager::UnLoadMaterial(const MaterialHandle& Handle)
 	{
-		static std::random_device randomDevice;
-		static std::mt19937 gen(randomDevice());
-		static std::uniform_int_distribution<uint32> dist;
+		Material* material = Find({ Handle.index,Handle.generation });
+		if (!material) return;
 
-		/* 生成不同片段的32位字符串 */
-		uint32 data[4];
-		data[0] = dist(gen);
-		data[1] = dist(gen);
-		data[2] = dist(gen);
-		data[3] = dist(gen);
+		/* 标记纹理插槽待释放 */
+		Engine::GetBindlessSlotsAllocator().MarkedTargetSlotsRelease(Handle);
+		/* 重置材质纹理插槽为默认值 */
+		material->SetMaterialSlot(MAX_SAMPLED_TEXTURE_IMAGES_SLOTS);
 
-		/* 设置版本4: 第三组的第一个4bit = 0x4 */
-		data[1] = (data[1] & 0xFFFF0FFF) | 0x00004000;
-		/* 设置variant: 第四组第一个2bit = 0b10 */
-		data[2] = (data[2] & 0x3FFFFFFF) | 0x80000000;
+		Free({ Handle.index,Handle.generation });
+	}
 
-		std::ostringstream oss;
-		oss << std::hex << std::setfill('0');
-		oss << std::setw(8) << data[0] << "-";
-
-		oss << std::setw(4) << ((data[1] >> 16) & 0xFFFF) << "-";
-		oss << std::setw(4) << (data[1] & 0xFFFF) << "-";
-
-		oss << std::setw(4) << ((data[2] >> 16) & 0xFFFF) << "-";
-		oss << std::setw(4) << (data[2] & 0xFFFF);
-
-		oss << std::setw(8) << data[3];
-
-		return oss.str();
+	Material* MaterialResourceManager::GetLoadedMaterial(const MaterialHandle& Handle)
+	{
+		return Find({ Handle.index,Handle.generation });
 	}
 
 
@@ -255,12 +121,20 @@ namespace suz
 		*m_isAlive = false;
 	}
 
-	uint16 BindlessSlotsAllocator::AllocateBindlessSlots(const std::string& MaterialId)
+	uint16 BindlessSlotsAllocator::AllocateBindlessSlots(const MaterialHandle& Handle)
 	{
-		auto it = m_textureSlots.find(MaterialId);
+		auto it = m_textureSlots.find(Handle.index);
 		if (it != m_textureSlots.end())
 		{
-			return it->second;
+			/* 假设插槽被旧资源占用返回插槽默认值 */
+			if (Handle.generation == it->second.generation)
+			{
+				return it->second.slotIndex;
+			}
+			else
+			{
+				return MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
+			}
 		}
 
 		/* 循环遍历插槽索引 */
@@ -269,7 +143,7 @@ namespace suz
 			/* 找到所需的插槽索引 */
 			if (m_slotsStatus[m_slotsIndex] == false)
 			{
-				m_textureSlots[MaterialId] = m_slotsIndex;
+				m_textureSlots[Handle.index] = { m_slotsIndex,Handle.generation };
 				m_slotsStatus[m_slotsIndex] = true;
 
 				m_slotsIndex++;
@@ -290,12 +164,12 @@ namespace suz
 		}
 	}
 
-	uint16 BindlessSlotsAllocator::GetMaterialBindlessSlots(const std::string& MaterialId)
+	uint16 BindlessSlotsAllocator::GetMaterialBindlessSlots(const MaterialHandle& Handle)
 	{
-		auto it = m_textureSlots.find(MaterialId);
-		if (it != m_textureSlots.end())
+		auto it = m_textureSlots.find(Handle.index);
+		if (it != m_textureSlots.end() && Handle.generation == it->second.generation)
 		{
-			return it->second;
+			return it->second.slotIndex;
 		}
 		else
 		{
@@ -304,16 +178,17 @@ namespace suz
 		}
 	}
 
-	void BindlessSlotsAllocator::MarkedTargetSlotsRelease(const std::string& MaterialId)
+	void BindlessSlotsAllocator::MarkedTargetSlotsRelease(const MaterialHandle& Handle)
 	{
-		auto it = m_textureSlots.find(MaterialId);
-		if (it != m_textureSlots.end())
+		auto it = m_textureSlots.find(Handle.index);
+		/* 不能拿老或新句柄释放插槽 */
+		if (it != m_textureSlots.end() && Handle.generation == it->second.generation)
 		{
-			/* 纹理Id存在 */
+			/* 纹理Handle存在 */
 			m_waitReleaseSlots[it->first] = MAX_FRAMES_IN_FLIGHT;
 		}
 
-		SUZZA_LOG_INFO("纹理Id不存在! MaterialId: ", MaterialId);
+		SUZZA_LOG_INFO("纹理不存在! Index: ", Handle.index, ", Generation: ", Handle.generation);
 	}
 
 	void BindlessSlotsAllocator::MarkedTargetSlotsRelease(const uint16& SlotIndex)
@@ -325,7 +200,7 @@ namespace suz
 
 		for (auto& pair : m_textureSlots)
 		{
-			if (pair.second == SlotIndex)
+			if (pair.second.slotIndex == SlotIndex)
 			{
 				m_waitReleaseSlots[pair.first] = MAX_FRAMES_IN_FLIGHT;
 			}
@@ -340,7 +215,7 @@ namespace suz
 		{
 			if (pair.second == 0)
 			{
-				uint16 slotIndex = m_textureSlots[pair.first];
+				uint16 slotIndex = m_textureSlots[pair.first].slotIndex;
 
 				/* 正式释放纹理插槽 */
 				m_slotsStatus[slotIndex] = false;

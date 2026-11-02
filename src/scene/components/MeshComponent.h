@@ -4,12 +4,8 @@
 #include "model/Mesh.h"
 #include "model/Material.h"
 #include "macros/ReflectMacros.h"
+#include "model/ModelResourceManager.h"
 #include "MeshComponent.generated.h"
-
-#include <memory>
-#include <vector>
-#include <string>
-#include <utility>
 
 namespace suz
 {
@@ -23,11 +19,11 @@ namespace suz
 		MeshComponent(Mesh* mesh, Material* material);
 		~MeshComponent();
 
-		void CreateMesh(const std::string& MeshId);
+		void CreateMesh(const MeshHandle& MeshId);
 		void CreateMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
 		void CreateMesh(Mesh* mesh);
 
-		void CreateMaterial(const std::string& MaterialId);
+		void CreateMaterial(const MaterialHandle& MaterialHandle);
 		void CreateMaterial(Material* material);
 
 		virtual void BeginPlay() override;
@@ -35,7 +31,7 @@ namespace suz
 		virtual void Destroy() override;
 
 	private:
-		std::pair<std::string, std::shared_ptr<Mesh>> m_meshPair = {};
-		std::pair<std::string, std::shared_ptr<Material>> m_materialPair = {};
+		std::pair<MeshHandle, Mesh*> m_meshPair = {};
+		std::pair<MaterialHandle, Material*> m_materialPair = {};
 	};
 }

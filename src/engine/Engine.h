@@ -14,7 +14,8 @@ class SuzzaApplication;
 namespace suz
 {
 	class VulkanResourceManager;
-	class ModelResourceManager;
+	class MeshResourceManager;
+	class MaterialResourceManager;
 	class ImageLoaderManager;
 	class ModelLoaderManager;
 	class BindlessSlotsAllocator;
@@ -27,7 +28,8 @@ namespace suz
 	public:
 		static Engine& GetEngineInstance();
 		static VulkanResourceManager& GetVulkanResourceManager();
-		static ModelResourceManager& GetModelResourceManager();
+		static MeshResourceManager& GetMeshResourceManager();
+		static MaterialResourceManager& GetMaterialResourceManager();
 		static ImageLoaderManager& GetImageLoaderManager();
 		static ModelLoaderManager& GetModelLoaderManager();
 		static BindlessSlotsAllocator& GetBindlessSlotsAllocator();
@@ -54,7 +56,9 @@ namespace suz
 		/* Vulkan资源管理器, 负责管理Vulkan的资源(交换链、管线、缓冲区等)生命周期 */
 		static VulkanResourceManager m_vkResourceManager;
 		/* 模型资源管理器 */
-		static ModelResourceManager m_modelResourceManager;
+		static MeshResourceManager m_meshResourceManager;
+		/* 材质资源管理器 */
+		static MaterialResourceManager m_materialResourceManager;
 		/* 图像加载管理器 */
 		static ImageLoaderManager m_imageLoaderManager;
 		/* 模型加载管理器 */

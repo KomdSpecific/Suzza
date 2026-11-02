@@ -68,7 +68,7 @@ namespace suz
 
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
 
-		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, vkManager.GetPipeline()->GetCameraDescriptorSetLayout());
+		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, vkManager.GetDescriptorLayouts().GetResource("CameraDesc")->GetDescriptorLayout());
 		VkDescriptorSetAllocateInfo allocateInfo{};
 		allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocateInfo.descriptorPool = m_cameraDescriptorPool;
@@ -131,7 +131,7 @@ namespace suz
 	{
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
 
-		VkDescriptorSetLayout bindlessLayout = vkManager.GetPipeline()->GetBindlessDescriptorSetLayout();
+		VkDescriptorSetLayout bindlessLayout = vkManager.GetDescriptorLayouts().GetResource("BindlessDesc")->GetDescriptorLayout();
 		VkDescriptorSetAllocateInfo bindlessInfo{};
 		bindlessInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		bindlessInfo.descriptorPool = m_bindlessDescriptorPool;

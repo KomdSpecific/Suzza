@@ -18,7 +18,9 @@ namespace suz
 	/* Vulkan资源管理器分配内存 */
 	VulkanResourceManager Engine::m_vkResourceManager;
 	/* 模型资源管理器分配内存 */
-	ModelResourceManager Engine::m_modelResourceManager;
+	MeshResourceManager Engine::m_meshResourceManager;
+	/* 材质资源管理器分配内存 */
+	MaterialResourceManager Engine::m_materialResourceManager;
 	/* 图像加载管理器分配内存 */
 	ImageLoaderManager Engine::m_imageLoaderManager;
 	/* 模型加载管理器分配内存 */
@@ -39,9 +41,14 @@ namespace suz
 		return m_vkResourceManager;
 	}
 
-	ModelResourceManager& Engine::GetModelResourceManager()
+	MeshResourceManager& Engine::GetMeshResourceManager()
 	{
-		return m_modelResourceManager;
+		return m_meshResourceManager;
+	}
+
+	MaterialResourceManager& Engine::GetMaterialResourceManager()
+	{
+		return m_materialResourceManager;
 	}
 
 	ImageLoaderManager& Engine::GetImageLoaderManager()
@@ -91,9 +98,9 @@ namespace suz
 			m_mainWindow->GetMainWindow(),
 			m_vkResourceManager.GetVulkanInitialize()->GetVulkanInstance(),
 			m_vkResourceManager.GetVulkanInitialize()->GetPhysicalDevice(),
-			m_vkResourceManager.GetVulkanInitialize()->GetDevice(),
-			m_vkResourceManager.GetVulkanInitialize()->GetGraphicsFamily(),
-			m_vkResourceManager.GetVulkanInitialize()->GetGraphicsQueue(),
+			m_vkResourceManager.GetDevice()->GetDevice(),
+			m_vkResourceManager.GetDevice()->GetGraphicsFamily(),
+			m_vkResourceManager.GetDevice()->GetGraphicsQueue(),
 			m_vkResourceManager.GetRenderPass()->GetRenderPass(),
 			m_vkResourceManager.GetBufferArea()->GetCommandPool()
 		);
@@ -133,7 +140,7 @@ namespace suz
 		}
 
 		/* 等待逻辑设备完成收尾操作 */
-		vkDeviceWaitIdle(m_vkResourceManager.GetVulkanInitialize()->GetDevice());
+		vkDeviceWaitIdle(m_vkResourceManager.GetDevice()->GetDevice());
 	}
 
 	void Engine::Destroy()
@@ -145,7 +152,9 @@ namespace suz
 #endif
 
 		/* 模型资源管理器统一销毁 */
-		m_modelResourceManager.Destroy();
+		m_meshResourceManager.Destroy();
+		/* 材质资源管理器统一销毁 */
+		m_materialResourceManager.Destroy();
 		/* 图像Bindless插槽统一释放 */
 		m_bindlessSlotsAllocator.Destroy();
 		/* 调用Vulkan资源管理器统一销毁 */

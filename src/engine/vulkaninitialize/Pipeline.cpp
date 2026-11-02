@@ -1,11 +1,13 @@
 #include "Pipeline.h"
+#include "Engine.h"
+#include "VulkanResourceManager.h"
 #include "model/Render.h"
 #include "macros/VkMacro.h"
+#include "file/FileSystem.h"
 
 #include "debug/SuzzaLog.h"
 
 #include <fstream>
-#include <stdexcept>
 #include <cassert>
 
 namespace suz
@@ -18,44 +20,28 @@ namespace suz
 	};
 
 
-	Pipeline::Pipeline(
-		VulkanInitialize& VulkanInitialize,
-		const VkRenderPass& RenderPass,
-		const std::string& VertexFilePath,
-		const std::string& FragmentFilePath,
-		const PipelineConfigInfo& ConfigInfo
-	) : m_vulkanInitialize(VulkanInitialize),
-		m_renderPass(RenderPass)
+#pragma region PipelineLayoutSpec
+	VkPipelineLayoutCreateInfo PipelineLayoutSpec::DefaultPipelineLayoutCreateInfo(const PipelineLayoutSpec& Spec)
 	{
-		CreateCameraDescriptorSetLayout();
-		CreateBindlessDescriptorSetLayout();
-		CreatePushConstantRange();
-		CreatePipelineLayout();
-		CreateGraphicsPipeline(VertexFilePath, FragmentFilePath, ConfigInfo);
-	}
+		VkPipelineLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		layoutInfo.setLayoutCount = static_cast<uint32>(Spec.descriptorSetLayout.size());
+		layoutInfo.pSetLayouts = Spec.descriptorSetLayout.data();
 
-	Pipeline::~Pipeline()
-	{
-		if (*m_isAlive)
+		if (Spec.constantRage.size() > 0)
 		{
-			SUZZA_LOG_ERROR("Class Pipeline Warning: 未调用Destroy手动销毁!");
-			Destroy();
+			layoutInfo.pushConstantRangeCount = static_cast<uint32>(Spec.constantRage.size());
+			layoutInfo.pPushConstantRanges = Spec.constantRage.data();
 		}
+
+		return layoutInfo;
 	}
 
-	void Pipeline::Destroy()
-	{
-		if (!(*m_isAlive)) return;
+#pragma endregion
 
-		vkDestroyPipeline(m_vulkanInitialize.GetDevice(), m_graphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(m_vulkanInitialize.GetDevice(), m_pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(m_vulkanInitialize.GetDevice(), m_cameraDescriptorSetLayout, nullptr);
-		vkDestroyDescriptorSetLayout(m_vulkanInitialize.GetDevice(), m_bindlessDescriptorSetLayout, nullptr);
 
-		*m_isAlive = false;
-	}
-
-	PipelineConfigInfo Pipeline::DefaultPipelineConfigInfo()
+#pragma region PipelineSpec
+	PipelineConfigInfo PipelineSpec::DefaultPipelineConfigInfo()
 	{
 		PipelineConfigInfo pipelineConfigInfo{};
 
@@ -107,8 +93,6 @@ namespace suz
 		pipelineConfigInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		pipelineConfigInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
 		pipelineConfigInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;
-		pipelineConfigInfo.colorBlendInfo.attachmentCount = 1;
-		pipelineConfigInfo.colorBlendInfo.pAttachments = &pipelineConfigInfo.colorBlendAttachment;
 		pipelineConfigInfo.colorBlendInfo.blendConstants[0] = 0.0f;
 		pipelineConfigInfo.colorBlendInfo.blendConstants[1] = 0.0f;
 		pipelineConfigInfo.colorBlendInfo.blendConstants[2] = 0.0f;
@@ -134,188 +118,162 @@ namespace suz
 		return pipelineConfigInfo;
 	}
 
-	std::vector<char> Pipeline::ReadFile(const std::string& FilePath)
+	VkPipelineVertexInputStateCreateInfo PipelineSpec::DefaultVertexInputStateCreateInfo(const PipelineSpec& Spec)
 	{
-		/* 打开文件时跳转到文件末尾, 并以二进制读取 */
-		std::ifstream file(FilePath, std::ios::ate | std::ios::binary);
-		if (!file.is_open())
+		if (Spec.bindingDescriptions.size() == 0 || Spec.attributeDescriptions.size() == 0)
 		{
-			throw std::runtime_error("打开文件失败!" + FilePath);
+			SUZZA_LOG_ERROR("未配置顶点描述或属性描述, 生成顶点读取规则失败!");
+			return {};
 		}
 
-		/* 初始化文件缓冲区大小 */
-		size_t fileSize = static_cast<size_t>(file.tellg());
-		std::vector<char> buffer(fileSize);
+		VkPipelineVertexInputStateCreateInfo inputStateCreateInfo{};
+		inputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		inputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32>(Spec.attributeDescriptions.size());
+		inputStateCreateInfo.pVertexAttributeDescriptions = Spec.attributeDescriptions.data();
+		inputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32>(Spec.bindingDescriptions.size());
+		inputStateCreateInfo.pVertexBindingDescriptions = Spec.bindingDescriptions.data();
 
-		/* 跳转到文件开头并读取文件 */
-		file.seekg(0);
-		file.read(buffer.data(), fileSize);
-
-		file.close();
-
-		return buffer;
+		return inputStateCreateInfo;
 	}
 
-	void Pipeline::CreateCameraDescriptorSetLayout()
+	VkGraphicsPipelineCreateInfo PipelineSpec::DefaultGraphicsPipelineCreateInfo(const PipelineSpec& Spec)
 	{
-		/* 定义描述符集绑定信息 */
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;											// 要求和着色器的Layout序列号一样
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;				// 在顶点着色器阶段被引用
-		uboLayoutBinding.pImmutableSamplers = nullptr;							// 与图像采样相关描述符有关
-
-		/* 定义描述符集配置信息 */
-		VkDescriptorSetLayoutCreateInfo uboLayoutInfo{};
-		uboLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		uboLayoutInfo.bindingCount = 1;
-		uboLayoutInfo.pBindings = &uboLayoutBinding;
-		if (vkCreateDescriptorSetLayout(m_vulkanInitialize.GetDevice(), &uboLayoutInfo, nullptr, &m_cameraDescriptorSetLayout) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建描述字符集失败!");
-		}
-	}
-
-	void Pipeline::CreateBindlessDescriptorSetLayout()
-	{
-		/* 定义图像描述符集绑定信息 */
-		/* 定义Bindless全局集合 */
-		VkDescriptorSetLayoutBinding bindlessLayoutBinding{};
-		bindlessLayoutBinding.binding = 1;
-		bindlessLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		bindlessLayoutBinding.descriptorCount = MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
-		bindlessLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;			// 在片段着色器阶段被引用
-		bindlessLayoutBinding.pImmutableSamplers = nullptr;
-
-		VkDescriptorBindingFlags flags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
-		/* 定义Bindless的Flag */
-		VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlags{};
-		bindingFlags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-		bindingFlags.bindingCount = 1;
-		bindingFlags.pBindingFlags = &flags;
-
-		/* 定义描述符集配置信息 */
-		VkDescriptorSetLayoutCreateInfo bindlessLayoutInfo{};
-		bindlessLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		bindlessLayoutInfo.bindingCount = 1;
-		bindlessLayoutInfo.pBindings = &bindlessLayoutBinding;
-		bindlessLayoutInfo.pNext = &bindingFlags;									// 挂载Binding Flags
-		bindlessLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-		if (vkCreateDescriptorSetLayout(m_vulkanInitialize.GetDevice(), &bindlessLayoutInfo, nullptr, &m_bindlessDescriptorSetLayout) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建描述字符集失败!");
-		}
-	}
-
-	void Pipeline::CreatePushConstantRange()
-	{
-		m_pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;				// 推送常量给顶点着色器使用
-		m_pushConstantRange.offset = 0;
-		m_pushConstantRange.size = sizeof(ModelConstant);
-	}
-
-	void Pipeline::CreatePipelineLayout()
-	{
-		/* camera[0]->(set = 0, ...), bindless[1]->(set = 1, ...) */
-		std::array<VkDescriptorSetLayout, 2> pipelineSetLayouts{ m_cameraDescriptorSetLayout,m_bindlessDescriptorSetLayout };
-		/* 设置管线布局创建信息 */
-		VkPipelineLayoutCreateInfo pipeLayoutInfo{};
-		pipeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipeLayoutInfo.setLayoutCount = static_cast<uint32>(pipelineSetLayouts.size());
-		pipeLayoutInfo.pSetLayouts = pipelineSetLayouts.data();						// 配置字符集布局信息
-		pipeLayoutInfo.pushConstantRangeCount = 1;
-		pipeLayoutInfo.pPushConstantRanges = &m_pushConstantRange;
-
-		if (vkCreatePipelineLayout(m_vulkanInitialize.GetDevice(), &pipeLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建管线布局失败!");
-		}
-	}
-
-	void Pipeline::CreateGraphicsPipeline(const std::string& VertexFilePath, const std::string& FragmentFilePath, const PipelineConfigInfo& ConfigInfo)
-	{
-		//assert(m_renderPass != VK_NULL_HANDLE && "无法创建图形管线: 没有合适的队列renderPass!");
-
-		std::vector<char> vertexShader = ReadFile(VertexFilePath);
-		std::vector<char> fragmentShader = ReadFile(FragmentFilePath);
-
-		CreateShaderMoudle(vertexShader, &m_vertShaderMoudle);
-		CreateShaderMoudle(fragmentShader, &m_fragShaderMoudle);
-
-		VkPipelineShaderStageCreateInfo shaderStages[2]{};
-		/* 创建管线顶点着色器阶段信息 */
-		shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-		shaderStages[0].module = m_vertShaderMoudle;
-		shaderStages[0].pName = "main";
-		shaderStages[0].flags = 0;
-		shaderStages[0].pNext = nullptr;
-		shaderStages[0].pSpecializationInfo = nullptr;						// 定制着色器功能
-
-		/* 创建管线片段着色器阶段信息 */
-		shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		shaderStages[1].module = m_fragShaderMoudle;
-		shaderStages[1].pName = "main";
-		shaderStages[1].flags = 0;
-		shaderStages[1].pNext = nullptr;
-		shaderStages[1].pSpecializationInfo = nullptr;						// 定制着色器功能
-
-		/* 获取顶点绑定和顶点属性描述信息, 告诉如何获取顶点属性 */
-		VkVertexInputBindingDescription bindingDescription = Vertex::GetBindingDescription();
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = Vertex::GetAttributeDescription();
-		/* 定义如何解析顶点缓冲数据 */
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());// 顶点属性描述数量
-		vertexInputInfo.vertexBindingDescriptionCount = 1;									// 顶点绑定描述数量
-		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();		// 顶点属性读取方式
-		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;					// 顶点在数组中的读取方式
-
 		/* 创建图形管线对象 */
-		VkGraphicsPipelineCreateInfo pipelineInfo{};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		/* 将管线所有的配置信息整合一起 */
-		pipelineInfo.stageCount = 2;
-		pipelineInfo.pStages = shaderStages;								// 设置着色器阶段信息
-		pipelineInfo.pVertexInputState = &vertexInputInfo;					// 设置解析顶点方法
-		pipelineInfo.pInputAssemblyState = &ConfigInfo.inputAssemblyInfo;
-		pipelineInfo.pViewportState = &ConfigInfo.viewportInfo;
-		pipelineInfo.pRasterizationState = &ConfigInfo.rasterizationInfo;
-		pipelineInfo.pMultisampleState = &ConfigInfo.multisampleInfo;
-		pipelineInfo.pColorBlendState = &ConfigInfo.colorBlendInfo;
-		pipelineInfo.pDepthStencilState = &ConfigInfo.depthStencilInfo;
-		pipelineInfo.pDynamicState = &ConfigInfo.dynamicStateInfo;
+		VkGraphicsPipelineCreateInfo graphicsPipelineInfo{};
+		graphicsPipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
-		pipelineInfo.layout = m_pipelineLayout;
-		pipelineInfo.renderPass = m_renderPass;
-		pipelineInfo.subpass = ConfigInfo.subpass;
+		/* 将管线所有的配置信息整合 */
+		graphicsPipelineInfo.stageCount = static_cast<uint32>(Spec.shaderStages.size());
+		graphicsPipelineInfo.pStages = Spec.shaderStages.data();					// 设置着色器阶段信息
 
-		pipelineInfo.basePipelineIndex = -1;
-		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;			// TODO: 性能优化点
+		graphicsPipelineInfo.pVertexInputState = &Spec.pipelineConfigInfo.vertexInputState;		// 设置解析顶点方法
 
-		/* 真正创建图形管线过程 */
-		if (vkCreateGraphicsPipelines(m_vulkanInitialize.GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
+		graphicsPipelineInfo.pViewportState = &Spec.pipelineConfigInfo.viewportInfo;
+		graphicsPipelineInfo.pInputAssemblyState = &Spec.pipelineConfigInfo.inputAssemblyInfo;
+		graphicsPipelineInfo.pRasterizationState = &Spec.pipelineConfigInfo.rasterizationInfo;
+		graphicsPipelineInfo.pMultisampleState = &Spec.pipelineConfigInfo.multisampleInfo;
+		graphicsPipelineInfo.pColorBlendState = &Spec.pipelineConfigInfo.colorBlendInfo;
+		graphicsPipelineInfo.pDepthStencilState = &Spec.pipelineConfigInfo.depthStencilInfo;
+		graphicsPipelineInfo.pDynamicState = &Spec.pipelineConfigInfo.dynamicStateInfo;
+
+		graphicsPipelineInfo.layout = Spec.layout;
+		graphicsPipelineInfo.renderPass = Spec.renderPass;
+		graphicsPipelineInfo.subpass = Spec.pipelineConfigInfo.subpass;
+
+		graphicsPipelineInfo.basePipelineIndex = -1;
+		graphicsPipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+		return graphicsPipelineInfo;
+	}
+
+#pragma endregion
+
+	Pipeline::~Pipeline()
+	{
+		if (*m_isAlive)
 		{
-			throw std::runtime_error("创建图形管线对象失败!");
+			SUZZA_LOG_ERROR("Class Pipeline Warning: 未调用Destroy手动销毁!");
+			Destroy();
+		}
+	}
+
+	bool Pipeline::Create(PipelineLayoutSpec& Spec)
+	{
+		return CreatePipelineLayout(Spec);
+	}
+
+	bool Pipeline::Create(PipelineSpec& Spec)
+	{
+		return CreateGraphicsPipeline(Spec);
+	}
+
+	bool Pipeline::CreatePipelineLayout(PipelineLayoutSpec& Spec)
+	{
+		if (Spec.device == VK_NULL_HANDLE)
+		{
+			SUZZA_LOG_ERROR("无法创建图形管线: 逻辑设备device不合法!");
+			return false;
 		}
 
-		/* 销毁顶点和片段着色器模块 */
-		vkDestroyShaderModule(m_vulkanInitialize.GetDevice(), m_vertShaderMoudle, nullptr);
-		vkDestroyShaderModule(m_vulkanInitialize.GetDevice(), m_fragShaderMoudle, nullptr);
+		m_device = Spec.device;
+
+		VkPipelineLayoutCreateInfo layoutCreateInfo = PipelineLayoutSpec::DefaultPipelineLayoutCreateInfo(Spec);
+		if (vkCreatePipelineLayout(Spec.device, &layoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
+		{
+			SUZZA_LOG_ERROR("创建管线布局失败!");
+			return false;
+		}
+
+		return true;
+	}
+
+	bool Pipeline::CreateGraphicsPipeline(PipelineSpec& Spec)
+	{
+		if (Spec.device == VK_NULL_HANDLE)
+		{
+			SUZZA_LOG_ERROR("无法创建图形管线: 逻辑设备device不合法!");
+			return false;
+		}
+
+		m_device = Spec.device;
+
+		if (Spec.layout == VK_NULL_HANDLE)
+		{
+			SUZZA_LOG_ERROR("无法创建图形管线: 没有合适的管线布局layout!");
+			return false;
+		}
+
+		if (Spec.renderPass == VK_NULL_HANDLE)
+		{
+			SUZZA_LOG_ERROR("无法创建图形管线: 没有合适的队列renderPass!");
+			return false;
+		}
+
+		/* 配置颜色混合设置 */
+		Spec.pipelineConfigInfo.colorBlendInfo.attachmentCount = 1;
+		Spec.pipelineConfigInfo.colorBlendInfo.pAttachments = &Spec.pipelineConfigInfo.colorBlendAttachment;
+
+		VkGraphicsPipelineCreateInfo graphicsPipelineInfo = PipelineSpec::DefaultGraphicsPipelineCreateInfo(Spec);
+		if (vkCreateGraphicsPipelines(Spec.device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
+		{
+			SUZZA_LOG_ERROR("创建图形管线对象失败!");
+			return false;
+		}
+
+		vkDestroyShaderModule(Spec.device, Spec.vertShaderMoudle, nullptr);
+		vkDestroyShaderModule(Spec.device, Spec.fragShaderMoudle, nullptr);
+
+		return true;
+	}
+
+	void Pipeline::Destroy()
+	{
+		if (!(*m_isAlive)) return;
+
+		if (m_device == VK_NULL_HANDLE)
+		{
+			SUZZA_LOG_ERROR("资源销毁失败: 逻辑设备device不合法!");
+			return;
+		}
+
+		vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
+		vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+
+		*m_isAlive = false;
 	}
 
 	void Pipeline::CreateShaderMoudle(const std::vector<char>& ShaderCode, VkShaderModule* ShaderMoudle)
 	{
-		VkShaderModuleCreateInfo shaderCreateInfo{};
-		shaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		shaderCreateInfo.codeSize = ShaderCode.size();
-		shaderCreateInfo.pCode = reinterpret_cast<const uint32*>(ShaderCode.data());
+		const VkDevice& device = Engine::GetVulkanResourceManager().GetDevice()->GetDevice();
 
-		if (vkCreateShaderModule(m_vulkanInitialize.GetDevice(), &shaderCreateInfo, nullptr, ShaderMoudle) != VK_SUCCESS)
+		VkShaderModuleCreateInfo shaderInfo{};
+		shaderInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		shaderInfo.codeSize = ShaderCode.size();
+		shaderInfo.pCode = reinterpret_cast<const uint32*>(ShaderCode.data());
+
+		if (vkCreateShaderModule(device, &shaderInfo, nullptr, ShaderMoudle) != VK_SUCCESS)
 		{
-			throw std::runtime_error("创建着色器模块失败!");
+			SUZZA_LOG_ERROR("创建着色器模块失败");
 		}
 	}
 }

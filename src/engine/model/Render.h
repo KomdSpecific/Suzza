@@ -6,6 +6,7 @@
 
 namespace suz
 {
+	class Device;
 	class Pipeline;
 	class VulkanInitialize;
 	class SwapChain;
@@ -35,6 +36,7 @@ namespace suz
 		void UpdateModelTransform(float DeltaTime);
 
 	private:
+		Device* m_device;
 		Pipeline* m_pipeline;
 		VulkanInitialize* m_vkInitialize;
 		SwapChain* m_swapChain;

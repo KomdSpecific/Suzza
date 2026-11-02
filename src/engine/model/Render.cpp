@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "macros/VkMacro.h"
 #include "ModelResourceManager.h"
+#include "vulkaninitialize/Device.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkanInitialize/Pipeline.h"
 #include "vulkanInitialize/VulkanInitialize.h"
@@ -21,7 +22,8 @@ namespace suz
 		: m_bindlessSlotsAllocator(Engine::GetBindlessSlotsAllocator())
 	{
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		m_pipeline = vkManager.GetPipeline();
+		m_device = vkManager.GetDevice();
+		m_pipeline = vkManager.GetPipelines().GetResource("DefaultPipeline");
 		m_vkInitialize = vkManager.GetVulkanInitialize();
 		m_swapChain = vkManager.GetSwapChain();
 		m_renderPass = vkManager.GetRenderPass();
@@ -30,6 +32,18 @@ namespace suz
 		m_syncObject = vkManager.GetSyncObject();
 
 		m_bufferArea->RegisterBindlessDescriptorSet(m_descriptor->GetBindlessDescriptorSets());
+
+		const Vector<ModelVertexData> gridVertices = {
+			{ { 10000.0f,  -10000.0f, 0.0f }, {1,1,1}, {0,0}},
+			{ { 10000.0f,  10000.0f, 0.0f }, {1,1,1}, {0,0}},
+			{ { -10000.0f,  10000.0f,  0.0f }, {1,1,1}, {0,0}},
+			{ { -10000.0f,  -10000.0f,  0.0f }, {1,1,1}, {0,0}}
+		};
+
+		const Vector<uint16> gridIndices = {
+			0,1,2,
+			0,2,3
+		};
 	};
 
 	void Render::SubmitMesh(Mesh* TargetMesh, const ModelConstant& ModelMatrix)
@@ -45,14 +59,14 @@ namespace suz
 	void Render::Draw(float DeltaTime)
 	{
 		/* 1. 等待上一帧完成接收到围栏(Fence)信号, 并设置超时阙值 */
-		vkWaitForFences(m_vkInitialize->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame], VK_TRUE, UINT64_MAX);
+		vkWaitForFences(m_device->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame], VK_TRUE, UINT64_MAX);
 
 		m_bindlessSlotsAllocator.ReleaseSlots();
 
 		/* 2. 从交换链获取图像 */
 		uint32 imageIndex;
 		/* 此处使用图像之后发送图像信号量 */
-		VkResult result = vkAcquireNextImageKHR(m_vkInitialize->GetDevice(), m_swapChain->GetSwapChain(), UINT64_MAX, m_syncObject->GetImageAvailableSemaphore()[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(m_device->GetDevice(), m_swapChain->GetSwapChain(), UINT64_MAX, m_syncObject->GetImageAvailableSemaphore()[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
 		/* 如果交换链过期可重建 */
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
@@ -65,7 +79,7 @@ namespace suz
 		}
 
 		/* 重置围栏信号, 防止围栏重置后提前返回导致没有信号发出, 造成死锁 */
-		vkResetFences(m_vkInitialize->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame]);
+		vkResetFences(m_device->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame]);
 
 		/* 3. 记录命令缓冲, 传入图像索引 */
 		vkResetCommandBuffer(m_bufferArea->GetCommandBuffer()[m_currentFrame], 0);
@@ -96,7 +110,7 @@ namespace suz
 		submitInfo.pSignalSemaphores = sendSemaphores;
 
 		/* 5. 提交命令缓冲区到图形队列 */
-		if (vkQueueSubmit(m_vkInitialize->GetGraphicsQueue(), 1, &submitInfo, m_syncObject->GetInFrameFence()[m_currentFrame]) != VK_SUCCESS)
+		if (vkQueueSubmit(m_device->GetGraphicsQueue(), 1, &submitInfo, m_syncObject->GetInFrameFence()[m_currentFrame]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("提交命令缓冲失败!");
 		}
@@ -114,7 +128,7 @@ namespace suz
 		presentInfo.pImageIndices = &imageIndex;
 
 		/* 最终: 请求提交图像到呈现队列 */
-		result = vkQueuePresentKHR(m_vkInitialize->GetPresentQueue(), &presentInfo);
+		result = vkQueuePresentKHR(m_device->GetPresentQueue(), &presentInfo);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_bufferArea->IsFrameBufferResized())
 		{
 			m_bufferArea->DisableBufferResized();

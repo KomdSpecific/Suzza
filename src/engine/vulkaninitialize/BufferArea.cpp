@@ -65,7 +65,7 @@ namespace suz
 
 	void BufferArea::CreateBuffer(const VkDeviceSize& Buffersize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Properties, VkBuffer& BufferToCreate, VkDeviceMemory& AllocatedMemory)
 	{
-		const VkDevice& device = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetDevice();
+		const VkDevice& device = Engine::GetVulkanResourceManager().GetDevice()->GetDevice();
 
 		/* 1. 定义顶点缓冲区信息 */
 		VkBufferCreateInfo bufferInfo{};
@@ -219,7 +219,7 @@ namespace suz
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
 		/* 配置背景颜色 */
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = { {1.0f,1.0f,1.0f,1.0f} };						// 设置颜色清除值 (背景颜色)
+		clearValues[0].color = { {0.0f,0.0f,0.0f,1.0f} };						// 设置颜色清除值 (背景颜色)
 		clearValues[1].depthStencil = { 1.0f,0 };								// 深度 + 模板清除值
 		renderPassInfo.clearValueCount = static_cast<uint32>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
@@ -474,7 +474,7 @@ namespace suz
 		submitInfo.pCommandBuffers = &CommandBuffer;
 
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		VkQueue graphicsQueue = vkManager.GetVulkanInitialize()->GetGraphicsQueue();
+		VkQueue graphicsQueue = vkManager.GetDevice()->GetGraphicsQueue();
 		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(graphicsQueue);
 

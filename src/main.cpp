@@ -21,15 +21,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	try
-	{
-		engine.Run();
-	}
-	catch (const std::exception& e)
-	{
-		SUZZA_LOG_ERROR(e.what());
-		return EXIT_FAILURE;
-	}
+	engine.Run();
 
 	engine.Destroy();
 

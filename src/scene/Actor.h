@@ -150,11 +150,11 @@ namespace suz
 		if constexpr (!std::is_base_of_v<Component, Comp>) return nullptr;
 
 		/* 获取组件对应的ID */
-		size_t typeId = GetStaticTypeId<Comp>();
+		uint16 typeId = Component::GetStaticComponentId<Comp>();
 
 		for (Component* comp : m_components)
 		{
-			if (comp->GetTypeId() == typeId)
+			if (comp->GetComponentId() == typeId)
 			{
 				return comp;
 			}

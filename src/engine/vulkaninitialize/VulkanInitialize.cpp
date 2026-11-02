@@ -2,7 +2,7 @@
 #include "Engine.h"
 #include "MainWindow.h"
 #include "SwapChain.h"
-#include "device/DeviceFunctionLibrary.h"
+#include "functionLibrary/DeviceFunctionLibrary.h"
 #include "macros/VkMacro.h"
 
 #include "debug/SuzzaLog.h"
@@ -27,7 +27,6 @@ namespace suz
 		SetupDebugMessenger();											// 开启验证层, 创建Vulkan实例包含在内
 		CreateSurface();
 		PickPhysicalDevice();
-		CreateLogicalDevice();
 	}
 	
 	VulkanInitialize::~VulkanInitialize()
@@ -42,8 +41,6 @@ namespace suz
 	void VulkanInitialize::Destroy()
 	{
 		if (!(*m_isAlive)) return;
-
-		vkDestroyDevice(m_device, nullptr);
 
 		if (enableValidationLayers)
 		{
@@ -188,6 +185,7 @@ namespace suz
 
 		if (m_shouldRequiredDiscreteGPU)
 		{
+			/* 显卡要求为独显 */
 			/* 程序应适用于支持几何着色器的独立显卡 */
 			if (deviceProperties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader)
 			{
@@ -276,8 +274,6 @@ namespace suz
 			i++;
 		}
 
-		m_queueFamilyIndices = indices;
-
 		return indices;
 	}
 
@@ -317,8 +313,6 @@ namespace suz
 
 			i++;
 		}
-
-		m_queueFamilyIndices = indices;
 
 		return indices;
 	}
@@ -471,125 +465,5 @@ namespace suz
 		{
 			throw std::runtime_error("无法找到合适的GPU!");
 		}
-	}
-
-	void VulkanInitialize::CreateLogicalDevice()
-	{
-		QueueFamilyIndices indices = FindQueueFamilies(m_vkPhysicalDevice);
-
-		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
-		std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(),indices.presentFamily.value() };
-
-		/* 指定队列分配优先级 */
-		float queuePriority = 1.0f;
-		for (const uint32_t& queueFamily : uniqueQueueFamilies)
-		{
-			/* 指定要创建的队列 */
-			VkDeviceQueueCreateInfo queueCreateInfo{};
-			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueCreateInfo.queueFamilyIndex = queueFamily;
-			queueCreateInfo.queueCount = 1;
-			queueCreateInfo.pQueuePriorities = &queuePriority;
-			queueCreateInfos.push_back(queueCreateInfo);
-		}
-
-		/* 指定要使用的设备特性 */
-		VkPhysicalDeviceFeatures deviceFeatures{};
-		deviceFeatures.samplerAnisotropy = VK_TRUE;						// 开启采样器各项异性过滤
-		
-		/* 创建逻辑设备 */
-		VkDeviceCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-		createInfo.pQueueCreateInfos = queueCreateInfos.data();
-		createInfo.pEnabledFeatures = &deviceFeatures;
-
-		/* 启用交换链扩展 */
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-
-		/* 将设备开启能力链表设置给设备创建信息 */
-		if (CheckDeviceFeatureSupport(m_vkPhysicalDevice))
-		{
-			m_deviceFeaturesChain = CreateDeviceFeaturesChain();
-			createInfo.pNext = &m_deviceFeaturesChain;
-		}
-
-		/* 再次设置设备验证层, 防止被忽略 */
-		if (enableValidationLayers)
-		{
-			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-			createInfo.ppEnabledLayerNames = validationLayers.data();
-		}
-		else
-		{
-			createInfo.enabledLayerCount = 0;
-		}
-
-		/* 创建逻辑设备 */
-		if (vkCreateDevice(m_vkPhysicalDevice, &createInfo, nullptr, &m_device) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建逻辑设备失败!");
-		}
-
-		/* 检索目标设备的队列句柄并进行缓存 */
-		vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
-		vkGetDeviceQueue(m_device, indices.presentFamily.value(), 0, &m_presentQueue);
-	}
-
-	bool VulkanInitialize::CheckDeviceFeatureSupport(const VkPhysicalDevice& physicalDevice)
-	{
-		/* 查询设备是否支持描述符索引 */
-		auto queryStructureChain = vk::StructureChain<
-			vk::PhysicalDeviceFeatures2,
-			vk::PhysicalDeviceDescriptorIndexingFeaturesEXT
-		>{};
-
-		auto& deviceFeatures2 = queryStructureChain.get<vk::PhysicalDeviceFeatures2>();
-		auto& descIndexFeatureQuery = queryStructureChain.get<vk::PhysicalDeviceDescriptorIndexingFeaturesEXT>();
-
-		/* 调用接口, 驱动填充全部Features */
-		vkGetPhysicalDeviceFeatures2(physicalDevice, reinterpret_cast<VkPhysicalDeviceFeatures2*>(&deviceFeatures2));
-
-		bool featSupport = descIndexFeatureQuery.shaderSampledImageArrayNonUniformIndexing == VK_TRUE &&
-			descIndexFeatureQuery.descriptorBindingVariableDescriptorCount == VK_TRUE &&
-			descIndexFeatureQuery.descriptorBindingUpdateUnusedWhilePending == VK_TRUE;
-
-		/* 至少预留256个纹理槽位 */
-		bool propSupport = DeviceFunctionLibrary::GetDeviceMaxBindlessImageNum(physicalDevice) >= MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
-
-		/* shader里数组下标可以是变量 */
-		/* 允许描述符集合更新之后, 不重新分配set; 运行时可修改数组中元素 */
-		/* 允许提交后更新元素 */
-		if (featSupport && propSupport)
-		{
-			return true;
-		}
-		else
-		{
-			throw std::runtime_error("设备无法支持所需功能!");
-		}
-	}
-
-	vk::StructureChain<vk::PhysicalDeviceFeatures2,
-		vk::PhysicalDeviceDescriptorIndexingFeaturesEXT
-	> VulkanInitialize::CreateDeviceFeaturesChain()
-	{
-		auto featureChain = vk::StructureChain<
-			vk::PhysicalDeviceFeatures2,
-			vk::PhysicalDeviceDescriptorIndexingFeaturesEXT
-		>{};
-
-		auto& deviceFeatures2 = featureChain.get<vk::PhysicalDeviceFeatures2>();
-		auto& descIndexFeature = featureChain.get<vk::PhysicalDeviceDescriptorIndexingFeaturesEXT>();
-
-		descIndexFeature.runtimeDescriptorArray = VK_TRUE;
-		descIndexFeature.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-		descIndexFeature.descriptorBindingVariableDescriptorCount = VK_TRUE;
-		descIndexFeature.descriptorBindingUpdateUnusedWhilePending = VK_TRUE;
-		descIndexFeature.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
-		descIndexFeature.descriptorBindingPartiallyBound = VK_TRUE;
-
-		return featureChain;
 	}
 }
