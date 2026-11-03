@@ -18,7 +18,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class Material Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class Material Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -35,7 +35,7 @@ namespace suz
 	void Material::SetMaterialSlot(const uint16& SlotIndex)
 	{
 		m_materialSlot = SlotIndex;
-		/* Í¨ÖªÎÆÀíÊ¹ÓÃ²å²Û¸ü¸Ä */
+		/* é€šçŸ¥çº¹ç†ä½¿ç”¨æ’æ§½æ›´æ”¹ */
 		m_texture->UpdateTextureSlot(SlotIndex);
 	}
 

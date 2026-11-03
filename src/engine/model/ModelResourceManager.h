@@ -14,7 +14,7 @@ namespace suz
 		using HandleBase::HandleBase;
 	};
 
-	/* ¸ºÔğÈ«¾Ö¹ÜÀíMesh */
+	/* è´Ÿè´£å…¨å±€ç®¡ç†Mesh */
 	class MeshResourceManager : public PointerPoolBase<Mesh>
 	{
 	public:
@@ -36,7 +36,7 @@ namespace suz
 	};
 
 
-	/* ¸ºÔğÈ«¾Ö¹ÜÀíMaterial */
+	/* è´Ÿè´£å…¨å±€ç®¡ç†Material */
 	struct MaterialHandle : public HandleBase
 	{
 		using HandleBase::HandleBase;
@@ -93,7 +93,7 @@ namespace suz
 		std::unordered_map<uint32, SlotInfo> m_textureSlots = {};
 		std::array<bool, MAX_SAMPLED_TEXTURE_IMAGES_SLOTS> m_slotsStatus = { false };
 
-		/* µÈ´ıÊÍ·ÅÎÆÀí×ÊÔ´µÄ²å²Û */
+		/* ç­‰å¾…é‡Šæ”¾çº¹ç†èµ„æºçš„æ’æ§½ */
 		std::unordered_map<uint32, byte> m_waitReleaseSlots = {};
 
 		uint16 m_slotsIndex = 0;

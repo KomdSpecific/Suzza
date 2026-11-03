@@ -46,19 +46,19 @@ namespace suz
 
 	void Actor::Destroy()
 	{
-		/* Ä¿Ç°Ä¬ÈÏÏú»Ù×ÓActor */
+		/* ç›®å‰é»˜è®¤é”€æ¯å­Actor */
 		for (auto& childActor : m_childActors)
 		{
 			childActor->Destroy();
 		}
 		m_childActors.clear();
 
-		/* Ïú»ÙActorÏÂµÄ×é¼ş */
+		/* é”€æ¯Actorä¸‹çš„ç»„ä»¶ */
 		for (Component* comp : m_components)
 		{
 			comp->Destroy();
 
-			/* ÄÚ´æ»ØÊÕ */
+			/* å†…å­˜å›æ”¶ */
 			delete comp;
 		}
 		m_components.clear();
@@ -170,7 +170,7 @@ namespace suz
 
 	void Actor::SetActorRotation(const glm::vec3& NewRotation)
 	{
-		/* ÏŞÖÆĞı×ªÉèÖÃ·¶Î§ */
+		/* é™åˆ¶æ—‹è½¬è®¾ç½®èŒƒå›´ */
 		float rotX = Math::NormalizeAngle(NewRotation.x);
 		float rotY = glm::clamp(NewRotation.y, -89.5f, 89.5f);
 		float rotZ = Math::NormalizeAngle(NewRotation.z);
@@ -179,7 +179,7 @@ namespace suz
 		float pitch = glm::radians(rotY);
 		float yaw = glm::radians(rotZ);
 
-		/* Ê¹ÓÃÓÎÏ·×ø±êÖá¹¹ÔìËÄÔªÊı */
+		/* ä½¿ç”¨æ¸¸æˆåæ ‡è½´æ„é€ å››å…ƒæ•° */
 		glm::quat qRoll = glm::angleAxis(-roll, glm::vec3(1, 0, 0));
 		glm::quat qPitch = glm::angleAxis(-pitch, glm::vec3(0, 1, 0));
 		glm::quat qYaw = glm::angleAxis(yaw, glm::vec3(0, 0, 1));
@@ -193,7 +193,7 @@ namespace suz
 
 		const glm::quat& quat = m_rotation;
 
-		/* ´ÓÓÎÏ·×ø±êËÄÔªÊı·´½âÅ·À­½Ç */
+		/* ä»æ¸¸æˆåæ ‡å››å…ƒæ•°åè§£æ¬§æ‹‰è§’ */
 		float sinPitch = 2 * (quat.w * quat.y - quat.z * quat.x);
 		if (fabs(sinPitch) >= 1)
 		{
@@ -259,7 +259,7 @@ namespace suz
 		glm::mat4 matRotate = glm::mat4(m_rotation);
 		glm::mat4 matScale = glm::scale(glm::mat4(1.0f), m_scale);
 
-		/* ¼ÆËãË³Ğò: Æ½ÒÆ * Ğı×ª * Ëõ·Å */
+		/* è®¡ç®—é¡ºåº: å¹³ç§» * æ—‹è½¬ * ç¼©æ”¾ */
 		return matTranslate * matRotate * matScale;
 	}
 

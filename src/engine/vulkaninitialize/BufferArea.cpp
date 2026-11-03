@@ -1,10 +1,11 @@
-#include "BufferArea.h"
+ï»¿#include "BufferArea.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "VulkanInitialize.h"
 #include "Pipeline.h"
 #include "macros/VkMacro.h"
 #include "graphics/Texture.h"
+#include "functionLibrary/VulkanFunctionLibrary.h"
 
 #include "debug/SuzzaLog.h"
 
@@ -26,7 +27,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class BufferArea Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class BufferArea Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -65,36 +66,37 @@ namespace suz
 
 	void BufferArea::CreateBuffer(const VkDeviceSize& Buffersize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Properties, VkBuffer& BufferToCreate, VkDeviceMemory& AllocatedMemory)
 	{
-		const VkDevice& device = Engine::GetVulkanResourceManager().GetDevice()->GetDevice();
+		const DeviceContext& deviceContext = Engine::GetVulkanResourceManager().GetDeviceContext();
+		VkDevice device = deviceContext.device;
 
-		/* 1. ¶¨Òå¶¥µã»º³åÇøĞÅÏ¢ */
+		/* 1. å®šä¹‰é¡¶ç‚¹ç¼“å†²åŒºä¿¡æ¯ */
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferInfo.size = Buffersize;
-		bufferInfo.usage = Usage;											// ¶¨Òå»º³åµÄÊı¾İ½«Òª(¶¥µã»º³å»òÆ¬¶Î»º³åµÈ)
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;					// Ö»ÓĞÌØ¶¨¶ÓÁĞ×å¶ÀÕ¼
+		bufferInfo.usage = Usage;											// å®šä¹‰ç¼“å†²çš„æ•°æ®å°†è¦(é¡¶ç‚¹ç¼“å†²æˆ–ç‰‡æ®µç¼“å†²ç­‰)
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;					// åªæœ‰ç‰¹å®šé˜Ÿåˆ—æ—ç‹¬å 
 
 		if (vkCreateBuffer(device, &bufferInfo, nullptr, &BufferToCreate) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨¶¥µã»º³åÇøÊ§°Ü!");
+			throw std::runtime_error("åˆ›å»ºé¡¶ç‚¹ç¼“å†²åŒºå¤±è´¥!");
 		}
 
-		/* ²éÑ¯ÄÚ´æĞèÇó */
+		/* æŸ¥è¯¢å†…å­˜éœ€æ±‚ */
 		VkMemoryRequirements memoryRequirements{};
 		vkGetBufferMemoryRequirements(device, BufferToCreate, &memoryRequirements);
 
-		/* 2. ¶¨ÒåÄÚ´æ·ÖÅäĞÅÏ¢ */
+		/* 2. å®šä¹‰å†…å­˜åˆ†é…ä¿¡æ¯ */
 		VkMemoryAllocateInfo memoryAllocateInfo{};
 		memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memoryAllocateInfo.allocationSize = memoryRequirements.size;
-		memoryAllocateInfo.memoryTypeIndex = FindMemoryType(memoryRequirements.memoryTypeBits, Properties);
+		memoryAllocateInfo.memoryTypeIndex = VulkanFunctionLibrary::FindMemoryType(deviceContext.physicalDevice, memoryRequirements.memoryTypeBits, Properties);
 
 		if (vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &AllocatedMemory) != VK_SUCCESS)
 		{
-			throw std::runtime_error("·ÖÅä¶¥µã»º³åÇøÄÚ´æÊ§°Ü!");
+			throw std::runtime_error("åˆ†é…é¡¶ç‚¹ç¼“å†²åŒºå†…å­˜å¤±è´¥!");
 		}
 
-		/* 3. ½«·ÖÅäµÄÄÚ´æÓë¶¥µã»º³å¹ØÁªÆğÀ´ */
+		/* 3. å°†åˆ†é…çš„å†…å­˜ä¸é¡¶ç‚¹ç¼“å†²å…³è”èµ·æ¥ */
 		vkBindBufferMemory(device, BufferToCreate, AllocatedMemory, 0);
 	}
 
@@ -102,25 +104,25 @@ namespace suz
 	{
 		const VkDeviceSize bufferSize = sizeof(Vertices[0]) * Vertices.size();
 
-		/* ´´½¨Ö÷»ú¿É¼ûµÄ»º³å×÷ÎªÁÙÊ±»º³å */
+		/* åˆ›å»ºä¸»æœºå¯è§çš„ç¼“å†²ä½œä¸ºä¸´æ—¶ç¼“å†² */
 		VkBuffer stagingBuffer = {};
 		VkDeviceMemory stagingMemory = {};
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
 
-		/* ½«»º³åÄÚ´æÓ³Éäµ½CPU¿É·ÃÎÊµÄÄÚ´æ */
+		/* å°†ç¼“å†²å†…å­˜æ˜ å°„åˆ°CPUå¯è®¿é—®çš„å†…å­˜ */
 		void* data;
 		vkMapMemory(m_device, stagingMemory, 0, bufferSize, 0, &data);
-		/* ¿½±´Êı¾İµ½Ó³ÉäµÄÄÚ´æ */
+		/* æ‹·è´æ•°æ®åˆ°æ˜ å°„çš„å†…å­˜ */
 		memcpy(data, Vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(m_device, stagingMemory);
 
-		/* ´´½¨Éè±¸±¾µØÄÚ´æµÄ»º³åÇø(ÄÚ´æÀàĞÍ×î¼ÑÇÒÎŞ·¨Ö±½Ó·ÃÎÊ) */
+		/* åˆ›å»ºè®¾å¤‡æœ¬åœ°å†…å­˜çš„ç¼“å†²åŒº(å†…å­˜ç±»å‹æœ€ä½³ä¸”æ— æ³•ç›´æ¥è®¿é—®) */
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
 
-		/* ¸´ÖÆ»º³åÇø */
+		/* å¤åˆ¶ç¼“å†²åŒº */
 		CopyBuffer(stagingBuffer, VertexBuffer, bufferSize);
 
-		/* Ïú»Ù¾ÉµÄÁÙÊ±»º³åÇø */
+		/* é”€æ¯æ—§çš„ä¸´æ—¶ç¼“å†²åŒº */
 		vkDestroyBuffer(m_device, stagingBuffer, nullptr);
 		vkFreeMemory(m_device, stagingMemory, nullptr);
 	}
@@ -130,23 +132,23 @@ namespace suz
 		const VkDeviceSize bufferSize = sizeof(Indices[0]) * Indices.size();
 		uint32 indexBufferSize = static_cast<uint32>(Indices.size());
 
-		/* ´´½¨Ö÷»ú¿É¼ûµÄ»º³å×÷ÎªÁÙÊ±»º³å */
+		/* åˆ›å»ºä¸»æœºå¯è§çš„ç¼“å†²ä½œä¸ºä¸´æ—¶ç¼“å†² */
 		VkBuffer stagingBuffer = {};
 		VkDeviceMemory stagingMemory = {};
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
 
-		/* ½«»º³åÄÚ´æÓ³Éäµ½CPU¿É·ÃÎÊµÄÄÚ´æ */
-		/* »º³åÄÚ´æ×÷ÎªÇÅÁºÁ´½ÓÏÔ´æºÍCPUÄÚ´æ */
+		/* å°†ç¼“å†²å†…å­˜æ˜ å°„åˆ°CPUå¯è®¿é—®çš„å†…å­˜ */
+		/* ç¼“å†²å†…å­˜ä½œä¸ºæ¡¥æ¢é“¾æ¥æ˜¾å­˜å’ŒCPUå†…å­˜ */
 		void* data;
 		vkMapMemory(m_device, stagingMemory, 0, bufferSize, 0, &data);
-		/* ¿½±´Êı¾İµ½Ó³ÉäµÄÄÚ´æ */
+		/* æ‹·è´æ•°æ®åˆ°æ˜ å°„çš„å†…å­˜ */
 		memcpy(data, Indices.data(), (usize)bufferSize);
 		vkUnmapMemory(m_device, stagingMemory);
 
-		/* ´´½¨Éè±¸±¾µØÄÚ´æµÄ»º³åÇø(ÄÚ´æÀàĞÍ×î¼ÑÇÒÎŞ·¨Ö±½Ó·ÃÎÊ) */
+		/* åˆ›å»ºè®¾å¤‡æœ¬åœ°å†…å­˜çš„ç¼“å†²åŒº(å†…å­˜ç±»å‹æœ€ä½³ä¸”æ— æ³•ç›´æ¥è®¿é—®) */
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, IndexBuffer, IndexBufferMemory);
 
-		/* ¸´ÖÆ»º³åÇø */
+		/* å¤åˆ¶ç¼“å†²åŒº */
 		CopyBuffer(stagingBuffer, IndexBuffer, bufferSize);
 
 		vkDestroyBuffer(m_device, stagingBuffer, nullptr);
@@ -170,7 +172,7 @@ namespace suz
 		copyRegion.imageSubresource.baseArrayLayer = 0;
 		copyRegion.imageSubresource.layerCount = 1;
 
-		/* Ö¸¶¨Ä¿±êÍ¼ÏñĞèÒª¸´ÖÆµÄ²¿·Ö */
+		/* æŒ‡å®šç›®æ ‡å›¾åƒéœ€è¦å¤åˆ¶çš„éƒ¨åˆ† */
 		copyRegion.imageOffset = { 0,0,0 };
 		copyRegion.imageExtent = { Width,Height,1 };
 
@@ -183,7 +185,7 @@ namespace suz
 	{
 		VkDeviceSize bufferSize = sizeof(CameraViewportInfo);
 
-		/* Ö»´´½¨»º³åÇø²¢¹ØÁªÄÚ´æ, ²»ÕıÊ½¸ü¸Ä¶¥µãÊôĞÔ */
+		/* åªåˆ›å»ºç¼“å†²åŒºå¹¶å…³è”å†…å­˜, ä¸æ­£å¼æ›´æ”¹é¡¶ç‚¹å±æ€§ */
 		m_uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 		m_uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
 		m_uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
@@ -191,13 +193,13 @@ namespace suz
 		for (size_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
 		{
 			CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_uniformBuffers[frameIndex], m_uniformBuffersMemory[frameIndex]);
-			/* Ö»½øĞĞÓ³Éä¶ø²»ÊÍ·Å, ³ÆÎª³Ö¾ÃÓ³Éä */
-			/* »º³åÄÚ´æ×÷ÎªÇÅÁºÁ´½ÓÏÔ´æºÍCPUÄÚ´æ */
+			/* åªè¿›è¡Œæ˜ å°„è€Œä¸é‡Šæ”¾, ç§°ä¸ºæŒä¹…æ˜ å°„ */
+			/* ç¼“å†²å†…å­˜ä½œä¸ºæ¡¥æ¢é“¾æ¥æ˜¾å­˜å’ŒCPUå†…å­˜ */
 			vkMapMemory(m_device, m_uniformBuffersMemory[frameIndex], 0, bufferSize, 0, &m_uniformBuffersMapped[frameIndex]);
 		}
 	}
 
-	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const std::unordered_map<Mesh*, std::vector<ModelConstant>>& MeshToDraw, uint32_t ImageIndex)
+	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const DrawList& DrawQueue, uint32_t ImageIndex)
 	{
 		VkCommandBufferBeginInfo bufferBeginInfo{};
 		bufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -206,28 +208,28 @@ namespace suz
 
 		if (vkBeginCommandBuffer(CommandBuffer, &bufferBeginInfo) != VK_SUCCESS)
 		{
-			throw std::runtime_error("¿ªÊ¼¼ÇÂ¼ÃüÁî»º³åÇøÊ§°Ü!");
+			throw std::runtime_error("å¼€å§‹è®°å½•å‘½ä»¤ç¼“å†²åŒºå¤±è´¥!");
 		}
 
-		/* ÅäÖÃäÖÈ¾Í¨µÀĞÅÏ¢ */
+		/* é…ç½®æ¸²æŸ“é€šé“ä¿¡æ¯ */
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = m_renderPass;
-		renderPassInfo.framebuffer = m_frameBuffers[ImageIndex];				// °ó¶¨Ö¡»º³å
+		renderPassInfo.framebuffer = m_frameBuffers[ImageIndex];				// ç»‘å®šå¸§ç¼“å†²
 
-		renderPassInfo.renderArea.offset = { 0,0 };								// ¶¨Òå¼ÓÔØÔ­µã (¼ÓÔØ¾ØĞÎ×óÉÏ½Ç)
+		renderPassInfo.renderArea.offset = { 0,0 };								// å®šä¹‰åŠ è½½åŸç‚¹ (åŠ è½½çŸ©å½¢å·¦ä¸Šè§’)
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
-		/* ÅäÖÃ±³¾°ÑÕÉ« */
+		/* é…ç½®èƒŒæ™¯é¢œè‰² */
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = { {0.0f,0.0f,0.0f,1.0f} };						// ÉèÖÃÑÕÉ«Çå³ıÖµ (±³¾°ÑÕÉ«)
-		clearValues[1].depthStencil = { 1.0f,0 };								// Éî¶È + Ä£°åÇå³ıÖµ
+		clearValues[0].color = { {0.0f,0.0f,0.0f,1.0f} };						// è®¾ç½®é¢œè‰²æ¸…é™¤å€¼ (èƒŒæ™¯é¢œè‰²)
+		clearValues[1].depthStencil = { 1.0f,0 };								// æ·±åº¦ + æ¨¡æ¿æ¸…é™¤å€¼
 		renderPassInfo.clearValueCount = static_cast<uint32>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
-		/* ½«ÃüÁî»º³åÇøºÍäÖÈ¾Í¨µÀ°ó¶¨ */
+		/* å°†å‘½ä»¤ç¼“å†²åŒºå’Œæ¸²æŸ“é€šé“ç»‘å®š */
 		vkCmdBeginRenderPass(CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		/* °ó¶¨Í¼ĞÎ¹ÜÏß */
+		/* ç»‘å®šå›¾å½¢ç®¡çº¿ */
 		vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.GetGraphicsPipeline());
 
 		m_viewConfigInfo.viewport.width = static_cast<float>(m_swapChainExtent.width);
@@ -235,23 +237,23 @@ namespace suz
 
 		m_viewConfigInfo.scissor.extent = { m_swapChainExtent.width,m_swapChainExtent.height };
 
-		/* ÉèÖÃÍ¼ĞÎÊÓ¿ÚºÍ²Ã¼ô¾ØĞÎÇøÓò */
+		/* è®¾ç½®å›¾å½¢è§†å£å’Œè£å‰ªçŸ©å½¢åŒºåŸŸ */
 		vkCmdSetViewport(CommandBuffer, 0, 1, &m_viewConfigInfo.viewport);
 		vkCmdSetScissor(CommandBuffer, 0, 1, &m_viewConfigInfo.scissor);
 
 		std::array<VkDescriptorSet, 2> descriptorSets = { CameraDescriptor,m_bindlessDescriptorSet };
 
-		/* °ó¶¨ÃèÊö·û¼¯ºÏ, ²¢´ÓÓ³ÉäÄÚ´æ¶ÁÈ¡Êı¾İ */
-		/* °ó¶¨ÉãÏñ»úÃèÊö·ûºÍBindlessÃèÊö·û */
+		/* ç»‘å®šæè¿°ç¬¦é›†åˆ, å¹¶ä»æ˜ å°„å†…å­˜è¯»å–æ•°æ® */
+		/* ç»‘å®šæ‘„åƒæœºæè¿°ç¬¦å’ŒBindlessæè¿°ç¬¦ */
 		vkCmdBindDescriptorSets(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.GetPipelineLayout(),
 			0, static_cast<uint32>(descriptorSets.size()), &descriptorSets[0],
 			0, nullptr
 		);
 
-		for (const auto& [mesh, modelConstants] : MeshToDraw)
+		for (const auto& [mesh, modelConstants] : DrawQueue.GetDrawQueue())
 		{
-			/* °ó¶¨¶¥µã»º³å */
-			VkDeviceSize offsets[] = { 0 };											// ¶¨Òå¶ÁÈ¡¶¥µãÊı¾İµÄ×Ö½ÚÆ«ÒÆÁ¿
+			/* ç»‘å®šé¡¶ç‚¹ç¼“å†² */
+			VkDeviceSize offsets[] = { 0 };											// å®šä¹‰è¯»å–é¡¶ç‚¹æ•°æ®çš„å­—èŠ‚åç§»é‡
 			vkCmdBindVertexBuffers(CommandBuffer, 0, 1, &mesh->GetMeshVertexBuffer(), offsets);
 			if (mesh->GetMeshIndexBuffer() != VK_NULL_HANDLE)
 			{
@@ -262,27 +264,27 @@ namespace suz
 			{
 				vkCmdPushConstants(CommandBuffer, m_pipeline.GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ModelConstant), &modelConstant);
 
-				/* ·¢³ö»æÖÆÃüÁî */
-				/* ¸æËßVulkanÊ¹ÓÃË÷Òı»º³åÇø */
+				/* å‘å‡ºç»˜åˆ¶å‘½ä»¤ */
+				/* å‘Šè¯‰Vulkanä½¿ç”¨ç´¢å¼•ç¼“å†²åŒº */
 				vkCmdDrawIndexed(CommandBuffer, mesh->GetIndexBufferSize(), 1, 0, 0, 0);
 			}
 		}
 
-		/* Ö´ĞĞÒıÇæÈ«¾Ö¹ã²¥Î¯ÍĞ */
+		/* æ‰§è¡Œå¼•æ“å…¨å±€å¹¿æ’­å§”æ‰˜ */
 		m_engineUIDelegate.Execute(CommandBuffer);
 
-		/* ½áÊø»æÖÆÃüÁî */
+		/* ç»“æŸç»˜åˆ¶å‘½ä»¤ */
 		vkCmdEndRenderPass(CommandBuffer);
 
 		if (vkEndCommandBuffer(CommandBuffer) != VK_SUCCESS)
 		{
-			throw std::runtime_error("½áÊø¼ÇÂ¼ÃüÁî»º³åÇøÊ§°Ü!");
+			throw std::runtime_error("ç»“æŸè®°å½•å‘½ä»¤ç¼“å†²åŒºå¤±è´¥!");
 		}
 	}
 
 	void BufferArea::ReCreateBufferArea(const VkExtent2D& NewSwapChainExtent)
 	{
-		m_swapChainExtent = NewSwapChainExtent;								// ÖØÖÃ·Ö±æÂÊ
+		m_swapChainExtent = NewSwapChainExtent;								// é‡ç½®åˆ†è¾¨ç‡
 		CreateDepthResources();
 		CreateFrameBuffers();
 	}
@@ -299,103 +301,51 @@ namespace suz
 		}
 	}
 
-	VkFormat BufferArea::FindDepthFormat()
-	{
-		return FindSupportFormat(
-			{ VK_FORMAT_D32_SFLOAT,VK_FORMAT_D32_SFLOAT_S8_UINT,VK_FORMAT_D24_UNORM_S8_UINT },
-			VK_IMAGE_TILING_OPTIMAL,								// ×îÓÅÆ½ÆÌ GPU·ÃÎÊĞÔÄÜ×î¸ß
-			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-		);
-	}
-
-	uint32 BufferArea::FindMemoryType(uint32 TypeFilter, const VkMemoryPropertyFlags& Properties)
-	{
-		const VkPhysicalDevice& physicalDevice = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetPhysicalDevice();
-		/* ²éÑ¯Ïà¹Ø¿ÉÓÃÄÚ´æµÄĞÅÏ¢ */
-		VkPhysicalDeviceMemoryProperties physicalDeviceMemory{};
-		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &physicalDeviceMemory);
-
-		/* ²éÑ¯ºÏÊÊµÄÄÚ´æË÷Òı ¿ÉÄÜ´æÔÚ¶à¸öÆÚÍûµÄÊôĞÔÒò´Ë°´Î»ÓëÔËËã±È½Ï */
-		for (usize typeIndex = 0; typeIndex < physicalDeviceMemory.memoryTypeCount; typeIndex++)
-		{
-			if (TypeFilter & (1 << typeIndex) && (physicalDeviceMemory.memoryTypes[typeIndex].propertyFlags & Properties) == Properties)
-			{
-				return static_cast<uint32_t>(typeIndex);
-			}
-		}
-
-		throw std::runtime_error("ÎŞ·¨²éÕÒµ½ºÏÊÊµÄÄÚ´æÀàĞÍ!");
-	}
-
-	VkFormat BufferArea::FindSupportFormat(const std::vector<VkFormat>& Candidates, const VkImageTiling& Tiling, const VkFormatFeatureFlags& Features)
-	{
-		const VkPhysicalDevice& physicalDevice = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetPhysicalDevice();
-
-		for (const VkFormat& format : Candidates)
-		{
-			/* »ñÈ¡¸ñÊ½µÄÖ§³ÖÇé¿ö */
-			VkFormatProperties formatProps{};
-			vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
-
-			/* ²éÕÒÉè±¸ÊÇ·ñ°üº¬È«²¿ËùĞèµÄ¹¦ÄÜ */
-			if (Tiling == VK_IMAGE_TILING_LINEAR && (formatProps.linearTilingFeatures & Features) == Features)
-			{
-				return format;
-			}
-			else if (Tiling == VK_IMAGE_TILING_OPTIMAL && (formatProps.optimalTilingFeatures & Features) == Features)
-			{
-				return format;
-			}
-		}
-
-		throw std::runtime_error("ÎŞ·¨ÕÒµ½ÊÜÖ§³ÖµÄ¸ñÊ½!");
-	}
-
 	void BufferArea::TransitionImageLayout(const VkImage& Image, const VkFormat& Format, const VkImageLayout& OldLayout, const VkImageLayout& NewLayout)
 	{
-		/* ¿ªÆôÒ»´ÎĞÔÃüÁî»º³å */
+		/* å¼€å¯ä¸€æ¬¡æ€§å‘½ä»¤ç¼“å†² */
 		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
-		/* Í¼ÏñÄÚ´æÆÁÕÏ */
-		/* 1. Ö´ĞĞ²¼¾Ö×ª»» 2. ±£Ö¤Ç°ºó¹ÜÏß½×¶ÎµÄÄÚ´æ¿É¼ûĞÔ 3. Í¬²½×ÊÔ´·ÃÎÊ */
+		/* å›¾åƒå†…å­˜å±éšœ */
+		/* 1. æ‰§è¡Œå¸ƒå±€è½¬æ¢ 2. ä¿è¯å‰åç®¡çº¿é˜¶æ®µçš„å†…å­˜å¯è§æ€§ 3. åŒæ­¥èµ„æºè®¿é—® */
 		VkImageMemoryBarrier memoryBarrier{};
 		memoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		memoryBarrier.oldLayout = OldLayout;
 		memoryBarrier.newLayout = NewLayout;
-		memoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;	// ²»×ö¶ÓÁĞ×å×ªÒÆ
+		memoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;	// ä¸åšé˜Ÿåˆ—æ—è½¬ç§»
 		memoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		memoryBarrier.image = Image;									// Ä¿±êÍ¼Ïñ
+		memoryBarrier.image = Image;									// ç›®æ ‡å›¾åƒ
 
-		/* ×Ó×ÊÔ´·¶Î§: Ö¸¶¨Òª×ª»»µÄÍ¼ÏñÇøÓò */
+		/* å­èµ„æºèŒƒå›´: æŒ‡å®šè¦è½¬æ¢çš„å›¾åƒåŒºåŸŸ */
 		memoryBarrier.subresourceRange.baseMipLevel = 0;
 		memoryBarrier.subresourceRange.levelCount = 1;
 		memoryBarrier.subresourceRange.baseArrayLayer = 0;
 		memoryBarrier.subresourceRange.layerCount = 1;
 
-		/* Ô´/Ä¿±ê½×¶Î: ·ÃÎÊÑÚÂë */
-		VkPipelineStageFlags sourceStage{};								// ÆÁÕÏÇ°µÄ¹ÜÏß½×¶Î
-		VkPipelineStageFlags destinationStage{};						// ÆÁÕÏºóµÄ¹ÜÏß½×¶Î
+		/* æº/ç›®æ ‡é˜¶æ®µ: è®¿é—®æ©ç  */
+		VkPipelineStageFlags sourceStage{};								// å±éšœå‰çš„ç®¡çº¿é˜¶æ®µ
+		VkPipelineStageFlags destinationStage{};						// å±éšœåçš„ç®¡çº¿é˜¶æ®µ
 
-		/* ³¡¾°: ´ÓÎ´¶¨Òå²¼¾Ö -> Éî¶È/Ä£°å¸½¼ş×îÓÅ²¼¾Ö */
+		/* åœºæ™¯: ä»æœªå®šä¹‰å¸ƒå±€ -> æ·±åº¦/æ¨¡æ¿é™„ä»¶æœ€ä¼˜å¸ƒå±€ */
 		if (OldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
 			NewLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 		{
 			memoryBarrier.srcAccessMask = 0;
 			memoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;			// ÆÁÕÏÌá½»µÄÃüÁîÔÚ¹ÜÏß×î¿ªÊ¼Íê³É
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;			// å±éšœæäº¤çš„å‘½ä»¤åœ¨ç®¡çº¿æœ€å¼€å§‹å®Œæˆ
 			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		}
 		else if (OldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
 			NewLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
-			memoryBarrier.srcAccessMask = 0;							// Ô´¶ËÎŞ·ÃÎÊÈ¨ÏŞ, ¾ÉÊı¾İÖ±½Ó¶ªÆú
-			memoryBarrier.dstAccessMask =								// Ä¿±ê¶Ë Éî¶È¸½¼şÉèÖÃ¶ÁºÍĞ´È¨ÏŞ
+			memoryBarrier.srcAccessMask = 0;							// æºç«¯æ— è®¿é—®æƒé™, æ—§æ•°æ®ç›´æ¥ä¸¢å¼ƒ
+			memoryBarrier.dstAccessMask =								// ç›®æ ‡ç«¯ æ·±åº¦é™„ä»¶è®¾ç½®è¯»å’Œå†™æƒé™
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;			// ÆÁÕÏÌá½»µÄÃüÁîÔÚ¹ÜÏß×î¿ªÊ¼Íê³É
-			destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;// ¹ÜÏßµ½´ïÔçÆÚÆ¬¶Î²âÊÔ½×¶ÎÊ±µ÷ÓÃÆÁÕÏ
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;			// å±éšœæäº¤çš„å‘½ä»¤åœ¨ç®¡çº¿æœ€å¼€å§‹å®Œæˆ
+			destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;// ç®¡çº¿åˆ°è¾¾æ—©æœŸç‰‡æ®µæµ‹è¯•é˜¶æ®µæ—¶è°ƒç”¨å±éšœ
 		}
 		else if (OldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
 			NewLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
@@ -408,17 +358,17 @@ namespace suz
 		}
 		else
 		{
-			throw std::invalid_argument("²»ÊÜÖ§³ÖµÄÍ¼Ïñ²¼¾Ö×ª»»!");
+			throw std::invalid_argument("ä¸å—æ”¯æŒçš„å›¾åƒå¸ƒå±€è½¬æ¢!");
 		}
 
-		/* ÉèÖÃaspectÑÚÂë */
-		/* Éî¶È²¼¾Ö: ¿É¼ûÃæÎªÉî¶ÈÃæ, Èç¹û¸ñÊ½º¬Ä£°å, ¶îÍâ¼ÓÉÏÄ£°åÃæ */
+		/* è®¾ç½®aspectæ©ç  */
+		/* æ·±åº¦å¸ƒå±€: å¯è§é¢ä¸ºæ·±åº¦é¢, å¦‚æœæ ¼å¼å«æ¨¡æ¿, é¢å¤–åŠ ä¸Šæ¨¡æ¿é¢ */
 		if (NewLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
-			memoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;	// ¿É¼ûÃæÎªÉî¶ÈÃæ
-			if (HasStencilComponent(Format))
+			memoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;	// å¯è§é¢ä¸ºæ·±åº¦é¢
+			if (VulkanFunctionLibrary::HasStencilComponent(Format))
 			{
-				memoryBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;// ¶îÍâ¼ÓÉÏÄ£°åÃæ
+				memoryBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;// é¢å¤–åŠ ä¸Šæ¨¡æ¿é¢
 			}
 		}
 		else
@@ -426,23 +376,23 @@ namespace suz
 			memoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		}
 
-		/* Ìá½»¹ÜÏßÆÁÕÏ */
+		/* æäº¤ç®¡çº¿å±éšœ */
 		vkCmdPipelineBarrier(
 			commandBuffer,
 			sourceStage, destinationStage,
 			0,
-			0, nullptr,							// ÎŞÄÚ´æÆÁÕÏ
-			0, nullptr,							// ÎŞ»º³åÆÁÕÏ
-			1, &memoryBarrier					// 1¸öÍ¼ÏñÆÁÕÏ
+			0, nullptr,							// æ— å†…å­˜å±éšœ
+			0, nullptr,							// æ— ç¼“å†²å±éšœ
+			1, &memoryBarrier					// 1ä¸ªå›¾åƒå±éšœ
 		);
 
-		/* ½áÊøÃüÁî»º³å²¢Ìá½»Ö´ĞĞ */
+		/* ç»“æŸå‘½ä»¤ç¼“å†²å¹¶æäº¤æ‰§è¡Œ */
 		EndSingleTimeCommands(commandBuffer);
 	}
 
 	VkCommandBuffer BufferArea::BeginSingleTimeCommands()
 	{
-		/* ÃüÁî»º³åÇø·ÖÅä */
+		/* å‘½ä»¤ç¼“å†²åŒºåˆ†é… */
 		VkCommandBufferAllocateInfo allocateInfo{};
 		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -452,12 +402,12 @@ namespace suz
 		VkCommandBuffer commandBuffer{};
 		vkAllocateCommandBuffers(m_device, &allocateInfo, &commandBuffer);
 
-		/* ¶¨ÒåÃüÁî»º³åĞÅÏ¢ */
+		/* å®šä¹‰å‘½ä»¤ç¼“å†²ä¿¡æ¯ */
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-		/* ¿ªÊ¼¼ÇÂ¼ÃüÁî»º³å */
+		/* å¼€å§‹è®°å½•å‘½ä»¤ç¼“å†² */
 		vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
 		return commandBuffer;
@@ -467,7 +417,7 @@ namespace suz
 	{
 		vkEndCommandBuffer(CommandBuffer);
 
-		/* Ö´ĞĞÃüÁî»º³åÌá½» */
+		/* æ‰§è¡Œå‘½ä»¤ç¼“å†²æäº¤ */
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
@@ -478,7 +428,7 @@ namespace suz
 		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(graphicsQueue);
 
-		/* ÇåÀíÁÙÊ±ÃüÁî»º³å */
+		/* æ¸…ç†ä¸´æ—¶å‘½ä»¤ç¼“å†² */
 		vkFreeCommandBuffers(m_device, m_commandPool, 1, &CommandBuffer);
 	}
 
@@ -486,26 +436,26 @@ namespace suz
 	{
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
 		const std::vector<VkImageView>& swapChainImageViews = vkManager.GetSwapChain()->GetSwapChainImageViews();
-		/* ´´½¨Í¼ÏñÊÓÍ¼µÄÖ¡»º³å */
+		/* åˆ›å»ºå›¾åƒè§†å›¾çš„å¸§ç¼“å†² */
 		m_frameBuffers.resize(swapChainImageViews.size());
 
 		for (size_t currentImageView = 0; currentImageView < swapChainImageViews.size(); currentImageView++)
 		{
 			std::array<VkImageView, 2> attachments = { swapChainImageViews[currentImageView],m_depthImageView };
 
-			/* ±éÀúÍ¼ÏñÊÓÍ¼´´½¨Ö¡»º³å */
+			/* éå†å›¾åƒè§†å›¾åˆ›å»ºå¸§ç¼“å†² */
 			VkFramebufferCreateInfo framebufferInfo{};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = m_renderPass;
 			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-			framebufferInfo.pAttachments = attachments.data();								// Ã¿¸öÖ¡»º³å°ó¶¨Ò»¸ö½»»»Á´Í¼Ïñ
+			framebufferInfo.pAttachments = attachments.data();								// æ¯ä¸ªå¸§ç¼“å†²ç»‘å®šä¸€ä¸ªäº¤æ¢é“¾å›¾åƒ
 			framebufferInfo.width = m_swapChainExtent.width;
 			framebufferInfo.height = m_swapChainExtent.height;
 			framebufferInfo.layers = 1;
 
 			if (vkCreateFramebuffer(m_device, &framebufferInfo, nullptr, &m_frameBuffers[currentImageView]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("´´½¨Ö¡»º³åÊ§°Ü!");
+				throw std::runtime_error("åˆ›å»ºå¸§ç¼“å†²å¤±è´¥!");
 			}
 		}
 	}
@@ -515,39 +465,41 @@ namespace suz
 		VulkanInitialize* vulkanInitialize = Engine::GetVulkanResourceManager().GetVulkanInitialize();
 		QueueFamilyIndices indices = vulkanInitialize->FindQueueFamilies();
 
-		/* ´´½¨ÃüÁî»º³åÇøÓÃÓÚ´æ´¢»º³åÇøµÄÄÚ´æ²¢ÓÃÓÚ·ÖÅä»º³åÇø */
+		/* åˆ›å»ºå‘½ä»¤ç¼“å†²åŒºç”¨äºå­˜å‚¨ç¼“å†²åŒºçš„å†…å­˜å¹¶ç”¨äºåˆ†é…ç¼“å†²åŒº */
 		VkCommandPoolCreateInfo commandPoolInfo{};
 		commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;			// ÔÊĞíµ¥¶ÀÖØĞÂ¼ÇÂ¼ÃüÁî»º³åÇø
+		commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;			// å…è®¸å•ç‹¬é‡æ–°è®°å½•å‘½ä»¤ç¼“å†²åŒº
 		commandPoolInfo.queueFamilyIndex = indices.graphicsFamily.value();
 
 		if (vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_commandPool) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨ÃüÁî³ØÊ§°Ü!");
+			throw std::runtime_error("åˆ›å»ºå‘½ä»¤æ± å¤±è´¥!");
 		}
 	}
 
 	void BufferArea::CreateDepthResources()
 	{
-		/* ²éÑ¯Ó²¼şÖ§³ÖµÄ×î¼ÑÉî¶È¸ñÊ½ */
-		VkFormat depthFormat = FindDepthFormat();
+		/* æŸ¥è¯¢ç¡¬ä»¶æ”¯æŒçš„æœ€ä½³æ·±åº¦æ ¼å¼ */
+		VkFormat depthFormat = VulkanFunctionLibrary::FindDepthFormat(
+			Engine::GetVulkanResourceManager().GetDeviceContext().physicalDevice
+		);
 
-		/* ´´½¨Éî¶È»º³åÍ¼Ïñ²¢·ÖÅäÉè±¸±¾µØÏÔ´æ */
+		/* åˆ›å»ºæ·±åº¦ç¼“å†²å›¾åƒå¹¶åˆ†é…è®¾å¤‡æœ¬åœ°æ˜¾å­˜ */
 		Texture::CreateImage(
 			m_swapChainExtent.width, m_swapChainExtent.height,
 			depthFormat,
-			VK_IMAGE_TILING_OPTIMAL,						// ×îÓÅÆ½ÆÌ GPU·ÃÎÊĞÔÄÜ×î¸ß
-			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,	// ÓÃÍ¾: ×÷ÎªÉî¶È/Ä£°åäÖÈ¾¸½¼ş
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,			// ÀàĞÍ: GPU±¾µØÏÔ´æ
+			VK_IMAGE_TILING_OPTIMAL,						// æœ€ä¼˜å¹³é“º GPUè®¿é—®æ€§èƒ½æœ€é«˜
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,	// ç”¨é€”: ä½œä¸ºæ·±åº¦/æ¨¡æ¿æ¸²æŸ“é™„ä»¶
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,			// ç±»å‹: GPUæœ¬åœ°æ˜¾å­˜
 			m_depthImage,
 			m_depthImageMemory
 		);
 
-		/* ´´½¨Éî¶ÈÍ¼ÏñÊÓÍ¼, Ö»¿É¼ûÉî¶ÈÃæ */
+		/* åˆ›å»ºæ·±åº¦å›¾åƒè§†å›¾, åªå¯è§æ·±åº¦é¢ */
 		m_depthImageView = Texture::CreateImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-		/* ½«Í¼Ïñ´ÓÎ´¶¨Òå×ª»»Îª "Éî¶È¸½¼ş×îÓÅ" ²¼¾Ö */
-		/* Î´¶¨Òå²¼¾Ö: ĞÂ½¨Í¼ÏñÎŞÓĞĞ§Êı¾İ, ×ª»»Ê±²»±£Áô¾ÉÄÚÈİ, ĞÔÄÜ×îÓÅ */
+		/* å°†å›¾åƒä»æœªå®šä¹‰è½¬æ¢ä¸º "æ·±åº¦é™„ä»¶æœ€ä¼˜" å¸ƒå±€ */
+		/* æœªå®šä¹‰å¸ƒå±€: æ–°å»ºå›¾åƒæ— æœ‰æ•ˆæ•°æ®, è½¬æ¢æ—¶ä¸ä¿ç•™æ—§å†…å®¹, æ€§èƒ½æœ€ä¼˜ */
 		TransitionImageLayout(m_depthImage, depthFormat,
 			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 		);
@@ -557,31 +509,31 @@ namespace suz
 	{
 		m_commandBuffer.resize(MAX_FRAMES_IN_FLIGHT);
 
-		/* ÃüÁî»º³åÇø·ÖÅä */
+		/* å‘½ä»¤ç¼“å†²åŒºåˆ†é… */
 		VkCommandBufferAllocateInfo bufferAllocateInfo{};
 		bufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		bufferAllocateInfo.commandPool = m_commandPool;										// Ö¸¶¨ÃüÁî³Ø
-		bufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;							// ÉèÎªÖ÷»º³åÇø
+		bufferAllocateInfo.commandPool = m_commandPool;										// æŒ‡å®šå‘½ä»¤æ± 
+		bufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;							// è®¾ä¸ºä¸»ç¼“å†²åŒº
 		bufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffer.size());
 
 		if (vkAllocateCommandBuffers(m_device, &bufferAllocateInfo, m_commandBuffer.data()) != VK_SUCCESS)
 		{
-			throw std::runtime_error("·ÖÅäÃüÁî»º³åÇøÊ§°Ü!");
+			throw std::runtime_error("åˆ†é…å‘½ä»¤ç¼“å†²åŒºå¤±è´¥!");
 		}
 	}
 
 	void BufferArea::InitViewportConfig()
 	{
-		/* ÅäÖÃÊÓ¿ÚĞÅÏ¢, ¶¨Òå¹ÜÏß×ø±êÓ³Éäµ½Í¼ÏñµÄÊä³ö×ø±ê */
+		/* é…ç½®è§†å£ä¿¡æ¯, å®šä¹‰ç®¡çº¿åæ ‡æ˜ å°„åˆ°å›¾åƒçš„è¾“å‡ºåæ ‡ */
 		m_viewConfigInfo.viewport.x = 0.0f;
 		m_viewConfigInfo.viewport.y = 0.0f;
-		/* ¶¨ÒåÊÓ¿Ú¿í¶ÈºÍ¸ß¶È */
+		/* å®šä¹‰è§†å£å®½åº¦å’Œé«˜åº¦ */
 		m_viewConfigInfo.viewport.width = static_cast<float>(m_swapChainExtent.width);
 		m_viewConfigInfo.viewport.height = static_cast<float>(m_swapChainExtent.height);
 		m_viewConfigInfo.viewport.minDepth = 0.0f;
 		m_viewConfigInfo.viewport.maxDepth = 1.0f;
 
-		/* ¶¨Òå²Ã¼ô¾ØĞÎ, ÔÚ´°¿Ú²Ã¼ô³öextent´óĞ¡ */
+		/* å®šä¹‰è£å‰ªçŸ©å½¢, åœ¨çª—å£è£å‰ªå‡ºextentå¤§å° */
 		m_viewConfigInfo.scissor.offset = { 0,0 };
 		m_viewConfigInfo.scissor.extent = { m_swapChainExtent.width,m_swapChainExtent.height };
 	}
@@ -597,10 +549,5 @@ namespace suz
 		vkCmdCopyBuffer(commandBuffer, SrcBuffer, DstBuffer, 1, &bufferCopy);
 
 		EndSingleTimeCommands(commandBuffer);
-	}
-
-	bool BufferArea::HasStencilComponent(const VkFormat& DepthFormat)
-	{
-		return DepthFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || DepthFormat == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 }

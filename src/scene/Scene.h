@@ -26,8 +26,8 @@ namespace suz
 	private:
 		bool CheckWouldCreateCycle(Actor* TargetActor, Actor* ParentActor);
 
-		std::vector<std::unique_ptr<Actor>> m_actorList = {};		// 存放场景所有Actor对象
-		std::vector<Actor*> m_rootActorList = {};					// 存放场景所有根Actor对象
+		std::vector<std::unique_ptr<Actor>> m_actorList = {};		// 瀛樻斁鍦烘櫙鎵�鏈堿ctor瀵硅薄
+		std::vector<Actor*> m_rootActorList = {};					// 瀛樻斁鍦烘櫙鎵�鏈夋牴Actor瀵硅薄
 
 		std::unique_ptr<PlayerController> m_defaultPlayer = nullptr;
 

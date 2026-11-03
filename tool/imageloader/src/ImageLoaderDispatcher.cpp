@@ -11,7 +11,7 @@ namespace suz
 		if (extensionDot == std::string::npos) return {};
 
 		std::string extensionName = FilePath.substr(extensionDot);
-		/* ½«À©Õ¹Ãû×ª»»³ÉĞ¡Ğ´Í³Ò»ÅĞ¶Ï */
+		/* å°†æ‰©å±•åè½¬æ¢æˆå°å†™ç»Ÿä¸€åˆ¤æ–­ */
 		std::transform(extensionName.begin(), extensionName.end(), extensionName.begin(),
 			[](char c) {
 				return static_cast<char>(tolower(c));
@@ -37,7 +37,7 @@ namespace suz
 
 		for (const auto& loader : m_loaders)
 		{
-			/* ÕÒµ½Ö§³Ö¸Ã¸ñÊ½µÄ¼ÓÔØÆ÷, Ö±½Óµ÷ÓÃ */
+			/* æ‰¾åˆ°æ”¯æŒè¯¥æ ¼å¼çš„åŠ è½½å™¨, ç›´æ¥è°ƒç”¨ */
 			if (loader->QuerySupportFormat(extensionName))
 			{
 				return loader->LoadTargetImageFile(FilePath);
@@ -49,7 +49,7 @@ namespace suz
 
 	void ImageLoaderDispatcher::FreeImage(ImageData& Image)
 	{
-		/* Ö´ĞĞ¶ÔÓ¦µÄÊÍ·Åº¯Êı, ²»ÓÃ¼ÇÂ¼¼ÓÔØÆ÷ÀàĞÍ */
+		/* æ‰§è¡Œå¯¹åº”çš„é‡Šæ”¾å‡½æ•°, ä¸ç”¨è®°å½•åŠ è½½å™¨ç±»å‹ */
 		if (Image.releaseDataCallback)
 		{
 			Image.releaseDataCallback();
@@ -62,7 +62,7 @@ namespace suz
 	{
 		for (const auto& loader : m_loaders)
 		{
-			/* Ö»ÒªÓĞ¿âÖ§³Ö²éÑ¯¼´¿É·µ»ØTrue */
+			/* åªè¦æœ‰åº“æ”¯æŒæŸ¥è¯¢å³å¯è¿”å›True */
 			if (loader->QuerySupportFormat(Extension))
 			{
 				return true;

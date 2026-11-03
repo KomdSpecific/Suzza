@@ -12,7 +12,7 @@
 
 namespace suz
 {
-	/* ÇëÇóµÄÑéÖ¤²ãÁĞ±í */
+	/* è¯·æ±‚çš„éªŒè¯å±‚åˆ—è¡¨ */
 	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 
 	const std::vector<const char*> deviceExtensions = {
@@ -24,7 +24,7 @@ namespace suz
 	{
 		m_mainWindow = Engine::GetEngineInstance().GetMainWindow();
 		InitVulkanInfo();
-		SetupDebugMessenger();											// ¿ªÆôÑéÖ¤²ã, ´´½¨VulkanÊµÀı°üº¬ÔÚÄÚ
+		SetupDebugMessenger();											// å¼€å¯éªŒè¯å±‚, åˆ›å»ºVulkanå®ä¾‹åŒ…å«åœ¨å†…
 		CreateSurface();
 		PickPhysicalDevice();
 	}
@@ -33,7 +33,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class VulkanInitialize Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class VulkanInitialize Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -47,10 +47,10 @@ namespace suz
 			DestroyDebugUtilsMessengerEXT(m_vkInstance, m_debugMessenger, nullptr);
 		}
 
-		/* Ïú»Ù´°¿Ú±íÃæ */
+		/* é”€æ¯çª—å£è¡¨é¢ */
 		vkDestroySurfaceKHR(m_vkInstance, m_surface, nullptr);
-		/* Ïú»ÙÊµÀı */
-		/* ²ÎÊı1: Êä³öÊµÀı¾ä±ú; ²ÎÊı2: ×Ô¶¨ÒåÄÚ´æ·ÖÅäÆ÷, ²»Îª¿Õ´ú±íĞèÒªÊÖ¶¯Ïú»Ù */
+		/* é”€æ¯å®ä¾‹ */
+		/* å‚æ•°1: è¾“å‡ºå®ä¾‹å¥æŸ„; å‚æ•°2: è‡ªå®šä¹‰å†…å­˜åˆ†é…å™¨, ä¸ä¸ºç©ºä»£è¡¨éœ€è¦æ‰‹åŠ¨é”€æ¯ */
 		vkDestroyInstance(m_vkInstance, nullptr);
 
 		*m_isAlive = false;
@@ -65,13 +65,13 @@ namespace suz
 		void* userData
 	)
 	{
-		/* Ö»´òÓ¡¾¯¸æÒÔÉÏ¼¶±ğµÄµ÷ÊÔĞÅÏ¢ */
+		/* åªæ‰“å°è­¦å‘Šä»¥ä¸Šçº§åˆ«çš„è°ƒè¯•ä¿¡æ¯ */
 		if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 		{
 			std::cerr << "[Vulkan Message]: " << data->pMessage << std::endl;
 		}
 
-		/* µ÷ÊÔ±ØĞë·µ»ØVK_FALSE, ·ñÔò»áÖÕÖ¹APIµ÷ÓÃ */
+		/* è°ƒè¯•å¿…é¡»è¿”å›VK_FALSE, å¦åˆ™ä¼šç»ˆæ­¢APIè°ƒç”¨ */
 		return VK_FALSE;
 	}
 
@@ -108,36 +108,36 @@ namespace suz
 	{
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 		debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-		/* ÉèÖÃ¼àÌıµÄÏûÏ¢¼¶±ğ */
+		/* è®¾ç½®ç›‘å¬çš„æ¶ˆæ¯çº§åˆ« */
 		debugCreateInfo.messageSeverity =
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-		/* ÉèÖÃ¼àÌıµÄÏûÏ¢ÀàĞÍ */
+		/* è®¾ç½®ç›‘å¬çš„æ¶ˆæ¯ç±»å‹ */
 		debugCreateInfo.messageType =
 			VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-		/* °ó¶¨»Øµ÷ */
+		/* ç»‘å®šå›è°ƒ */
 		debugCreateInfo.pfnUserCallback = DebugCallback;
-		debugCreateInfo.pUserData = nullptr;									// ¿É´«Èë×Ô¶¨ÒåÊı¾İÖ¸Õë
+		debugCreateInfo.pUserData = nullptr;									// å¯ä¼ å…¥è‡ªå®šä¹‰æ•°æ®æŒ‡é’ˆ
 		
 		return debugCreateInfo;
 	}
 
 	bool VulkanInitialize::CheckValidationLayerSupport()
 	{
-		/* »ñÈ¡¿ÉÓÃ²ãÊıÁ¿ */
+		/* è·å–å¯ç”¨å±‚æ•°é‡ */
 		uint32_t layerCount;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-		/* »ñÈ¡ËùÓĞ¿ÉÓÃ²ãÏêÇé */
+		/* è·å–æ‰€æœ‰å¯ç”¨å±‚è¯¦æƒ… */
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
 		for (const char* layerName : validationLayers)
 		{
-			/* ±éÀúËùÓĞÏµÍ³¿ÉÓÃ²ã */
+			/* éå†æ‰€æœ‰ç³»ç»Ÿå¯ç”¨å±‚ */
 			bool found = false;
 			for (const VkLayerProperties& props : availableLayers)
 			{
@@ -148,7 +148,7 @@ namespace suz
 				}
 			}
 
-			/* Î´ÕÒµ½Ö¸¶¨µÄÑéÖ¤²ãÃû³Æ·µ»Øfalse */
+			/* æœªæ‰¾åˆ°æŒ‡å®šçš„éªŒè¯å±‚åç§°è¿”å›false */
 			if (!found) return false;
 		}
 
@@ -157,14 +157,14 @@ namespace suz
 
 	std::vector<const char*> VulkanInitialize::GetRequiredExtensions()
 	{
-		/* »ñÈ¡GLFW´°¿ÚËùĞèÒªµÄVulkanÊµÀıÀ©Õ¹ */
+		/* è·å–GLFWçª—å£æ‰€éœ€è¦çš„Vulkanå®ä¾‹æ‰©å±• */
 		uint32_t glfwExtensionCount = 0;
-		/* glfw×Ô¶¯·µ»Øµ±Ç°Æ½Ì¨äÖÈ¾´°¿Ú±ØĞëµÄÀ©Õ¹ÁĞ±í */
+		/* glfwè‡ªåŠ¨è¿”å›å½“å‰å¹³å°æ¸²æŸ“çª—å£å¿…é¡»çš„æ‰©å±•åˆ—è¡¨ */
 		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 		std::vector<const char*> exts(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-		/* ÆôÓÃÑéÖ¤²ãÊ±, ×·¼Óµ÷ÊÔÀ©Õ¹ */
+		/* å¯ç”¨éªŒè¯å±‚æ—¶, è¿½åŠ è°ƒè¯•æ‰©å±• */
 		if (enableValidationLayers)
 		{
 			exts.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -175,31 +175,31 @@ namespace suz
 
 	bool VulkanInitialize::IsDeviceSuitable(const VkPhysicalDevice& physicalDevice)
 	{
-		/* ²éÑ¯Ä¿±êÉè±¸»ù±¾ÊôĞÔ */
+		/* æŸ¥è¯¢ç›®æ ‡è®¾å¤‡åŸºæœ¬å±æ€§ */
 		VkPhysicalDeviceProperties deviceProperties;
 		VkPhysicalDeviceFeatures deviceFeatures;
 		vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 		vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
 
-		std::cout << "µ±Ç°Éè±¸: " << deviceProperties.deviceName << std::endl;
+		std::cout << "å½“å‰è®¾å¤‡: " << deviceProperties.deviceName << std::endl;
 
 		if (m_shouldRequiredDiscreteGPU)
 		{
-			/* ÏÔ¿¨ÒªÇóÎª¶ÀÏÔ */
-			/* ³ÌĞòÓ¦ÊÊÓÃÓÚÖ§³Ö¼¸ºÎ×ÅÉ«Æ÷µÄ¶ÀÁ¢ÏÔ¿¨ */
+			/* æ˜¾å¡è¦æ±‚ä¸ºç‹¬æ˜¾ */
+			/* ç¨‹åºåº”é€‚ç”¨äºæ”¯æŒå‡ ä½•ç€è‰²å™¨çš„ç‹¬ç«‹æ˜¾å¡ */
 			if (deviceProperties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader)
 			{
 				return false;
 			}
 		}
 
-		/* È·±£Éè±¸¿ÉÒÔ´¦ÀíÖ¸¶¨µÄÃüÁî */
+		/* ç¡®ä¿è®¾å¤‡å¯ä»¥å¤„ç†æŒ‡å®šçš„å‘½ä»¤ */
 		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
-		/* ²éÑ¯Éè±¸ÊÇ·ñÖ§³ÖÀ©Õ¹ (Èç½»»»Á´) */
+		/* æŸ¥è¯¢è®¾å¤‡æ˜¯å¦æ”¯æŒæ‰©å±• (å¦‚äº¤æ¢é“¾) */
 		bool extensionsSuppored = CheckDeviceExtensionSupport(physicalDevice);
 
-		/* ²éÑ¯Éè±¸ÊÇ·ñÖ§³ÖÍ¼Ïñ¸ñÊ½ºÍ³ÊÏÖÄ£Ê½ */
+		/* æŸ¥è¯¢è®¾å¤‡æ˜¯å¦æ”¯æŒå›¾åƒæ ¼å¼å’Œå‘ˆç°æ¨¡å¼ */
 		bool swapChainAdequate = false;
 		if (extensionsSuppored)
 		{
@@ -219,11 +219,11 @@ namespace suz
 
 	bool VulkanInitialize::CheckDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice)
 	{
-		/* »ñÈ¡Éè±¸Ö§³ÖµÄËùÓĞÀ©Õ¹ÊıÁ¿ */
+		/* è·å–è®¾å¤‡æ”¯æŒçš„æ‰€æœ‰æ‰©å±•æ•°é‡ */
 		uint32_t extensionCount = 0;
 		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
 
-		/* »ñÈ¡Éè±¸Ö§³ÖµÄËùÓĞÀ©Õ¹ */
+		/* è·å–è®¾å¤‡æ”¯æŒçš„æ‰€æœ‰æ‰©å±• */
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
 
@@ -241,11 +241,11 @@ namespace suz
 	{
 		QueueFamilyIndices indices;
 
-		/* »ñÈ¡Éè±¸ÖĞ¶ÓÁĞ×å³ÉÔ±ÊıÁ¿ */
+		/* è·å–è®¾å¤‡ä¸­é˜Ÿåˆ—æ—æˆå‘˜æ•°é‡ */
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &queueFamilyCount, nullptr);
 
-		/* »ñÈ¡Éè±¸ËùÓĞ¶ÓÁĞ×åĞÅÏ¢ */
+		/* è·å–è®¾å¤‡æ‰€æœ‰é˜Ÿåˆ—æ—ä¿¡æ¯ */
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &queueFamilyCount, queueFamilies.data());
 
@@ -257,7 +257,7 @@ namespace suz
 				indices.graphicsFamily = i;
 			}
 
-			/* ²éÕÒÖ§³Ö»æÖÆµ½´°¿ÚÃüÁîµÄ¶ÓÁĞ×å */
+			/* æŸ¥æ‰¾æ”¯æŒç»˜åˆ¶åˆ°çª—å£å‘½ä»¤çš„é˜Ÿåˆ—æ— */
 			VkBool32 presentSupport = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(m_vkPhysicalDevice, i, m_surface, &presentSupport);
 			if (presentSupport)
@@ -265,7 +265,7 @@ namespace suz
 				indices.presentFamily = i;
 			}
 
-			/* Ö»ÒªÕÒµ½¿É´¦ÀíµÄ¶ÓÁĞ×å, Ìø³öÑ­»·*/
+			/* åªè¦æ‰¾åˆ°å¯å¤„ç†çš„é˜Ÿåˆ—æ—, è·³å‡ºå¾ªç¯*/
 			if (indices.IsValid())
 			{
 				break;
@@ -281,11 +281,11 @@ namespace suz
 	{
 		QueueFamilyIndices indices;
 
-		/* »ñÈ¡Éè±¸ÖĞ¶ÓÁĞ×å³ÉÔ±ÊıÁ¿ */
+		/* è·å–è®¾å¤‡ä¸­é˜Ÿåˆ—æ—æˆå‘˜æ•°é‡ */
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 
-		/* »ñÈ¡Éè±¸ËùÓĞ¶ÓÁĞ×åĞÅÏ¢ */
+		/* è·å–è®¾å¤‡æ‰€æœ‰é˜Ÿåˆ—æ—ä¿¡æ¯ */
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
 
@@ -297,7 +297,7 @@ namespace suz
 				indices.graphicsFamily = i;
 			}
 
-			/* ²éÕÒÖ§³Ö»æÖÆµ½´°¿ÚÃüÁîµÄ¶ÓÁĞ×å */
+			/* æŸ¥æ‰¾æ”¯æŒç»˜åˆ¶åˆ°çª—å£å‘½ä»¤çš„é˜Ÿåˆ—æ— */
 			VkBool32 presentSupport = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, m_surface, &presentSupport);
 			if (presentSupport)
@@ -305,7 +305,7 @@ namespace suz
 				indices.presentFamily = i;
 			}
 			
-			/* Ö»ÒªÕÒµ½¿É´¦ÀíµÄ¶ÓÁĞ×å, Ìø³öÑ­»·*/
+			/* åªè¦æ‰¾åˆ°å¯å¤„ç†çš„é˜Ÿåˆ—æ—, è·³å‡ºå¾ªç¯*/
 			if (indices.IsValid())
 			{
 				break;
@@ -321,11 +321,11 @@ namespace suz
 	{
 		QueueFamilyIndices indices;
 
-		/* »ñÈ¡Éè±¸ÖĞ¶ÓÁĞ×å³ÉÔ±ÊıÁ¿ */
+		/* è·å–è®¾å¤‡ä¸­é˜Ÿåˆ—æ—æˆå‘˜æ•°é‡ */
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 
-		/* »ñÈ¡Éè±¸ËùÓĞ¶ÓÁĞ×åĞÅÏ¢ */
+		/* è·å–è®¾å¤‡æ‰€æœ‰é˜Ÿåˆ—æ—ä¿¡æ¯ */
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
 
@@ -337,7 +337,7 @@ namespace suz
 				indices.graphicsFamily = i;
 			}
 
-			/* ²éÕÒÖ§³Ö»æÖÆµ½´°¿ÚÃüÁîµÄ¶ÓÁĞ×å */
+			/* æŸ¥æ‰¾æ”¯æŒç»˜åˆ¶åˆ°çª—å£å‘½ä»¤çš„é˜Ÿåˆ—æ— */
 			VkBool32 presentSupport = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
 			if (presentSupport)
@@ -345,7 +345,7 @@ namespace suz
 				indices.presentFamily = i;
 			}
 
-			/* Ö»ÒªÕÒµ½¿É´¦ÀíµÄ¶ÓÁĞ×å, Ìø³öÑ­»·*/
+			/* åªè¦æ‰¾åˆ°å¯å¤„ç†çš„é˜Ÿåˆ—æ—, è·³å‡ºå¾ªç¯*/
 			if (indices.IsValid())
 			{
 				break;
@@ -361,68 +361,68 @@ namespace suz
 
 	void VulkanInitialize::InitVulkanInfo()
 	{
-		/* Ìî³äÓ¦ÓÃ³ÌĞòĞÅÏ¢, (¸øÇı¶¯×öÓÅ»¯ÌáÊ¾) */
-		m_vkAppInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;			// ÉèÖÃ½á¹¹ÌåÀàĞÍ
-		m_vkAppInfo.pNext = nullptr;									// À©Õ¹Á´, Ä¬ÈÏ¿Õ
-		m_vkAppInfo.pApplicationName = "Suzza Engine";					// Ó¦ÓÃÃû×Ö
-		m_vkAppInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);		// Ó¦ÓÃ°æ±¾ Ö÷. ´Î. ²¹¶¡
-		m_vkAppInfo.pEngineName = "Suzza Engine";						// Ê¹ÓÃµÄÒıÇæÃû×Ö
+		/* å¡«å……åº”ç”¨ç¨‹åºä¿¡æ¯, (ç»™é©±åŠ¨åšä¼˜åŒ–æç¤º) */
+		m_vkAppInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;			// è®¾ç½®ç»“æ„ä½“ç±»å‹
+		m_vkAppInfo.pNext = nullptr;									// æ‰©å±•é“¾, é»˜è®¤ç©º
+		m_vkAppInfo.pApplicationName = "Suzza Engine";					// åº”ç”¨åå­—
+		m_vkAppInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);		// åº”ç”¨ç‰ˆæœ¬ ä¸». æ¬¡. è¡¥ä¸
+		m_vkAppInfo.pEngineName = "Suzza Engine";						// ä½¿ç”¨çš„å¼•æ“åå­—
 		m_vkAppInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-		m_vkAppInfo.apiVersion = VK_API_VERSION_1_2;					// Ê¹ÓÃµÄVulkan API°æ±¾
+		m_vkAppInfo.apiVersion = VK_API_VERSION_1_2;					// ä½¿ç”¨çš„Vulkan APIç‰ˆæœ¬
 
 
-		/* ´´½¨ÊµÀıµÄºËĞÄÅäÖÃ */
+		/* åˆ›å»ºå®ä¾‹çš„æ ¸å¿ƒé…ç½® */
 		m_vkCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		m_vkCreateInfo.pApplicationInfo = &m_vkAppInfo;					// °ó¶¨ÉÏÃæµÄÓ¦ÓÃĞÅÏ¢
+		m_vkCreateInfo.pApplicationInfo = &m_vkAppInfo;					// ç»‘å®šä¸Šé¢çš„åº”ç”¨ä¿¡æ¯
 	}
 
 	void VulkanInitialize::SetupDebugMessenger()
 	{
-		/* ×¢ÈëÑéÖ¤²ãÓëµ÷ÊÔÅäÖÃ */
+		/* æ³¨å…¥éªŒè¯å±‚ä¸è°ƒè¯•é…ç½® */
 		if (enableValidationLayers)
 		{
 			if (!CheckValidationLayerSupport())
 			{
-				throw std::runtime_error("ÏµÍ³²»Ö§³ÖÇëÇóµÄÑéÖ¤²ã!");
+				throw std::runtime_error("ç³»ç»Ÿä¸æ”¯æŒè¯·æ±‚çš„éªŒè¯å±‚!");
 			}
 
-			/* ×¢ÈëÑéÖ¤²ãÁĞ±í */
+			/* æ³¨å…¥éªŒè¯å±‚åˆ—è¡¨ */
 			m_vkCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 			m_vkCreateInfo.ppEnabledLayerNames = validationLayers.data();
 
-			/* Ìî³äµ÷ÊÔĞÅÊ¹²ÎÊı */
-			/* ¹ÒÔØµ½pNextÀ©Õ¹Á´, ²¶»ñÊµÀı´´½¨/Ïú»Ù¹ı³ÌµÄ´íÎó */
+			/* å¡«å……è°ƒè¯•ä¿¡ä½¿å‚æ•° */
+			/* æŒ‚è½½åˆ°pNextæ‰©å±•é“¾, æ•è·å®ä¾‹åˆ›å»º/é”€æ¯è¿‡ç¨‹çš„é”™è¯¯ */
 			VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = PopulateDebugMessengerCreateInfo();
 			m_vkCreateInfo.pNext = &debugCreateInfo;
 		}
 
 		std::vector<const char*> exts = GetRequiredExtensions();
-		/* ÉèÖÃĞèÒª¿ªÆôµÄÀ©Õ¹ */
+		/* è®¾ç½®éœ€è¦å¼€å¯çš„æ‰©å±• */
 		m_vkCreateInfo.enabledExtensionCount = static_cast<uint32_t>(exts.size());
 		m_vkCreateInfo.ppEnabledExtensionNames = exts.data();
 
-		/* ´´½¨VulkanÊµÀı */
+		/* åˆ›å»ºVulkanå®ä¾‹ */
 		CreateVulkanInstance();
 
-		/* ´´½¨µ÷ÊÔĞÅÊ¹ */
+		/* åˆ›å»ºè°ƒè¯•ä¿¡ä½¿ */
 		if (enableValidationLayers)
 		{
 			VkDebugUtilsMessengerCreateInfoEXT messengerInfo = PopulateDebugMessengerCreateInfo();
 			if (CreateDebugUtilsMessengerEXT(m_vkInstance, &messengerInfo, nullptr, &m_debugMessenger) != VK_SUCCESS)
 			{
-				throw std::runtime_error("µ÷ÊÔĞÅÊ¹´´½¨Ê§°Ü!");
+				throw std::runtime_error("è°ƒè¯•ä¿¡ä½¿åˆ›å»ºå¤±è´¥!");
 			}
 		}
 	}
 
 	void VulkanInitialize::CreateVulkanInstance()
 	{
-		/* ÕæÕı´´½¨ÊµÀıµÄ¹ı³Ì */
-		/* ²ÎÊı1: ´´½¨ÅäÖÃ; ²ÎÊı2: ×Ô¶¨ÒåÄÚ´æ·ÖÅäÆ÷, Îª¿Õ´ú±í½»¸øVulkan¹ÜÀí; ²ÎÊı3: Êä³öÊµÀı¾ä±ú */
+		/* çœŸæ­£åˆ›å»ºå®ä¾‹çš„è¿‡ç¨‹ */
+		/* å‚æ•°1: åˆ›å»ºé…ç½®; å‚æ•°2: è‡ªå®šä¹‰å†…å­˜åˆ†é…å™¨, ä¸ºç©ºä»£è¡¨äº¤ç»™Vulkanç®¡ç†; å‚æ•°3: è¾“å‡ºå®ä¾‹å¥æŸ„ */
 		VkResult result = vkCreateInstance(&m_vkCreateInfo, nullptr, &m_vkInstance);
 		if (result != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨VulkanÊµÀıÊ§°Ü!");
+			throw std::runtime_error("åˆ›å»ºVulkanå®ä¾‹å¤±è´¥!");
 		}
 	}
 
@@ -436,18 +436,18 @@ namespace suz
 
 	void VulkanInitialize::PickPhysicalDevice()
 	{
-		/* ½«×îÖÕÑ¡ÔñµÄÏÔ¿¨Éè±¸´æ´¢ÔÚ¸Ã¾ä±úÖĞ */
+		/* å°†æœ€ç»ˆé€‰æ‹©çš„æ˜¾å¡è®¾å¤‡å­˜å‚¨åœ¨è¯¥å¥æŸ„ä¸­ */
 		m_vkPhysicalDevice = VK_NULL_HANDLE;
 
-		/* »ñÈ¡ËùÓĞGPUÉè±¸ÊıÁ¿ */
+		/* è·å–æ‰€æœ‰GPUè®¾å¤‡æ•°é‡ */
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(m_vkInstance, &deviceCount, nullptr);
 		if (deviceCount == 0)
 		{
-			throw std::runtime_error("ÎŞ·¨ÕÒµ½Ö§³ÖVulkanµÄGPU!");
+			throw std::runtime_error("æ— æ³•æ‰¾åˆ°æ”¯æŒVulkançš„GPU!");
 		}
 
-		/* ¸ÃÊı×é±£´æËùÓĞµÄÉè±¸¾ä±ú */
+		/* è¯¥æ•°ç»„ä¿å­˜æ‰€æœ‰çš„è®¾å¤‡å¥æŸ„ */
 		std::vector<VkPhysicalDevice> devices(deviceCount);
 		vkEnumeratePhysicalDevices(m_vkInstance, &deviceCount, devices.data());
 
@@ -455,7 +455,7 @@ namespace suz
 		{
 			if (IsDeviceSuitable(device))
 			{
-				/* Ö»ÒªÕÒµ½ºÏÊÊµÄÉè±¸¼´ÖÕÖ¹ */
+				/* åªè¦æ‰¾åˆ°åˆé€‚çš„è®¾å¤‡å³ç»ˆæ­¢ */
 				m_vkPhysicalDevice = device;
 				break;
 			}
@@ -463,7 +463,7 @@ namespace suz
 
 		if (m_vkPhysicalDevice == VK_NULL_HANDLE)
 		{
-			throw std::runtime_error("ÎŞ·¨ÕÒµ½ºÏÊÊµÄGPU!");
+			throw std::runtime_error("æ— æ³•æ‰¾åˆ°åˆé€‚çš„GPU!");
 		}
 	}
 }

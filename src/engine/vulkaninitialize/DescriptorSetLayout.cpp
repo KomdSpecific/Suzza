@@ -17,7 +17,7 @@ namespace suz
 
 	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutSpec::DefaultDescriptorSetLayoutCreateInfo(const DescriptorSetLayoutSpec& Spec)
 	{
-		/* ¶¨ÒåÃèÊö·û¼¯ÅäÖÃĞÅÏ¢ */
+		/* å®šä¹‰æè¿°ç¬¦é›†é…ç½®ä¿¡æ¯ */
 		VkDescriptorSetLayoutCreateInfo descriotorInfo{};
 		descriotorInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		descriotorInfo.bindingCount = static_cast<uint32>(Spec.descriptorBinding.size());
@@ -25,7 +25,7 @@ namespace suz
 
 		if (Spec.BindingFlagsValid())
 		{
-			descriotorInfo.pNext = &Spec.bindingFlags;									// ¹ÒÔØBinding Flags
+			descriotorInfo.pNext = &Spec.bindingFlags;									// æŒ‚è½½Binding Flags
 			descriotorInfo.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 		}
 
@@ -36,7 +36,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class DescriptorSetLayout Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class DescriptorSetLayout Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -50,7 +50,7 @@ namespace suz
 	{
 		if (Spec.device == VK_NULL_HANDLE)
 		{
-			SUZZA_LOG_ERROR("ÎŞ·¨´´½¨Í¼ĞÎ¹ÜÏß: Âß¼­Éè±¸device²»ºÏ·¨!");
+			SUZZA_LOG_ERROR("æ— æ³•åˆ›å»ºå›¾å½¢ç®¡çº¿: é€»è¾‘è®¾å¤‡deviceä¸åˆæ³•!");
 			return false;
 		}
 
@@ -65,7 +65,7 @@ namespace suz
 		VkDescriptorSetLayoutCreateInfo descriptorInfo = DescriptorSetLayoutSpec::DefaultDescriptorSetLayoutCreateInfo(Spec);
 		if (vkCreateDescriptorSetLayout(Spec.device, &descriptorInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS)
 		{
-			SUZZA_LOG_ERROR("´´½¨ÃèÊö×Ö·û¼¯Ê§°Ü!");
+			SUZZA_LOG_ERROR("åˆ›å»ºæè¿°å­—ç¬¦é›†å¤±è´¥!");
 			return false;
 		}
 
@@ -78,7 +78,7 @@ namespace suz
 
 		if (m_device == VK_NULL_HANDLE)
 		{
-			SUZZA_LOG_ERROR("×ÊÔ´Ïú»ÙÊ§°Ü: Âß¼­Éè±¸device²»ºÏ·¨!");
+			SUZZA_LOG_ERROR("èµ„æºé”€æ¯å¤±è´¥: é€»è¾‘è®¾å¤‡deviceä¸åˆæ³•!");
 			return;
 		}
 

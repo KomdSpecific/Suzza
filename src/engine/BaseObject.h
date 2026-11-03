@@ -12,7 +12,7 @@ namespace suz
 		BaseObject() : m_isAlive(std::make_shared<bool>(true)) {}
 		virtual ~BaseObject() = default;
 
-		/* ½ûÖ¹¿½±´ */
+		/* ç¦æ­¢æ‹·è´ */
 		BaseObject(const BaseObject&) = delete;
 		BaseObject& operator=(const BaseObject&) = delete;
 

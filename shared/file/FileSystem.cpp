@@ -61,7 +61,7 @@ namespace suz
 
 #endif
 
-		/* Ö±½ÓÍ¨¹ıÏîÄ¿Ö´ĞĞÂ·¾¶¶ÁÈ¡ */
+		/* ç›´æ¥é€šè¿‡é¡¹ç›®æ‰§è¡Œè·¯å¾„è¯»å– */
 		return std::filesystem::weakly_canonical(GetExecutableFolder() / "shaders");
 	}
 
@@ -81,18 +81,18 @@ namespace suz
 
 	Vector<char> FileSystem::ReadFile(const std::string& FilePath)
 	{
-		/* ´ò¿ªÎÄ¼şÊ±Ìø×ªµ½ÎÄ¼şÄ©Î², ²¢ÒÔ¶ş½øÖÆ¶ÁÈ¡ */
+		/* æ‰“å¼€æ–‡ä»¶æ—¶è·³è½¬åˆ°æ–‡ä»¶æœ«å°¾, å¹¶ä»¥äºŒè¿›åˆ¶è¯»å– */
 		std::ifstream file(FilePath, std::ios::ate | std::ios::binary);
 		if (!file.is_open())
 		{
 			return {};
 		}
 
-		/* ³õÊ¼»¯ÎÄ¼ş»º³åÇø´óĞ¡ */
+		/* åˆå§‹åŒ–æ–‡ä»¶ç¼“å†²åŒºå¤§å° */
 		usize fileSize = static_cast<usize>(file.tellg());
 		std::vector<char> buffer(fileSize);
 
-		/* Ìø×ªµ½ÎÄ¼ş¿ªÍ·²¢¶ÁÈ¡ÎÄ¼ş */
+		/* è·³è½¬åˆ°æ–‡ä»¶å¼€å¤´å¹¶è¯»å–æ–‡ä»¶ */
 		file.seekg(0);
 		file.read(buffer.data(), fileSize);
 

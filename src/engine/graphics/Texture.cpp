@@ -1,9 +1,10 @@
-#include "Texture.h"
+ï»¿#include "Texture.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkaninitialize/VulkanInitialize.h"
 #include "vulkaninitialize/BufferArea.h"
 #include "vulkaninitialize/functionLibrary/DeviceFunctionLibrary.h"
+#include "vulkaninitialize/functionLibrary/VulkanFunctionLibrary.h"
 #include "ImageLoaderManager.h"
 #include "file/FileSystem.h"
 
@@ -22,7 +23,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class Texture Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class Texture Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -51,47 +52,48 @@ namespace suz
 		const VkImageUsageFlags& Usage, const VkMemoryPropertyFlags& Properties,
 		VkImage& Image, VkDeviceMemory& ImageMemory)
 	{
-		/* ¶¨ÒåÍ¼Ïñ´´½¨ĞÅÏ¢ */
+		/* å®šä¹‰å›¾åƒåˆ›å»ºä¿¡æ¯ */
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;					// Í¼ÏñÉèÎª2DÊÓÍ¼
+		imageInfo.imageType = VK_IMAGE_TYPE_2D;					// å›¾åƒè®¾ä¸º2Dè§†å›¾
 		imageInfo.extent.width = Width;
 		imageInfo.extent.height = Height;
-		imageInfo.extent.depth = 1;								// Í¼ÏñÉî¶ÈÖµÎª1
-		imageInfo.mipLevels = 1;								// ²»Éú³Émipmap
-		imageInfo.arrayLayers = 1;								// µ¥²ãÍ¼Ïñ
-		imageInfo.format = Format;								// ÏñËØ¸ñÊ½
-		imageInfo.tiling = Tiling;								// ÏñËØÔÚÏÔ´æÖĞµÄÅÅÁĞ·½Ê½
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;	// ³õÊ¼²¼¾Ö: ÎŞÓĞĞ§Êı¾İ(ºóÆÚ½øĞĞ²¼¾Ö×ª»»)
-		imageInfo.usage = Usage;								// Í¼ÏñÓÃÍ¾±ê¼Ç, Çı¶¯¶Ô´ËÓÅ»¯
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;				// ÎŞ¶àÖØ²ÉÑù
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;		// µ¥¶ÓÁĞ¶ÀÕ¼: ĞÔÄÜ×îÓÅ
+		imageInfo.extent.depth = 1;								// å›¾åƒæ·±åº¦å€¼ä¸º1
+		imageInfo.mipLevels = 1;								// ä¸ç”Ÿæˆmipmap
+		imageInfo.arrayLayers = 1;								// å•å±‚å›¾åƒ
+		imageInfo.format = Format;								// åƒç´ æ ¼å¼
+		imageInfo.tiling = Tiling;								// åƒç´ åœ¨æ˜¾å­˜ä¸­çš„æ’åˆ—æ–¹å¼
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;	// åˆå§‹å¸ƒå±€: æ— æœ‰æ•ˆæ•°æ®(åæœŸè¿›è¡Œå¸ƒå±€è½¬æ¢)
+		imageInfo.usage = Usage;								// å›¾åƒç”¨é€”æ ‡è®°, é©±åŠ¨å¯¹æ­¤ä¼˜åŒ–
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;				// æ— å¤šé‡é‡‡æ ·
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;		// å•é˜Ÿåˆ—ç‹¬å : æ€§èƒ½æœ€ä¼˜
 
-		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		VkDevice device = vkManager.GetDevice()->GetDevice();
+		const DeviceContext& deviceContext = Engine::GetVulkanResourceManager().GetDeviceContext();
+		VkDevice device = deviceContext.device;
+
 		if (vkCreateImage(device, &imageInfo, nullptr, &Image) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨Í¼ÏñÊ§°Ü!");
+			throw std::runtime_error("åˆ›å»ºå›¾åƒå¤±è´¥!");
 		}
 
-		/* ²éÑ¯Í¼ÏñÏÔ´æĞèÇó */
+		/* æŸ¥è¯¢å›¾åƒæ˜¾å­˜éœ€æ±‚ */
 		VkMemoryRequirements memoryRequire{};
 		vkGetImageMemoryRequirements(device, Image, &memoryRequire);
 
-		/* ·ÖÅä·ûºÏĞèÇóµÄÏÔ´æ */
+		/* åˆ†é…ç¬¦åˆéœ€æ±‚çš„æ˜¾å­˜ */
 		VkMemoryAllocateInfo allocateInfo{};
 		allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocateInfo.allocationSize = memoryRequire.size;		// ÉèÖÃÏÔ´æ´óĞ¡
-		/* ²éÕÒ·ûºÏ "ÄÚ´æÀàĞÍÎ»ÑÚÂë + ÊôĞÔÒªÇó" µÄÏÔ´æÀàĞÍË÷Òı*/
-		allocateInfo.memoryTypeIndex = BufferArea::FindMemoryType(memoryRequire.memoryTypeBits, Properties);
+		allocateInfo.allocationSize = memoryRequire.size;		// è®¾ç½®æ˜¾å­˜å¤§å°
+		/* æŸ¥æ‰¾ç¬¦åˆ "å†…å­˜ç±»å‹ä½æ©ç  + å±æ€§è¦æ±‚" çš„æ˜¾å­˜ç±»å‹ç´¢å¼• */
+		allocateInfo.memoryTypeIndex = VulkanFunctionLibrary::FindMemoryType(deviceContext.physicalDevice, memoryRequire.memoryTypeBits, Properties);
 
 		if (vkAllocateMemory(device, &allocateInfo, nullptr, &ImageMemory) != VK_SUCCESS)
 		{
-			throw std::runtime_error("·ÖÅäÍ¼ÏñÏÔ´æÊ§°Ü!");
+			throw std::runtime_error("åˆ†é…å›¾åƒæ˜¾å­˜å¤±è´¥!");
 		}
 
-		/* ½«ÏÔ´æ°ó¶¨µ½Í¼Ïñ */
-		/* Ë÷ÒıÎª0: ½«ÕûÕÅÍ¼Ïñ°ó¶¨Ò»Õû¿éÏÔ´æ*/
+		/* å°†æ˜¾å­˜ç»‘å®šåˆ°å›¾åƒ */
+		/* ç´¢å¼•ä¸º0: å°†æ•´å¼ å›¾åƒç»‘å®šä¸€æ•´å—æ˜¾å­˜*/
 		vkBindImageMemory(device, Image, ImageMemory, 0);
 	}
 
@@ -99,16 +101,16 @@ namespace suz
 	{
 		VkImageViewCreateInfo imageCreateInfo{};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		imageCreateInfo.image = Image;									// ÉèÖÃÔ´Í¼Ïñ
-		imageCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;				// ÉèÎª2DÊÓÍ¼
+		imageCreateInfo.image = Image;									// è®¾ç½®æºå›¾åƒ
+		imageCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;				// è®¾ä¸º2Dè§†å›¾
 		imageCreateInfo.format = Format;
 
-		/* ×Ó×ÊÔ´·¶Î§: Ö¸¶¨Í¼ÏñÖĞ¿É¼ûµÄ²¿·Ö */
-		imageCreateInfo.subresourceRange.aspectMask = AspectFlags;		// ¿É¼ûÍ¨µÀÃæ
-		imageCreateInfo.subresourceRange.baseMipLevel = 0;				// ÆğÊ¼mip²ã¼¶
-		imageCreateInfo.subresourceRange.levelCount = 1;				// ²ã¼¶ÊıÁ¿
-		imageCreateInfo.subresourceRange.baseArrayLayer = 0;			// ÆğÊ¼Í¼²ã
-		imageCreateInfo.subresourceRange.layerCount = 1;				// Í¼²ãÊıÁ¿
+		/* å­èµ„æºèŒƒå›´: æŒ‡å®šå›¾åƒä¸­å¯è§çš„éƒ¨åˆ† */
+		imageCreateInfo.subresourceRange.aspectMask = AspectFlags;		// å¯è§é€šé“é¢
+		imageCreateInfo.subresourceRange.baseMipLevel = 0;				// èµ·å§‹mipå±‚çº§
+		imageCreateInfo.subresourceRange.levelCount = 1;				// å±‚çº§æ•°é‡
+		imageCreateInfo.subresourceRange.baseArrayLayer = 0;			// èµ·å§‹å›¾å±‚
+		imageCreateInfo.subresourceRange.layerCount = 1;				// å›¾å±‚æ•°é‡
 
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
 		VkDevice device = vkManager.GetDevice()->GetDevice();
@@ -116,7 +118,7 @@ namespace suz
 		VkImageView imageView{};
 		if (vkCreateImageView(device, &imageCreateInfo, nullptr, &imageView) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨Í¼ÏñÊÓÍ¼Ê§°Ü!");
+			throw std::runtime_error("åˆ›å»ºå›¾åƒè§†å›¾å¤±è´¥!");
 		}
 
 		return imageView;
@@ -145,19 +147,19 @@ namespace suz
 
 		VkDeviceSize imageSize = image.texWidth * image.texHeight * 4;
 
-		/* ´´½¨Ôİ´æ»º³åÇø, ÓÃÓÚÁÙÊ±´æ´¢ */
+		/* åˆ›å»ºæš‚å­˜ç¼“å†²åŒº, ç”¨äºä¸´æ—¶å­˜å‚¨ */
 		VkBuffer stagingBuffer{};
 		VkDeviceMemory stagingMemory{};
 
 		BufferArea::CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
 
-		/* ½«ÏÔ´æ¿½±´µ½CPU¿É¶ÁÈ¡µÄÄÚ´æÖĞ */
+		/* å°†æ˜¾å­˜æ‹·è´åˆ°CPUå¯è¯»å–çš„å†…å­˜ä¸­ */
 		void* imageData;
 		vkMapMemory(m_device, stagingMemory, 0, imageSize, 0, &imageData);
 		memcpy(imageData, image.pixels, static_cast<size_t>(imageSize));
 		vkUnmapMemory(m_device, stagingMemory);
 
-		/* ÇåÀíÔ­Ê¼ÏñËØÊı×é */
+		/* æ¸…ç†åŸå§‹åƒç´ æ•°ç»„ */
 		Engine::GetImageLoaderManager().UnLoadImage(image);
 
 		CreateImage(image.texWidth, image.texHeight, VK_FORMAT_R8G8B8A8_SRGB,
@@ -166,12 +168,12 @@ namespace suz
 		);
 
 		bufferArea->TransitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		/* ¸´ÖÆ»º³åÇøµ½Í¼Ïñ */
+		/* å¤åˆ¶ç¼“å†²åŒºåˆ°å›¾åƒ */
 		bufferArea->CopyBufferToImage(stagingBuffer, m_textureImage, image.texWidth, image.texHeight);
-		/* ×ª»»Í¼Ïñ¸ñÊ½ÒÔ±ãÓÚ×ÅÉ«Æ÷·ÃÎÊ */
+		/* è½¬æ¢å›¾åƒæ ¼å¼ä»¥ä¾¿äºç€è‰²å™¨è®¿é—® */
 		bufferArea->TransitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		/* Ïú»ÙÁÙÊ±»º³åÇø */
+		/* é”€æ¯ä¸´æ—¶ç¼“å†²åŒº */
 		vkDestroyBuffer(m_device, stagingBuffer, nullptr);
 		vkFreeMemory(m_device, stagingMemory, nullptr);
 	}

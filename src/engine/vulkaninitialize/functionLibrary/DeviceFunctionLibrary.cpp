@@ -8,7 +8,7 @@ namespace suz
 {
 	bool DeviceFunctionLibrary::CheckPhysicalDeviceFeatureSupport(const VkPhysicalDevice& PhysicalDevice)
 	{
-		/* ²éÑ¯Éè±¸ÊÇ·ñÖ§³ÖÃèÊö·ûË÷Òı */
+		/* æŸ¥è¯¢è®¾å¤‡æ˜¯å¦æ”¯æŒæè¿°ç¬¦ç´¢å¼• */
 		auto queryStructureChain = vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceDescriptorIndexingFeaturesEXT
@@ -17,17 +17,17 @@ namespace suz
 		auto& deviceFeatures2 = queryStructureChain.get<vk::PhysicalDeviceFeatures2>();
 		auto& descIndexFeaturesEXT = queryStructureChain.get<vk::PhysicalDeviceDescriptorIndexingFeaturesEXT>();
 
-		/* µ÷ÓÃ½Ó¿Ú, Çı¶¯Ìî³äÈ«²¿Features */
+		/* è°ƒç”¨æ¥å£, é©±åŠ¨å¡«å……å…¨éƒ¨Features */
 		vkGetPhysicalDeviceFeatures2(PhysicalDevice, reinterpret_cast<VkPhysicalDeviceFeatures2*>(&deviceFeatures2));
 
-		/* shaderÀïÊı×éÏÂ±ê¿ÉÒÔÊÇ±äÁ¿ */
-		/* ÔÊĞíÃèÊö·û¼¯ºÏ¸üĞÂÖ®ºó, ²»ÖØĞÂ·ÖÅäset; ÔËĞĞÊ±¿ÉĞŞ¸ÄÊı×éÖĞÔªËØ */
-		/* ÔÊĞíÌá½»ºó¸üĞÂÔªËØ */
+		/* shaderé‡Œæ•°ç»„ä¸‹æ ‡å¯ä»¥æ˜¯å˜é‡ */
+		/* å…è®¸æè¿°ç¬¦é›†åˆæ›´æ–°ä¹‹å, ä¸é‡æ–°åˆ†é…set; è¿è¡Œæ—¶å¯ä¿®æ”¹æ•°ç»„ä¸­å…ƒç´  */
+		/* å…è®¸æäº¤åæ›´æ–°å…ƒç´  */
 		bool featSupport = descIndexFeaturesEXT.shaderSampledImageArrayNonUniformIndexing == VK_TRUE &&
 			descIndexFeaturesEXT.descriptorBindingVariableDescriptorCount == VK_TRUE &&
 			descIndexFeaturesEXT.descriptorBindingUpdateUnusedWhilePending == VK_TRUE;
 
-		/* ÖÁÉÙÔ¤Áô256¸öÎÆÀí²ÛÎ» */
+		/* è‡³å°‘é¢„ç•™256ä¸ªçº¹ç†æ§½ä½ */
 		bool bindlessSupport = DeviceFunctionLibrary::GetDeviceMaxBindlessImageNum(PhysicalDevice) >= MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
 
 		if (featSupport && bindlessSupport)
@@ -36,7 +36,7 @@ namespace suz
 		}
 		else
 		{
-			SUZZA_LOG_ERROR("Éè±¸ÎŞ·¨Ö§³ÖËùĞè¹¦ÄÜ!");
+			SUZZA_LOG_ERROR("è®¾å¤‡æ— æ³•æ”¯æŒæ‰€éœ€åŠŸèƒ½!");
 			return false;
 		}
 	}
@@ -52,9 +52,9 @@ namespace suz
 		auto& deviceFeatures2 = featuresChain.get<vk::PhysicalDeviceFeatures2>();
 		auto& descIndexFeaturesEXT = featuresChain.get<vk::PhysicalDeviceDescriptorIndexingFeaturesEXT>();
 
-		/* shaderÀïÊı×éÏÂ±ê¿ÉÒÔÊÇ±äÁ¿ */
-		/* ÔÊĞíÃèÊö·û¼¯ºÏ¸üĞÂÖ®ºó, ²»ÖØĞÂ·ÖÅäset; ÔËĞĞÊ±¿ÉĞŞ¸ÄÊı×éÖĞÔªËØ */
-		/* ÔÊĞíÌá½»ºó¸üĞÂÔªËØ */
+		/* shaderé‡Œæ•°ç»„ä¸‹æ ‡å¯ä»¥æ˜¯å˜é‡ */
+		/* å…è®¸æè¿°ç¬¦é›†åˆæ›´æ–°ä¹‹å, ä¸é‡æ–°åˆ†é…set; è¿è¡Œæ—¶å¯ä¿®æ”¹æ•°ç»„ä¸­å…ƒç´  */
+		/* å…è®¸æäº¤åæ›´æ–°å…ƒç´  */
 		descIndexFeaturesEXT.runtimeDescriptorArray = VK_TRUE;
 		descIndexFeaturesEXT.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
 		descIndexFeaturesEXT.descriptorBindingVariableDescriptorCount = VK_TRUE;
@@ -83,11 +83,11 @@ namespace suz
 	{
 		QueueFamilyCollector collector{};
 
-		/* »ñÈ¡Éè±¸ÖĞ¶ÓÁĞ×å³ÉÔ±ÊıÁ¿ */
+		/* è·å–è®¾å¤‡ä¸­é˜Ÿåˆ—æ—æˆå‘˜æ•°é‡ */
 		uint32 familiesCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &familiesCount, nullptr);
 
-		/* »ñÈ¡Éè±¸ËùÓĞ¶ÓÁĞ×åĞÅÏ¢ */
+		/* è·å–è®¾å¤‡æ‰€æœ‰é˜Ÿåˆ—æ—ä¿¡æ¯ */
 		Vector<VkQueueFamilyProperties> familyProperties(familiesCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &familiesCount, familyProperties.data());
 
@@ -99,7 +99,7 @@ namespace suz
 				collector.graphicsFamliy = i;
 			}
 
-			/* ²éÕÒÖ§³Ö»æÖÆµ½´°¿ÚÃüÁîµÄ¶ÓÁĞ×å */
+			/* æŸ¥æ‰¾æ”¯æŒç»˜åˆ¶åˆ°çª—å£å‘½ä»¤çš„é˜Ÿåˆ—æ— */
 			VkBool32 presentSupport = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(PhysicalDevice, i, Surface, &presentSupport);
 			if (presentSupport)
@@ -107,7 +107,7 @@ namespace suz
 				collector.presentFamily = i;
 			}
 
-			/* Ö»ÒªÕÒµ½¿É´¦ÀíµÄ¶ÓÁĞ×å, Ìø³öÑ­»·*/
+			/* åªè¦æ‰¾åˆ°å¯å¤„ç†çš„é˜Ÿåˆ—æ—, è·³å‡ºå¾ªç¯*/
 			if (collector.IsValid())
 			{
 				break;

@@ -55,7 +55,7 @@ namespace suz
 		return std::make_shared<VectorAccessor>(static_cast<std::vector<T>*>((char*)Obj + Offset));
 	}
 
-	/* 成员函数返回vector数组引用 */
+	/* 鎴愬憳鍑芥暟杩斿洖vector鏁扮粍寮曠敤 */
 	template<typename T>
 	template<typename ClassT>
 	inline std::shared_ptr<IContainerAccessor>& VectorAccessor<T>::CreateVectorAccessor(void* Obj, const std::vector<T>& (ClassT::* GetterFunc)() const)

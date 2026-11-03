@@ -2,18 +2,13 @@
 
 #include "Component.h"
 #include "macros/ReflectMacros.h"
+#include "model/RenderTypes.h"
 #include "CameraComponent.generated.h"
 
 #include <glm/glm.hpp>
 
 namespace suz
 {
-	struct CameraViewportInfo
-	{
-		glm::mat4 viewMatrix;
-		glm::mat4 projectionMatrix;
-	};
-
 	class CameraComponent : public Component
 	{
 		SUZZA_REFLECT_CLASS();
@@ -29,11 +24,11 @@ namespace suz
 		virtual void Destroy() override;
 
 		glm::mat4 GetViewMatrix() const;
-		glm::mat4 GetProjectionMatrix(float Aspect) const;	// AspectÎª¿í¸ß±È
+		glm::mat4 GetProjectionMatrix(float Aspect) const;	// Aspectä¸ºå®½é«˜æ¯”
 
 	private:
 		SUZZA_PROPERTY(Editability::Editable)
-		float m_fovRad = 70.0f;								// ÊÓ³¡½Ç ÎïÌå·Å´ó
+		float m_fovRad = 70.0f;								// è§†åœºè§’ ç‰©ä½“æ”¾å¤§
 		float m_nearClip = 0.1f;
 		float m_farClip = 1000.0f;
 

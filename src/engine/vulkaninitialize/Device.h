@@ -21,12 +21,12 @@ namespace suz
 
 	struct DeviceSpec
 	{
-		/* ÑéÖ¤²ãÆôÓÃ¿ØÖÆ */
+		/* éªŒè¯å±‚å¯ç”¨æ§åˆ¶ */
 #ifdef NDEBUG
 		const bool enableValidationLayers = false;
 #else
 		const bool enableValidationLayers = true;
-#endif // DEBUGÄ£Ê½×Ô¶¯¿ªÆôÑéÖ¤²ã
+#endif // DEBUGæ¨¡å¼è‡ªåŠ¨å¼€å¯éªŒè¯å±‚
 
 		DeviceSpec(const VkPhysicalDevice& PhysicalDevice)
 			: physicalDevice(PhysicalDevice) {
@@ -34,18 +34,18 @@ namespace suz
 
 		const VkPhysicalDevice& physicalDevice;
 
-		/* Ö¸¶¨¶ÓÁĞ·ÖÅäÓÅÏÈ¼¶ */
+		/* æŒ‡å®šé˜Ÿåˆ—åˆ†é…ä¼˜å…ˆçº§ */
 		const float queuePriority = 1.0f;
 
 		Vector<const char*> validationLayers{};
 		Vector<const char*> deviceExtensions{};
 
-		/* Âß¼­Éè±¸Ö§³ÖµÄ¶ÓÁĞ×å */
+		/* é€»è¾‘è®¾å¤‡æ”¯æŒçš„é˜Ÿåˆ—æ— */
 		QueueFamilyCollector queueFamilieIndices{};
 		Vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
-		/* ½«¿ªÆôµÄÎïÀíÉè±¸ÌØĞÔ */
+		/* å°†å¼€å¯çš„ç‰©ç†è®¾å¤‡ç‰¹æ€§ */
 		VkPhysicalDeviceFeatures physicalDeviceFeatures{};
-		/* »º´æÉè±¸Ó²¼şÄÜÁ¦µÄÁ´±í */
+		/* ç¼“å­˜è®¾å¤‡ç¡¬ä»¶èƒ½åŠ›çš„é“¾è¡¨ */
 		vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceDescriptorIndexingFeaturesEXT> deviceFeaturesChain{};
@@ -66,11 +66,11 @@ namespace suz
 	private:
 		VkDevice m_device = {};
 
-		/* Éè±¸µÄ¶ÓÁĞ×åË÷Òı */
+		/* è®¾å¤‡çš„é˜Ÿåˆ—æ—ç´¢å¼• */
 		uint32 m_graphicsFamilyIndex = 0;
 		uint32 m_presentFamilyIndex = 0;
 
-		/* Éè±¸µÄ¶ÓÁĞ¾ä±ú */
+		/* è®¾å¤‡çš„é˜Ÿåˆ—å¥æŸ„ */
 		VkQueue m_graphicsQueue = {};
 		VkQueue m_presentQueue = {};
 

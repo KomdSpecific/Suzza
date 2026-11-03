@@ -17,7 +17,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class SyncObject Warning: н╢╣ВсцDestroyйж╤╞оЗ╩ы!");
+			SUZZA_LOG_ERROR("Class SyncObject Warning: Ф°╙Х╟┐Г■╗DestroyФ┴▀Е┼╗И■─Ф╞│!");
 			Destroy();
 		}
 	}
@@ -42,14 +42,14 @@ namespace suz
 		m_renderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
 		m_inFrameFence.resize(MAX_FRAMES_IN_FLIGHT);
 
-		/* ╢╢╫╗пе╨еа©пео╒ */
+		/* Е┬⌡Е╩╨Д©║Е▐╥И┤▐Д©║Ф│╞ */
 		VkSemaphoreCreateInfo semapCreateInfo{};
 		semapCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-		/* ╢╢╫╗н╖ю╦пео╒ */
+		/* Е┬⌡Е╩╨Е⌡╢Ф═▐Д©║Ф│╞ */
 		VkFenceCreateInfo fenceInfo{};
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;						// ╥юж╧╣зр╩ж║╡╩╢Фтзн╖ю╦пе╨етЛЁинчочвХхШ!
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;						// И≤╡Ф╜╒Г╛╛Д╦─Е╦╖Д╦█Е╜≤Е°╗Е⌡╢Ф═▐Д©║Е▐╥И─═Ф┬░Ф≈═И≥░И≤╩Е║·!
 
 		for (size_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
 		{
@@ -57,7 +57,7 @@ namespace suz
 				vkCreateSemaphore(m_device, &semapCreateInfo, nullptr, &m_renderFinishedSemaphore[frameIndex]) != VK_SUCCESS ||
 				vkCreateFence(m_device, &fenceInfo, nullptr, &m_inFrameFence[frameIndex]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("╢╢╫╗пе╨еа©╨мн╖ю╦й╖╟э!");
+				throw std::runtime_error("Е┬⌡Е╩╨Д©║Е▐╥И┤▐Е▓▄Е⌡╢Ф═▐Е╓╠Х╢╔!");
 			}
 		}
 	}

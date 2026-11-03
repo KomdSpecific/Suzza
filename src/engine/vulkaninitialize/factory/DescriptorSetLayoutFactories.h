@@ -4,7 +4,7 @@
 
 namespace suz
 {
-	/* 上层手写硬编码的工厂函数 */
+	/* 涓婂眰鎵嬪啓纭紪鐮佺殑宸ュ巶鍑芥暟 */
 	namespace suz_descLayout
 	{
 		DescriptorSetLayoutSpec CreateCameraDescriptorSetLayoutSpec();

@@ -11,11 +11,11 @@ namespace suz
 	template<typename ClassT, typename MemberT>
 	constexpr usize OffsetOf(MemberT ClassT::* memberPtr) noexcept
 	{
-		/* °Ñ0×ªÎªÀàÖ¸Õëconst ClassT*, ¼ÙÉè¸Ã¶ÔÏó·ÅÔÚÄÚ´æµØÖ·0´¦ */
+		/* æŠŠ0è½¬ä¸ºç±»æŒ‡é’ˆconst ClassT*, å‡è®¾è¯¥å¯¹è±¡æ”¾åœ¨å†…å­˜åœ°å€0å¤„ */
 		const ClassT* obj_ptr = reinterpret_cast<const ClassT*>(0);
-		/* Ê¹ÓÃ³ÉÔ±Ö¸ÕëÔËËã·û·ÃÎÊÀàÀïÃæµÄ³ÉÔ± */
+		/* ä½¿ç”¨æˆå‘˜æŒ‡é’ˆè¿ç®—ç¬¦è®¿é—®ç±»é‡Œé¢çš„æˆå‘˜ */
 		const MemberT& member = obj_ptr->*memberPtr;
-		/* ÄÃµ½³ÉÔ±µÄÆ«ÒÆµØÖ·²¢·µ»Ø */
+		/* æ‹¿åˆ°æˆå‘˜çš„åç§»åœ°å€å¹¶è¿”å› */
 		return reinterpret_cast<usize>(&member);
 	}
 }

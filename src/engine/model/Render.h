@@ -1,11 +1,10 @@
 #pragma once
 
-#include "components/CameraComponent.h"
-#include "model/Mesh.h"
-#include "SuzzaTypes.h"
+#include "DrawList.h"
 
 namespace suz
 {
+	class Mesh;
 	class Device;
 	class Pipeline;
 	class VulkanInitialize;
@@ -17,18 +16,12 @@ namespace suz
 
 	class BindlessSlotsAllocator;
 
-	struct ModelConstant
-	{
-		glm::mat4 modelMatrix;
-		uint16 slotIndex;
-	};
-
 	class Render
 	{
 	public:
 		Render();
 
-		void SubmitMesh(Mesh* TargetMesh, const ModelConstant& ModelMatrix);
+		void SubmitMesh(Mesh* TargetMesh, const ModelConstant& Constant);
 		void SubmitCameraViewport(const CameraViewportInfo& ViewportInfo);
 
 		void Draw(float DeltaTime);
@@ -47,7 +40,7 @@ namespace suz
 
 		BindlessSlotsAllocator& m_bindlessSlotsAllocator;
 
-		std::unordered_map<Mesh*, std::vector<ModelConstant>> m_meshQueue = {};
+		DrawList m_drawList = {};
 		CameraViewportInfo m_cameraViewportInfo = {};
 
 		uint32 m_currentFrame = 0;

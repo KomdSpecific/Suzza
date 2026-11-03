@@ -23,7 +23,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class SwapChain Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class SwapChain Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -47,10 +47,10 @@ namespace suz
 	{
 		SwapChainSupportDetails details = {};
 
-		/* »ñÈ¡Éè±¸µÄ»ù±¾±íÃæ¹¦ÄÜ */
+		/* è·å–è®¾å¤‡çš„åŸºæœ¬è¡¨é¢åŠŸèƒ½ */
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Device, Surface, &details.capabilities);
 		
-		/* ²éÑ¯Éè±¸Ö§³ÖµÄ±íÃæ¸ñÊ½ */
+		/* æŸ¥è¯¢è®¾å¤‡æ”¯æŒçš„è¡¨é¢æ ¼å¼ */
 		uint32_t formatCount = 0;
 		vkGetPhysicalDeviceSurfaceFormatsKHR(Device, Surface, &formatCount, nullptr);
 
@@ -60,7 +60,7 @@ namespace suz
 			vkGetPhysicalDeviceSurfaceFormatsKHR(Device, Surface, &formatCount, details.formats.data());
 		}
 
-		/* ²éÑ¯Éè±¸Ö§³ÖµÄ³ÊÏÖ¸ñÊ½ */
+		/* æŸ¥è¯¢è®¾å¤‡æ”¯æŒçš„å‘ˆç°æ ¼å¼ */
 		uint32_t presentCount = 0;
 		vkGetPhysicalDeviceSurfacePresentModesKHR(Device, Surface, &presentCount, nullptr);
 
@@ -77,8 +77,8 @@ namespace suz
 	{
 		for (const VkSurfaceFormatKHR& surfaceFormat : AvailableFormats)
 		{
-			/* Ñ¡ÔñÖ§³Ö°´Ë³Ğò´æ´¢µÄRGBµÄformatÑÕÉ«Í¨µÀÀàĞÍ */
-			/* Ñ¡ÔñÖ§³ÖSRGBÉ«²Ê¿Õ¼äµÄcolorSpace */
+			/* é€‰æ‹©æ”¯æŒæŒ‰é¡ºåºå­˜å‚¨çš„RGBçš„formaté¢œè‰²é€šé“ç±»å‹ */
+			/* é€‰æ‹©æ”¯æŒSRGBè‰²å½©ç©ºé—´çš„colorSpace */
 			if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB && surfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			{
 				return surfaceFormat;
@@ -92,20 +92,20 @@ namespace suz
 	{
 		for (const VkPresentModeKHR& presentMode : AvailableModes)
 		{
-			/* ×îºÃÑ¡ÔñÔÚ¶ÓÁĞÒÑÂúÊ±³ÌĞò²»»áÍ£Ö¹ÔËĞĞ¶øÊÇ½«¶ÓÁĞÖĞµÄÍ¼ÏñÌæ»»³É¸üĞÂµÄÍ¼Ïñ */
+			/* æœ€å¥½é€‰æ‹©åœ¨é˜Ÿåˆ—å·²æ»¡æ—¶ç¨‹åºä¸ä¼šåœæ­¢è¿è¡Œè€Œæ˜¯å°†é˜Ÿåˆ—ä¸­çš„å›¾åƒæ›¿æ¢æˆæ›´æ–°çš„å›¾åƒ */
 			if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
 				return presentMode;
 			}
 		}
 
-		/* Ä¬ÈÏÇé¿öÏÂ³ÌĞòÔÚ¶ÓÁĞºóÃæ²åÈë»æÖÆºÃµÄÍ¼Ïñ, ÏÔÊ¾Æ÷Ë¢ĞÂÊ±´Ó¶ÓÁĞÇ°Ãæ»ñÈ¡Í¼Ïñ */
+		/* é»˜è®¤æƒ…å†µä¸‹ç¨‹åºåœ¨é˜Ÿåˆ—åé¢æ’å…¥ç»˜åˆ¶å¥½çš„å›¾åƒ, æ˜¾ç¤ºå™¨åˆ·æ–°æ—¶ä»é˜Ÿåˆ—å‰é¢è·å–å›¾åƒ */
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 
 	void SwapChain::ReCreateSwapChain(BufferArea* BufferArea)
 	{
-		/* ´°¿Ú×îĞ¡»¯´¦Àí */
+		/* çª—å£æœ€å°åŒ–å¤„ç† */
 		int width = 0, height = 0;
 		glfwGetFramebufferSize(m_mainWindow->GetMainWindow(), &width, &height);
 		while (width == 0 || height == 0)
@@ -114,14 +114,14 @@ namespace suz
 			glfwWaitEvents();
 		}
 
-		/* µÈ´ıÉè±¸Íê³É¹¤×÷ */
+		/* ç­‰å¾…è®¾å¤‡å®Œæˆå·¥ä½œ */
 		vkDeviceWaitIdle(m_device);
 
-		/* ÇåÀí¾ÉµÄ»º³åÇøºÍ½»»»Á´ */
+		/* æ¸…ç†æ—§çš„ç¼“å†²åŒºå’Œäº¤æ¢é“¾ */
 		BufferArea->CleanupBufferArea();
 		CleanupSwapChain();
 
-		/* ´´½¨ĞÂµÄ½»»»Á´ºÍĞÂµÄÖ¡»º³åÇø */
+		/* åˆ›å»ºæ–°çš„äº¤æ¢é“¾å’Œæ–°çš„å¸§ç¼“å†²åŒº */
 		CreateSwapChain();
 		CreateImageViews();
 		BufferArea->ReCreateBufferArea(m_swapChainExtent);
@@ -153,55 +153,55 @@ namespace suz
 		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 		if (swapChainSupport.capabilities.maxImageCount > 0)
 		{
-			/* ±£Ö¤²»³¬¹ıÍ¼ÏñµÄ×î´óÊıÁ¿ */
+			/* ä¿è¯ä¸è¶…è¿‡å›¾åƒçš„æœ€å¤§æ•°é‡ */
 			imageCount = std::min(imageCount, swapChainSupport.capabilities.maxImageCount);
 		}
-		/* ±£Ö¤Î´À´Êı¾İ¸Ä¶¯µ¼ÖÂ max < min */
+		/* ä¿è¯æœªæ¥æ•°æ®æ”¹åŠ¨å¯¼è‡´ max < min */
 		imageCount = std::max(imageCount, swapChainSupport.capabilities.minImageCount);
 
-		/* ´´½¨½»»»Á´¶ÔÏó */
+		/* åˆ›å»ºäº¤æ¢é“¾å¯¹è±¡ */
 		VkSwapchainCreateInfoKHR swapChainCreateInfo{};
 		swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		swapChainCreateInfo.surface = surface;
-		/* Ö¸¶¨½»»»Á´Í¼ÏñµÄÏêÏ¸ĞÅÏ¢ */
+		/* æŒ‡å®šäº¤æ¢é“¾å›¾åƒçš„è¯¦ç»†ä¿¡æ¯ */
 		swapChainCreateInfo.minImageCount = imageCount;
 		swapChainCreateInfo.imageFormat = surfaceFormat.format;
 		swapChainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
 		swapChainCreateInfo.imageExtent = currentExtent;
-		swapChainCreateInfo.imageArrayLayers = 1;									// Ö¸¶¨Í¼ÏñÓÉ¶àÉÙ²ã×é³É
-		swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;		// Ö¸¶¨½»»»Á´ÖĞÍ¼ÏñµÄ²Ù×÷ÀàĞÍ
+		swapChainCreateInfo.imageArrayLayers = 1;									// æŒ‡å®šå›¾åƒç”±å¤šå°‘å±‚ç»„æˆ
+		swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;		// æŒ‡å®šäº¤æ¢é“¾ä¸­å›¾åƒçš„æ“ä½œç±»å‹
 
 		QueueFamilyIndices indices = vulkanInitialize->FindQueueFamilies();
 		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(),indices.presentFamily.value() };
 
 		if (indices.graphicsFamily != indices.presentFamily)
 		{
-			/* Í¼Ïñ¿ÉÔÚ¶à¸ö¶ÓÁĞ×åÖ®¼äÊ¹ÓÃ */
+			/* å›¾åƒå¯åœ¨å¤šä¸ªé˜Ÿåˆ—æ—ä¹‹é—´ä½¿ç”¨ */
 			swapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 			swapChainCreateInfo.queueFamilyIndexCount = 2;
 			swapChainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
 		}
 		else
 		{
-			/* Í¼ÏñÒ»´ÎÓÉÒ»¸ö¶ÓÁĞ×åÓµÓĞ ±ØĞëÏÔÊ½´«ÊäËùÓĞÈ¨ */
+			/* å›¾åƒä¸€æ¬¡ç”±ä¸€ä¸ªé˜Ÿåˆ—æ—æ‹¥æœ‰ å¿…é¡»æ˜¾å¼ä¼ è¾“æ‰€æœ‰æƒ */
 			swapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			swapChainCreateInfo.queueFamilyIndexCount = 0;
 			swapChainCreateInfo.pQueueFamilyIndices = nullptr;
 		}
 
 		swapChainCreateInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-		/* Ö¸¶¨alphaÍ¨µÀÊÇ·ñÓë´°¿ÚÏµÍ³ÖĞµÄÆäËû´°¿Ú»ìºÏ */
-		swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;		// ´Ë¿ÌÉèÖÃºöÂÔalphaÍ¨µÀ
+		/* æŒ‡å®šalphaé€šé“æ˜¯å¦ä¸çª—å£ç³»ç»Ÿä¸­çš„å…¶ä»–çª—å£æ··åˆ */
+		swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;		// æ­¤åˆ»è®¾ç½®å¿½ç•¥alphaé€šé“
 		swapChainCreateInfo.presentMode = presentMode;
 		swapChainCreateInfo.clipped = VK_TRUE;
-		swapChainCreateInfo.oldSwapchain = VK_NULL_HANDLE;							// Èç¹ûĞèÖØ½¨½»»»Á´¿ÉÔÚ¾É½»»»Á´Î´Ïú»ÙÊ±´´½¨ĞÂµÄ½»»»Á´
+		swapChainCreateInfo.oldSwapchain = VK_NULL_HANDLE;							// å¦‚æœéœ€é‡å»ºäº¤æ¢é“¾å¯åœ¨æ—§äº¤æ¢é“¾æœªé”€æ¯æ—¶åˆ›å»ºæ–°çš„äº¤æ¢é“¾
 
 		if (vkCreateSwapchainKHR(m_device, &swapChainCreateInfo, nullptr, &m_swapChain) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨½»»»Á´Ê§°Ü!");
+			throw std::runtime_error("åˆ›å»ºäº¤æ¢é“¾å¤±è´¥!");
 		}
 
-		/* ¼ìË÷½»»»Á´ËùÓĞÍ¼Ïñ */
+		/* æ£€ç´¢äº¤æ¢é“¾æ‰€æœ‰å›¾åƒ */
 		vkGetSwapchainImagesKHR(m_device, m_swapChain, &imageCount, nullptr);
 		m_swapChainImages.resize(imageCount);
 		vkGetSwapchainImagesKHR(m_device, m_swapChain, &imageCount, m_swapChainImages.data());
@@ -214,20 +214,20 @@ namespace suz
 	{
 		m_swapChainImageViews.resize(m_swapChainImages.size());
 
-		/* µü´úËùÓĞ½»»»Á´Í¼Ïñ */
+		/* è¿­ä»£æ‰€æœ‰äº¤æ¢é“¾å›¾åƒ */
 		for (size_t currentImage = 0; currentImage < m_swapChainImages.size(); currentImage++)
 		{
 			VkImageViewCreateInfo imageCreateInfo{};
 			imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			imageCreateInfo.image = m_swapChainImages[currentImage];
-			imageCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;						// Ö¸¶¨ÓÃ2DÎÆÀí½âÊÍÍ¼Ïñ
-			imageCreateInfo.format = m_swapChainImageFormat;						// ÉèÖÃÍ¼Ïñ¸ñÊ½
-			/* Ä¬ÈÏÓ³ÉäÑÕÉ«Í¨µÀ */
+			imageCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;						// æŒ‡å®šç”¨2Dçº¹ç†è§£é‡Šå›¾åƒ
+			imageCreateInfo.format = m_swapChainImageFormat;						// è®¾ç½®å›¾åƒæ ¼å¼
+			/* é»˜è®¤æ˜ å°„é¢œè‰²é€šé“ */
 			imageCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 			imageCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 			imageCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 			imageCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-			/* Ö¸¶¨·ÃÎÊÍ¼ÏñµÄÓÃÍ¾ÒÔ¼°·ÃÎÊÍ¼ÏñÄÄÒ»²¿·Ö */
+			/* æŒ‡å®šè®¿é—®å›¾åƒçš„ç”¨é€”ä»¥åŠè®¿é—®å›¾åƒå“ªä¸€éƒ¨åˆ† */
 			imageCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			imageCreateInfo.subresourceRange.baseMipLevel = 0;
 			imageCreateInfo.subresourceRange.levelCount = 1;
@@ -236,14 +236,14 @@ namespace suz
 
 			if (vkCreateImageView(m_device, &imageCreateInfo, nullptr, &m_swapChainImageViews[currentImage]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("´´½¨½»»»Á´Í¼ÏñÊ§°Ü!" + std::to_string(currentImage));
+				throw std::runtime_error("åˆ›å»ºäº¤æ¢é“¾å›¾åƒå¤±è´¥!" + std::to_string(currentImage));
 			}
 		}
 	}
 
 	VkExtent2D SwapChain::GetSwapChainExtent(const VkSurfaceCapabilitiesKHR& Capabilities)
 	{
-		/* Ä³Ğ©Çé¿öÏÂ´°¿ÚÊµ¼Ê·Ö±æÂÊ´óÓÚÆÁÄ»×ø±ê·Ö±æÂÊ, Òò´Ë±ØĞë·µ»ØÏñËØ×ø±ê */
+		/* æŸäº›æƒ…å†µä¸‹çª—å£å®é™…åˆ†è¾¨ç‡å¤§äºå±å¹•åæ ‡åˆ†è¾¨ç‡, å› æ­¤å¿…é¡»è¿”å›åƒç´ åæ ‡ */
 		if (Capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		{
 			return Capabilities.currentExtent;

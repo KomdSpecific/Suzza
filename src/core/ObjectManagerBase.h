@@ -17,13 +17,13 @@ namespace suz
 			uint32 index = 0;
 			if (!m_freeIndex.empty())
 			{
-				/* сеох╥жеДйм╥е╧Щ╣д╡Е╡ш */
+				/* Д╪≤Е┘┬Е┬├И┘█И┤┼Ф■╬Х©┤Г └Ф▐▓Ф╖╫ */
 				index = m_freeIndex.back();
 				m_freeIndex.pop_back();
 			}
 			else
 			{
-				/* нч©уоп, ж╠╫сю╘хщ */
+				/* Ф≈═Г╘╨И≈╡, Г⌡╢Ф▌╔Ф┴╘Е╝╧ */
 				index = static_cast<uint32>(m_objSlots.size());
 				m_objSlots.emplace_back();
 			}
@@ -47,7 +47,7 @@ namespace suz
 			objInfo.generation += 1;
 			objInfo.obj.~Obj();
 
-			/* ╫╚йм╥е╣д╡ш╥е╩ь©уопап╠М */
+			/* Е╟├И┤┼Ф■╬Г └Ф╖╫Ф■╬Е⌡·Г╘╨И≈╡Е┬≈Х║╗ */
 			m_freeIndex.push_back(ObjHandle.index);
 		}
 
@@ -94,7 +94,7 @@ namespace suz
 		};
 
 		Vector<ObjectInfo> m_objSlots = {};
-		Vector<uint32> m_freeIndex = {};					// ╪гб╪╠╩йм╥е╧Щ╣д╡Е╡ш
+		Vector<uint32> m_freeIndex = {};					// Х╝╟Е╫∙Х╒╚И┤┼Ф■╬Х©┤Г └Ф▐▓Ф╖╫
 	};
 
 

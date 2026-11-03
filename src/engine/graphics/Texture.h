@@ -19,21 +19,21 @@ namespace suz
 
 		virtual void Destroy() override;
 
-		/* 创建图像 */
+		/* 鍒涘缓鍥惧儚 */
 		static void CreateImage(uint32_t Width, uint32_t Height,
 			const VkFormat& Format,
 			const VkImageTiling& Tiling,
 			const VkImageUsageFlags& Usage, const VkMemoryPropertyFlags& Properties,
 			VkImage& Image, VkDeviceMemory& ImageMemory);
 
-		/* 创建图像视图 */
+		/* 鍒涘缓鍥惧儚瑙嗗浘 */
 		static VkImageView CreateImageView(const VkImage& Image, const VkFormat& Format, const VkImageAspectFlags& AspectFlags);
 
 		void UpdateTextureSlot(uint16 SlotIndex);
 
 	private:
-		void CreateTextureImage(const std::string FilePath);		// 创建纹理图像
-		void CreateTextureImageView();								// 创建纹理图像视图
+		void CreateTextureImage(const std::string FilePath);		// 鍒涘缓绾圭悊鍥惧儚
+		void CreateTextureImageView();								// 鍒涘缓绾圭悊鍥惧儚瑙嗗浘
 
 		const VkDevice& m_device;
 

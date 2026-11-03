@@ -15,11 +15,11 @@ namespace suz
 
 			DescriptorSetLayoutSpec cameraSpec(device);
 			VkDescriptorSetLayoutBinding layoutBinding{};
-			layoutBinding.binding = 0;											// ÒªÇóºÍ×ÅÉ«Æ÷µÄLayoutĞòÁĞºÅÒ»Ñù
+			layoutBinding.binding = 0;											// è¦æ±‚å’Œç€è‰²å™¨çš„Layoutåºåˆ—å·ä¸€æ ·
 			layoutBinding.descriptorCount = 1;
 			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;				// ÔÚ¶¥µã×ÅÉ«Æ÷½×¶Î±»ÒıÓÃ
-			layoutBinding.pImmutableSamplers = nullptr;							// ÓëÍ¼Ïñ²ÉÑùÏà¹ØÃèÊö·ûÓĞ¹Ø
+			layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;				// åœ¨é¡¶ç‚¹ç€è‰²å™¨é˜¶æ®µè¢«å¼•ç”¨
+			layoutBinding.pImmutableSamplers = nullptr;							// ä¸å›¾åƒé‡‡æ ·ç›¸å…³æè¿°ç¬¦æœ‰å…³
 
 			cameraSpec.descriptorBinding.push_back(layoutBinding);
 
@@ -34,17 +34,17 @@ namespace suz
 
 			DescriptorSetLayoutSpec bindlessSpec(device);
 			VkDescriptorSetLayoutBinding layoutBinding{};
-			layoutBinding.binding = 1;											// ÒªÇóºÍ×ÅÉ«Æ÷µÄLayoutĞòÁĞºÅÒ»Ñù
+			layoutBinding.binding = 1;											// è¦æ±‚å’Œç€è‰²å™¨çš„Layoutåºåˆ—å·ä¸€æ ·
 			layoutBinding.descriptorCount = MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
 			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;			// ÔÚÆ¬¶Î×ÅÉ«Æ÷½×¶Î±»ÒıÓÃ
-			layoutBinding.pImmutableSamplers = nullptr;							// ÓëÍ¼Ïñ²ÉÑùÏà¹ØÃèÊö·ûÓĞ¹Ø
+			layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;			// åœ¨ç‰‡æ®µç€è‰²å™¨é˜¶æ®µè¢«å¼•ç”¨
+			layoutBinding.pImmutableSamplers = nullptr;							// ä¸å›¾åƒé‡‡æ ·ç›¸å…³æè¿°ç¬¦æœ‰å…³
 
 			bindlessSpec.descriptorBinding.push_back(layoutBinding);
 
 			VkDescriptorBindingFlags flags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 			bindlessSpec.flags.push_back(flags);
-			/* ¶¨ÒåBindlessµÄFlag */
+			/* å®šä¹‰Bindlessçš„Flag */
 			bindlessSpec.bindingFlags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
 
 			return bindlessSpec;

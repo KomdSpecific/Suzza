@@ -77,11 +77,11 @@ namespace suz
 		HandleBase base = Allocate(MaterialToLoad);
 
 		MaterialHandle handle(base.index, base.generation);
-		/* ¸ø²ÄÖÊ·ÖÅäÎÆÀí²å²Û */
+		/* ç»™æè´¨åˆ†é…çº¹ç†æ’æ§½ */
 		uint16 slotIndex = Engine::GetBindlessSlotsAllocator().AllocateBindlessSlots(handle);
 		if (slotIndex == MAX_SAMPLED_TEXTURE_IMAGES_SLOTS)
 		{
-			SUZZA_LOG_ERROR("·ÖÅäÎÆÀí²å²ÛÊ§°Ü, ²å²ÛÕıÔÚ±»¾É×ÊÔ´Õ¼ÓÃ!");
+			SUZZA_LOG_ERROR("åˆ†é…çº¹ç†æ’æ§½å¤±è´¥, æ’æ§½æ­£åœ¨è¢«æ—§èµ„æºå ç”¨!");
 		}
 
 		MaterialToLoad->SetMaterialSlot(slotIndex);
@@ -94,9 +94,9 @@ namespace suz
 		Material* material = Find({ Handle.index,Handle.generation });
 		if (!material) return;
 
-		/* ±ê¼ÇÎÆÀí²å²Û´ıÊÍ·Å */
+		/* æ ‡è®°çº¹ç†æ’æ§½å¾…é‡Šæ”¾ */
 		Engine::GetBindlessSlotsAllocator().MarkedTargetSlotsRelease(Handle);
-		/* ÖØÖÃ²ÄÖÊÎÆÀí²å²ÛÎªÄ¬ÈÏÖµ */
+		/* é‡ç½®æè´¨çº¹ç†æ’æ§½ä¸ºé»˜è®¤å€¼ */
 		material->SetMaterialSlot(MAX_SAMPLED_TEXTURE_IMAGES_SLOTS);
 
 		Free({ Handle.index,Handle.generation });
@@ -126,7 +126,7 @@ namespace suz
 		auto it = m_textureSlots.find(Handle.index);
 		if (it != m_textureSlots.end())
 		{
-			/* ¼ÙÉè²å²Û±»¾É×ÊÔ´Õ¼ÓÃ·µ»Ø²å²ÛÄ¬ÈÏÖµ */
+			/* å‡è®¾æ’æ§½è¢«æ—§èµ„æºå ç”¨è¿”å›æ’æ§½é»˜è®¤å€¼ */
 			if (Handle.generation == it->second.generation)
 			{
 				return it->second.slotIndex;
@@ -137,10 +137,10 @@ namespace suz
 			}
 		}
 
-		/* Ñ­»·±éÀú²å²ÛË÷Òı */
+		/* å¾ªç¯éå†æ’æ§½ç´¢å¼• */
 		while (m_slotsIndex < MAX_SAMPLED_TEXTURE_IMAGES_SLOTS)
 		{
-			/* ÕÒµ½ËùĞèµÄ²å²ÛË÷Òı */
+			/* æ‰¾åˆ°æ‰€éœ€çš„æ’æ§½ç´¢å¼• */
 			if (m_slotsStatus[m_slotsIndex] == false)
 			{
 				m_textureSlots[Handle.index] = { m_slotsIndex,Handle.generation };
@@ -155,7 +155,7 @@ namespace suz
 
 		if (m_slotsIndex == MAX_SAMPLED_TEXTURE_IMAGES_SLOTS)
 		{
-			/* ´ú±íÎŞ¿ÉÓÃµÄË÷Òı */
+			/* ä»£è¡¨æ— å¯ç”¨çš„ç´¢å¼• */
 			return MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
 		}
 		else
@@ -173,7 +173,7 @@ namespace suz
 		}
 		else
 		{
-			/* ´¦ÀíÎÆÀíId²»´æÔÚµÄÇé¿ö */
+			/* å¤„ç†çº¹ç†Idä¸å­˜åœ¨çš„æƒ…å†µ */
 			return MAX_SAMPLED_TEXTURE_IMAGES_SLOTS;
 		}
 	}
@@ -181,21 +181,21 @@ namespace suz
 	void BindlessSlotsAllocator::MarkedTargetSlotsRelease(const MaterialHandle& Handle)
 	{
 		auto it = m_textureSlots.find(Handle.index);
-		/* ²»ÄÜÄÃÀÏ»òĞÂ¾ä±úÊÍ·Å²å²Û */
+		/* ä¸èƒ½æ‹¿è€æˆ–æ–°å¥æŸ„é‡Šæ”¾æ’æ§½ */
 		if (it != m_textureSlots.end() && Handle.generation == it->second.generation)
 		{
-			/* ÎÆÀíHandle´æÔÚ */
+			/* çº¹ç†Handleå­˜åœ¨ */
 			m_waitReleaseSlots[it->first] = MAX_FRAMES_IN_FLIGHT;
 		}
 
-		SUZZA_LOG_INFO("ÎÆÀí²»´æÔÚ! Index: ", Handle.index, ", Generation: ", Handle.generation);
+		SUZZA_LOG_INFO("çº¹ç†ä¸å­˜åœ¨! Index: ", Handle.index, ", Generation: ", Handle.generation);
 	}
 
 	void BindlessSlotsAllocator::MarkedTargetSlotsRelease(const uint16& SlotIndex)
 	{
 		if (SlotIndex >= MAX_SAMPLED_TEXTURE_IMAGES_SLOTS)
 		{
-			SUZZA_LOG_WARN("ÎÆÀí²ÛË÷ÒıÏŞÖÆÔÚ0 ~ %dÖ®¼ä Ë÷ÒıÒÑ³¬³ö·¶Î§! SlotIndex: %d", MAX_SAMPLED_TEXTURE_IMAGES_SLOTS, SlotIndex);
+			SUZZA_LOG_WARN("çº¹ç†æ§½ç´¢å¼•é™åˆ¶åœ¨0 ~ %dä¹‹é—´ ç´¢å¼•å·²è¶…å‡ºèŒƒå›´! SlotIndex: %d", MAX_SAMPLED_TEXTURE_IMAGES_SLOTS, SlotIndex);
 		}
 
 		for (auto& pair : m_textureSlots)
@@ -206,7 +206,7 @@ namespace suz
 			}
 		}
 
-		SUZZA_LOG_INFO("ÎÆÀí²å²Û %d Î´Ê¹ÓÃ!", SlotIndex);
+		SUZZA_LOG_INFO("çº¹ç†æ’æ§½ %d æœªä½¿ç”¨!", SlotIndex);
 	}
 
 	void BindlessSlotsAllocator::ReleaseSlots()
@@ -217,7 +217,7 @@ namespace suz
 			{
 				uint16 slotIndex = m_textureSlots[pair.first].slotIndex;
 
-				/* ÕıÊ½ÊÍ·ÅÎÆÀí²å²Û */
+				/* æ­£å¼é‡Šæ”¾çº¹ç†æ’æ§½ */
 				m_slotsStatus[slotIndex] = false;
 				m_textureSlots.erase(pair.first);
 				m_waitReleaseSlots.erase(pair.first);

@@ -20,7 +20,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class Descriptor Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class Descriptor Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -58,7 +58,7 @@ namespace suz
 
 		if (vkCreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_cameraDescriptorPool) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨ÃèÊö·û³ØÊ§°Ü!");
+			throw std::runtime_error("åˆ›å»ºæè¿°ç¬¦æ± å¤±è´¥!");
 		}
 	}
 
@@ -77,15 +77,15 @@ namespace suz
 
 		if (vkAllocateDescriptorSets(m_device, &allocateInfo, m_cameraDescriptorSet.data()) != VK_SUCCESS)
 		{
-			throw std::runtime_error("·ÖÅäÃèÊö·û¼¯ºÏÊ§°Ü!");
+			throw std::runtime_error("åˆ†é…æè¿°ç¬¦é›†åˆå¤±è´¥!");
 		}
 
 		const std::vector<VkBuffer>& uniformBuffers = vkManager.GetBufferArea()->GetUniformBuffers();
 
-		/* ÅäÖÃ¼¯ºÏÖĞµÄÃ¿Ò»¸öÃèÊö·û */
+		/* é…ç½®é›†åˆä¸­çš„æ¯ä¸€ä¸ªæè¿°ç¬¦ */
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			/* ¸æËßÃèÊö·û°ó¶¨buffer¡¢Æ«ÒÆÁ¿¡¢Õ¼ÓÃ´óĞ¡ */
+			/* å‘Šè¯‰æè¿°ç¬¦ç»‘å®šbufferã€åç§»é‡ã€å ç”¨å¤§å° */
 			VkDescriptorBufferInfo descriptorInfo{};
 			descriptorInfo.buffer = uniformBuffers[i];
 			descriptorInfo.offset = 0;
@@ -117,13 +117,13 @@ namespace suz
 		poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 
 		poolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-		poolCreateInfo.maxSets = 1;										// Ö»·ÖÅä1¸öÈ«¾ÖBindless¼¯ºÏ
+		poolCreateInfo.maxSets = 1;										// åªåˆ†é…1ä¸ªå…¨å±€Bindlessé›†åˆ
 		poolCreateInfo.poolSizeCount = 1;
 		poolCreateInfo.pPoolSizes = &bindlessPoolSizes;
 
 		if (vkCreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_bindlessDescriptorPool) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨ÃèÊö·û³ØÊ§°Ü!");
+			throw std::runtime_error("åˆ›å»ºæè¿°ç¬¦æ± å¤±è´¥!");
 		}
 	}
 
@@ -140,24 +140,24 @@ namespace suz
 
 		if (vkAllocateDescriptorSets(m_device, &bindlessInfo, &m_bindlessDescriptorSet) != VK_SUCCESS)
 		{
-			throw std::runtime_error("·ÖÅäÃèÊö·û¼¯ºÏÊ§°Ü!");
+			throw std::runtime_error("åˆ†é…æè¿°ç¬¦é›†åˆå¤±è´¥!");
 		}
 	}
 
 	void Descriptor::UpdateBindlessDescriptor(const VkImageView& ImageView, const VkSampler& Sampler, uint32 SlotIndex)
 	{
-		/* ÅäÖÃĞèÒª¼ÓÔØµÄÍ¼ÏñÊÓÍ¼ĞÅÏ¢ */
+		/* é…ç½®éœ€è¦åŠ è½½çš„å›¾åƒè§†å›¾ä¿¡æ¯ */
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfo.imageView = ImageView;
 		imageInfo.sampler = Sampler;
 
-		/* ¸ü¸ÄÏàÓ¦µÄÃèÊö·û, ¿É³õÊ¼»¯¸ü¸ÄÒ²¿ÉÔËĞĞÊ±¸ü¸Ä */
+		/* æ›´æ”¹ç›¸åº”çš„æè¿°ç¬¦, å¯åˆå§‹åŒ–æ›´æ”¹ä¹Ÿå¯è¿è¡Œæ—¶æ›´æ”¹ */
 		VkWriteDescriptorSet writeDescriptors{};
 		writeDescriptors.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptors.dstSet = m_bindlessDescriptorSet;
 		writeDescriptors.dstBinding = 1;
-		writeDescriptors.dstArrayElement = SlotIndex;							// Êı×éÖ¸¶¨ÏÂ±ê
+		writeDescriptors.dstArrayElement = SlotIndex;							// æ•°ç»„æŒ‡å®šä¸‹æ ‡
 		writeDescriptors.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		writeDescriptors.descriptorCount = 1;
 		writeDescriptors.pImageInfo = &imageInfo;

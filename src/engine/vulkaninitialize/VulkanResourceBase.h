@@ -10,7 +10,7 @@ namespace suz
 		VulkanResourceBase() : m_isAlive(std::make_shared<bool>(true)) {}
 		virtual ~VulkanResourceBase() = default;
 
-		/* ½ûÖ¹¿½±´ */
+		/* ç¦æ­¢æ‹·è´ */
 		VulkanResourceBase(const VulkanResourceBase&) = delete;
 		VulkanResourceBase& operator=(const VulkanResourceBase&) = delete;
 

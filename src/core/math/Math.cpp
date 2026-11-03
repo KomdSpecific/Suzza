@@ -8,7 +8,7 @@ namespace suz
 		glm::vec3 right = glm::normalize(glm::cross(forward, Up));
 		glm::vec3 newUp = glm::cross(right, forward);
 
-		/* ÉèÖÃÈıÎ¬¿Õ¼ä¸÷¸ö×ø±êÖá·½Ïò */
+		/* è®¾ç½®ä¸‰ç»´ç©ºé—´å„ä¸ªåæ ‡è½´æ–¹å‘ */
 		glm::mat4 view(1.0f);
 		view[0][0] = -right.x;	view[0][1] = newUp.x;	view[0][2] = -forward.x;
 		view[1][0] = -right.y;	view[1][1] = newUp.y;	view[1][2] = -forward.y;

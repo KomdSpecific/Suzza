@@ -4,6 +4,8 @@
 #include "factory/DeviceFactories.h"
 #include "factory/DescriptorSetLayoutFactories.h"
 #include "factory/PipelineFactories.h"
+#include "factory/RenderPassFactories.h"
+#include "factory/CommandPoolFactories.h"
 
 #include "debug/SuzzaLog.h"
 #include <filesystem>
@@ -12,38 +14,46 @@ namespace suz
 {
 	bool VulkanResourceManager::InitVulkan()
 	{
-		/* ===============³õÊ¼»¯²¢µ÷ÓÃInitº¯Êı=============== */
+		/* ===============åˆå§‹åŒ–å¹¶è°ƒç”¨Initå‡½æ•°=============== */
 		m_vkInitialize = std::make_unique<VulkanInitialize>();
 
-		/* ===================´´½¨Âß¼­Éè±¸===================*/
+		/* ==================åˆ›å»ºé€»è¾‘è®¾å¤‡=================== */
 		{
 			m_device = std::make_unique<Device>();
 			DeviceSpec deviceSpec = suz_device::CreateDefaultDeviceSpec();
 			if (!m_device->CreateDevice(deviceSpec))
 			{
-				SUZZA_LOG_ERROR("Vulkan×ÊÔ´³õÊ¼»¯Ê§°Ü!");
+				SUZZA_LOG_ERROR("Vulkanèµ„æºåˆå§‹åŒ–å¤±è´¥!");
 				return false;
 			}
 		}
 
+		/* ==================æ„å»ºè®¾å¤‡ä¸Šä¸‹æ–‡================= */
+		m_deviceContext.device = m_device->GetDevice();
+		m_deviceContext.physicalDevice = m_vkInitialize->GetPhysicalDevice();
+		m_deviceContext.graphicsQueue = m_device->GetGraphicsQueue();
+		m_deviceContext.presentQueue = m_device->GetPresentQueue();
+		m_deviceContext.graphicsFamilyIndex = m_device->GetGraphicsFamily();
+		m_deviceContext.presentFamilyIndex = m_device->GetPresentFamily();
+
 		m_swapChain = std::make_unique<SwapChain>(m_device->GetDevice());
 		m_swapChain->InitSwapChain();
 
-		/* äÖÈ¾Í¨µÀ´´½¨ */
-		m_renderPass = std::make_unique<RenderPass>(
-			m_device->GetDevice(),
-			m_swapChain->GetSwapChainFormat()
-		);
+		/* ===================æ¸²æŸ“é€šé“åˆ›å»º================== */
+		{
+			RenderPassSpec renderPassSpec = suz_renderpass::CreateDefaultRenderPassSpec();
+			m_renderPasses.CreateResource<RenderPassSpec>("DefaultRenderPass", renderPassSpec);
+		}
 
-		/* ==================´´½¨ÃèÊö·û²¼¾Ö================= */
+		/* ==================åˆ›å»ºæè¿°ç¬¦å¸ƒå±€================= */
 		{
 			DescriptorSetLayoutSpec cameraLayoutSpec = suz_descLayout::CreateCameraDescriptorSetLayoutSpec();
-			DescriptorSetLayoutSpec bindlessLayoutSpec = suz_descLayout::CreateBindlessDescriptorSetLayoutSpec();
 			m_descriptorLayouts.CreateResource<DescriptorSetLayoutSpec>("CameraDesc", cameraLayoutSpec);
+			DescriptorSetLayoutSpec bindlessLayoutSpec = suz_descLayout::CreateBindlessDescriptorSetLayoutSpec();
 			m_descriptorLayouts.CreateResource<DescriptorSetLayoutSpec>("BindlessDesc", bindlessLayoutSpec);
 		}
 
-		/* ====================¹ÜÏß´´½¨===================== */
+		/* ====================ç®¡çº¿åˆ›å»º===================== */
 		{
 			PipelineLayoutSpec layoutSpec = suz_pipeline::CreateDefaultPipelineLayoutSpec();
 			m_pipelines.CreateResource<PipelineLayoutSpec>("DefaultPipeline", layoutSpec);
@@ -54,13 +64,19 @@ namespace suz
 			m_pipelines.CreateResource<PipelineSpec>("DefaultPipeline", pipelineSpec);
 		}
 
+		/* ====================åˆ›å»ºå‘½ä»¤æ± ==================== */
+		{
+			/*CommandPoolSpec commandSpec = suz_commandPool::CreateDefaultCommandPoolSpec();
+			m_commandPool = std::make_unique<CommandPool>();
+			m_commandPool->Create(commandSpec);*/
+		}
 
-		/* BufferArea³õÊ¼»¯ */
+		/* BufferAreaåˆå§‹åŒ– */
 		m_bufferArea = std::make_unique<BufferArea>(
 			*m_pipelines.GetResource("DefaultPipeline"),
 			m_device->GetDevice(),
 			m_swapChain->GetSwapChainExtent(),
-			m_renderPass->GetRenderPass()
+			m_renderPasses.GetResource("DefaultRenderPass")->GetRenderPass()
 		);
 		m_bufferArea->InitBufferArea();
 
@@ -87,7 +103,7 @@ namespace suz
 		m_bufferArea->Destroy();
 		m_descriptorLayouts.Destroy();
 		m_pipelines.Destroy();
-		m_renderPass->Destroy();
+		m_renderPasses.Destroy();
 		m_swapChain->Destroy();
 		m_device->Destroy();
 		m_vkInitialize->Destroy();
@@ -104,24 +120,24 @@ namespace suz
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
 		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		/* µ±¶ÁÈ¡³¬³öÍ¼Ïñ·¶Î§Ê±·µ»Ø´°¿Ú±³¾°´¿É« */
+		/* å½“è¯»å–è¶…å‡ºå›¾åƒèŒƒå›´æ—¶è¿”å›çª—å£èƒŒæ™¯çº¯è‰² */
 		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 
-		/* ¿ªÆô¸÷ÏòÒìĞÔ¹ıÂË */
+		/* å¼€å¯å„å‘å¼‚æ€§è¿‡æ»¤ */
 		samplerInfo.anisotropyEnable = VK_TRUE;
-		/* ´«ÈëÎïÀíÉè±¸Ö§³ÖµÄÎÆËØÑù±¾ÊıÁ¿×î´óÖµ */
+		/* ä¼ å…¥ç‰©ç†è®¾å¤‡æ”¯æŒçš„çº¹ç´ æ ·æœ¬æ•°é‡æœ€å¤§å€¼ */
 		samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
 
-		/* ²ÉÑù³¬³öÍ¼ÏñÊ±Ìî³äµÄÑÕÉ« */
+		/* é‡‡æ ·è¶…å‡ºå›¾åƒæ—¶å¡«å……çš„é¢œè‰² */
 		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
 		samplerInfo.compareEnable = VK_FALSE;
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 
-		/* mipmapping¹ıÂËÆ÷ */
+		/* mipmappingè¿‡æ»¤å™¨ */
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		samplerInfo.mipLodBias = 0.0f;
 		samplerInfo.minLod = 0.0f;
@@ -129,7 +145,7 @@ namespace suz
 
 		if (vkCreateSampler(m_device->GetDevice(), &samplerInfo, nullptr, &m_textureSampler) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨ÎÆÀí²ÉÑùÆ÷Ê§°Ü!");
+			throw std::runtime_error("åˆ›å»ºçº¹ç†é‡‡æ ·å™¨å¤±è´¥!");
 		}
 	}
 

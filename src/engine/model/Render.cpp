@@ -12,8 +12,9 @@
 #include "vulkaninitialize/Descriptor.h"
 #include "vulkanInitialize/SyncObject.h"
 
+#include "debug/SuzzaLog.h"
+
 #include <glm/gtc/matrix_transform.hpp>
-#include <vulkan/vulkan.h>
 #include <stdexcept>
 
 namespace suz
@@ -26,7 +27,7 @@ namespace suz
 		m_pipeline = vkManager.GetPipelines().GetResource("DefaultPipeline");
 		m_vkInitialize = vkManager.GetVulkanInitialize();
 		m_swapChain = vkManager.GetSwapChain();
-		m_renderPass = vkManager.GetRenderPass();
+		m_renderPass = vkManager.GetRenderPasses().GetResource("DefaultRenderPass");
 		m_bufferArea = vkManager.GetBufferArea();
 		m_descriptor = vkManager.GetDescriptor();
 		m_syncObject = vkManager.GetSyncObject();
@@ -46,9 +47,9 @@ namespace suz
 		};
 	};
 
-	void Render::SubmitMesh(Mesh* TargetMesh, const ModelConstant& ModelMatrix)
+	void Render::SubmitMesh(Mesh* TargetMesh, const ModelConstant& Constant)
 	{
-		m_meshQueue[TargetMesh].push_back(ModelMatrix);
+		m_drawList.SubmitMesh(TargetMesh, Constant);
 	}
 
 	void Render::SubmitCameraViewport(const CameraViewportInfo& ViewportInfo)
@@ -58,16 +59,23 @@ namespace suz
 
 	void Render::Draw(float DeltaTime)
 	{
-		/* 1. µÈ´ýÉÏÒ»Ö¡Íê³É½ÓÊÕµ½Î§À¸(Fence)ÐÅºÅ, ²¢ÉèÖÃ³¬Ê±ãÚÖµ */
+		struct DrawListCleanerGuard
+		{
+			~DrawListCleanerGuard() { drawList.Clear(); }
+
+			DrawList& drawList;
+		} drawListCleaner{ m_drawList };
+
+		/* 1. ç­‰å¾…ä¸Šä¸€å¸§å®ŒæˆæŽ¥æ”¶åˆ°å›´æ (Fence)ä¿¡å·, å¹¶è®¾ç½®è¶…æ—¶é˜™å€¼ */
 		vkWaitForFences(m_device->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame], VK_TRUE, UINT64_MAX);
 
 		m_bindlessSlotsAllocator.ReleaseSlots();
 
-		/* 2. ´Ó½»»»Á´»ñÈ¡Í¼Ïñ */
+		/* 2. ä»Žäº¤æ¢é“¾èŽ·å–å›¾åƒ */
 		uint32 imageIndex;
-		/* ´Ë´¦Ê¹ÓÃÍ¼ÏñÖ®ºó·¢ËÍÍ¼ÏñÐÅºÅÁ¿ */
+		/* æ­¤å¤„ä½¿ç”¨å›¾åƒä¹‹åŽå‘é€å›¾åƒä¿¡å·é‡ */
 		VkResult result = vkAcquireNextImageKHR(m_device->GetDevice(), m_swapChain->GetSwapChain(), UINT64_MAX, m_syncObject->GetImageAvailableSemaphore()[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
-		/* Èç¹û½»»»Á´¹ýÆÚ¿ÉÖØ½¨ */
+		/* å¦‚æžœäº¤æ¢é“¾è¿‡æœŸå¯é‡å»º */
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			m_swapChain->ReCreateSwapChain(m_bufferArea);
@@ -75,59 +83,59 @@ namespace suz
 		}
 		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
 		{
-			throw std::runtime_error("´Ó½»»»Á´»ñÈ¡Í¼ÏñÊ§°Ü!");
+			throw std::runtime_error("ä»Žäº¤æ¢é“¾èŽ·å–å›¾åƒå¤±è´¥!");
 		}
 
-		/* ÖØÖÃÎ§À¸ÐÅºÅ, ·ÀÖ¹Î§À¸ÖØÖÃºóÌáÇ°·µ»Øµ¼ÖÂÃ»ÓÐÐÅºÅ·¢³ö, Ôì³ÉËÀËø */
+		/* é‡ç½®å›´æ ä¿¡å·, é˜²æ­¢å›´æ é‡ç½®åŽæå‰è¿”å›žå¯¼è‡´æ²¡æœ‰ä¿¡å·å‘å‡º, é€ æˆæ­»é” */
 		vkResetFences(m_device->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame]);
 
-		/* 3. ¼ÇÂ¼ÃüÁî»º³å, ´«ÈëÍ¼ÏñË÷Òý */
+		/* 3. è®°å½•å‘½ä»¤ç¼“å†², ä¼ å…¥å›¾åƒç´¢å¼• */
 		vkResetCommandBuffer(m_bufferArea->GetCommandBuffer()[m_currentFrame], 0);
 		m_bufferArea->RecordCommandBuffer(
 			m_bufferArea->GetCommandBuffer()[m_currentFrame],
 			m_descriptor->GetCameraDescriptorSetElement(m_currentFrame),
-			m_meshQueue,
+			m_drawList,
 			imageIndex
 		);
 
 		UpdateModelTransform(DeltaTime);
 
-		/* 4. Ìá½»ÃüÁî»º³å */
+		/* 4. æäº¤å‘½ä»¤ç¼“å†² */
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		/* Ö¸¶¨ÐèÒªµÈ´ýµÄÍ¼ÏñÐÅºÅÁ¿ºÍµÈ´ý¶ÔÓ¦µÄ¹ÜÏß½×¶Î */
+		/* æŒ‡å®šéœ€è¦ç­‰å¾…çš„å›¾åƒä¿¡å·é‡å’Œç­‰å¾…å¯¹åº”çš„ç®¡çº¿é˜¶æ®µ */
 		VkSemaphore waitSemaphores[]{ m_syncObject->GetImageAvailableSemaphore()[m_currentFrame] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
-		/* Ö¸¶¨Êµ¼ÊÌá½»Ö´ÐÐµÄÃüÁî»º³åÇø */
+		/* æŒ‡å®šå®žé™…æäº¤æ‰§è¡Œçš„å‘½ä»¤ç¼“å†²åŒº */
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &m_bufferArea->GetCommandBuffer()[m_currentFrame];
-		/* Ö¸¶¨ÃüÁî»º³åÇøÍê³ÉÖ´ÐÐÐèÒª·¢³öµÄÐÅºÅÁ¿ */
+		/* æŒ‡å®šå‘½ä»¤ç¼“å†²åŒºå®Œæˆæ‰§è¡Œéœ€è¦å‘å‡ºçš„ä¿¡å·é‡ */
 		VkSemaphore sendSemaphores[] = { m_syncObject->GetRenderFinishedSemaphore()[m_currentFrame] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = sendSemaphores;
 
-		/* 5. Ìá½»ÃüÁî»º³åÇøµ½Í¼ÐÎ¶ÓÁÐ */
+		/* 5. æäº¤å‘½ä»¤ç¼“å†²åŒºåˆ°å›¾å½¢é˜Ÿåˆ— */
 		if (vkQueueSubmit(m_device->GetGraphicsQueue(), 1, &submitInfo, m_syncObject->GetInFrameFence()[m_currentFrame]) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Ìá½»ÃüÁî»º³åÊ§°Ü!");
+			throw std::runtime_error("æäº¤å‘½ä»¤ç¼“å†²å¤±è´¥!");
 		}
 
-		/* 6. Ìá½»½á¹ûµ½½»»»Á´ÒÔ´Ë×îÖÕÔÚÆÁÄ»ÉÏÏÔÊ¾ */
+		/* 6. æäº¤ç»“æžœåˆ°äº¤æ¢é“¾ä»¥æ­¤æœ€ç»ˆåœ¨å±å¹•ä¸Šæ˜¾ç¤º */
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		/* µÈ´ý»æÖÆÍê³ÉµÄÐÅºÅ½ÓÊÕµ½²Å¿ÉÒÔÖ´ÐÐ */
+		/* ç­‰å¾…ç»˜åˆ¶å®Œæˆçš„ä¿¡å·æŽ¥æ”¶åˆ°æ‰å¯ä»¥æ‰§è¡Œ */
 		presentInfo.waitSemaphoreCount = 1;
 		presentInfo.pWaitSemaphores = sendSemaphores;
-		/* Ö¸¶¨½«Òª³ÊÏÖµÄ½»»»Á´, ÒÔ¼°½»»»Á´ÐèÒª³ÊÏÖµÄÍ¼ÏñË÷Òý */
+		/* æŒ‡å®šå°†è¦å‘ˆçŽ°çš„äº¤æ¢é“¾, ä»¥åŠäº¤æ¢é“¾éœ€è¦å‘ˆçŽ°çš„å›¾åƒç´¢å¼• */
 		VkSwapchainKHR swapchains[] = { m_swapChain->GetSwapChain() };
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = swapchains;
 		presentInfo.pImageIndices = &imageIndex;
 
-		/* ×îÖÕ: ÇëÇóÌá½»Í¼Ïñµ½³ÊÏÖ¶ÓÁÐ */
+		/* æœ€ç»ˆ: è¯·æ±‚æäº¤å›¾åƒåˆ°å‘ˆçŽ°é˜Ÿåˆ— */
 		result = vkQueuePresentKHR(m_device->GetPresentQueue(), &presentInfo);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_bufferArea->IsFrameBufferResized())
 		{
@@ -136,7 +144,7 @@ namespace suz
 		}
 		else if (result != VK_SUCCESS)
 		{
-			throw std::runtime_error("³ÊÏÖ½»»»Á´Í¼ÏñÊ§°Ü!");
+			throw std::runtime_error("å‘ˆçŽ°äº¤æ¢é“¾å›¾åƒå¤±è´¥!");
 		}
 
 		m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
@@ -144,7 +152,7 @@ namespace suz
 
 	void Render::UpdateModelTransform(float DeltaTime)
 	{
-		/* ½«ÉãÏñ»úÊý¾Ý´«ÈëÓ³ÉäÄÚ´æ */
+		/* å°†æ‘„åƒæœºæ•°æ®ä¼ å…¥æ˜ å°„å†…å­˜ */
 		memcpy(m_bufferArea->GetUniformBuffersMapped()[m_currentFrame], &m_cameraViewportInfo, sizeof(m_cameraViewportInfo));
 	}
 }

@@ -2,5 +2,5 @@
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
-/* т╓аТнфюМ╡шн╩вН╢Сиооч */
+/* И╒└Г∙≥Г╨╧Г░├Ф╖╫Д╫█Ф°─Е╓╖Д╦┼И≥░ */
 #define MAX_SAMPLED_TEXTURE_IMAGES_SLOTS 256

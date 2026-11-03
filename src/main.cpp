@@ -1,10 +1,9 @@
-#include "engine/Engine.h"
+ï»¿#include "engine/Engine.h"
 #include "SuzzaApplication.h"
 
 #include "debug/SuzzaLog.h"
 
 #include <cstdlib>
-#include <stdexcept>
 
 int main()
 {
@@ -17,7 +16,7 @@ int main()
 
 	if (!engine.Init())
 	{
-		SUZZA_LOG_ERROR("³ÌĞò³õÊ¼»¯Ê§°Ü!");
+		SUZZA_LOG_ERROR("ç¨‹åºåˆå§‹åŒ–å¤±è´¥!");
 		return EXIT_FAILURE;
 	}
 

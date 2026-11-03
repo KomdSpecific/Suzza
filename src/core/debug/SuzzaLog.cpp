@@ -9,7 +9,7 @@ namespace suz
 	{
 		va_list valueList{};
 
-		/* 告诉系统函数可变参数在msg后面 */
+		/* 鍛婅瘔绯荤粺鍑芥暟鍙彉鍙傛暟鍦╩sg鍚庨潰 */
 		va_start(valueList, msg);
 		printf("[LOG INFO] ");
 		vprintf(msg, valueList);
@@ -21,7 +21,7 @@ namespace suz
 	{
 		va_list valueList{};
 
-		/* 告诉系统函数可变参数在msg后面 */
+		/* 鍛婅瘔绯荤粺鍑芥暟鍙彉鍙傛暟鍦╩sg鍚庨潰 */
 		va_start(valueList, msg);
 		printf("[LOG WARN] ");
 		vprintf(msg, valueList);
@@ -33,7 +33,7 @@ namespace suz
 	{
 		va_list valueList{};
 
-		/* 告诉系统函数可变参数在msg后面 */
+		/* 鍛婅瘔绯荤粺鍑芥暟鍙彉鍙傛暟鍦╩sg鍚庨潰 */
 		va_start(valueList, msg);
 		printf("[LOG ERROR] ");
 		vprintf(msg, valueList);

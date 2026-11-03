@@ -106,16 +106,16 @@ namespace suz
 		const VkRenderPass& RenderPass,
 		const VkCommandPool& CommandPool)
 	{
-		IMGUI_CHECKVERSION();								// ¼ì²éImgui°æ±¾
-		ImGui::CreateContext();								// ´´½¨ImguiÉÏÏÂÎÄ
+		IMGUI_CHECKVERSION();								// æ£€æŸ¥Imguiç‰ˆæœ¬
+		ImGui::CreateContext();								// åˆ›å»ºImguiä¸Šä¸‹æ–‡
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-		/* °ó¶¨GLFW´°¿Ú */
+		/* ç»‘å®šGLFWçª—å£ */
 		ImGui_ImplGlfw_InitForVulkan(window, true);
 
-		/* Vulkan³õÊ¼»¯½á¹¹Ìå */
+		/* Vulkanåˆå§‹åŒ–ç»“æ„ä½“ */
 		ImGui_ImplVulkan_InitInfo vk_init_info{};
 		vk_init_info.Instance = Instance;
 		vk_init_info.PhysicalDevice = PhysicalDevice;

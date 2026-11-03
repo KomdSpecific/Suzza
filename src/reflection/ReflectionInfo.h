@@ -62,17 +62,17 @@ namespace suz
 
 	struct FieldInfo
 	{
-		std::string name{};							// ±äÁ¿Ãû
-		std::string typeName{};						// ÀàĞÍÃû(Èç¹ûÀàĞÍÊÇ±ğÃûÔòÏÔÊ¾ÀàĞÍ±ğÃû)
-		usize offset;								// ÀàÄÚÆ«ÒÆÁ¿
-		Editability editable;						// ÊÇ·ñ¿É¸ü¸Ä
+		std::string name{};							// å˜é‡å
+		std::string typeName{};						// ç±»å‹å(å¦‚æœç±»å‹æ˜¯åˆ«ååˆ™æ˜¾ç¤ºç±»å‹åˆ«å)
+		usize offset;								// ç±»å†…åç§»é‡
+		Editability editable;						// æ˜¯å¦å¯æ›´æ”¹
 
 		std::function<void(void*, void*)> getterFunc;
 		std::function<void(void*, void*)> setterFunc;
 
-		ETypeCategory category = ETypeCategory::Unknown;				// ±äÁ¿·ÖÀà
-		EPrimitiveType primitiveType = EPrimitiveType::Unknown;			// ±äÁ¿¾ßÌåÀàĞÍ(½öµ±category==Primitive²ÅÓĞĞ§)
-		EContainerType containerType = EContainerType::Unknown;			// ÈİÆ÷ÀàĞÍ(½öµ±category==Container²ÅÓĞĞ§)
+		ETypeCategory category = ETypeCategory::Unknown;				// å˜é‡åˆ†ç±»
+		EPrimitiveType primitiveType = EPrimitiveType::Unknown;			// å˜é‡å…·ä½“ç±»å‹(ä»…å½“category==Primitiveæ‰æœ‰æ•ˆ)
+		EContainerType containerType = EContainerType::Unknown;			// å®¹å™¨ç±»å‹(ä»…å½“category==Containeræ‰æœ‰æ•ˆ)
 
 		std::shared_ptr<IContainerAccessor> accessor = nullptr;
 
@@ -81,13 +81,13 @@ namespace suz
 			return !name.empty() && !typeName.empty() && getterFunc;
 		}
 
-		/* Æ«ÒÆÁ¿·½°¸¹¹Ôì */
+		/* åç§»é‡æ–¹æ¡ˆæ„é€  */
 		static FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, ETypeCategory TypeCategory, Editability EditEnum);
 		static FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, ETypeCategory TypeCategory, EPrimitiveType PrimitiveType, Editability EditEnum);
 		static FieldInfo CreateFieldInfo(const std::string& Name, const std::string& TypeName, usize Offset, usize TypeSize, ETypeCategory TypeCategory, EContainerType ContainerType, Editability EditEnum);
 		
-		/* Àà³ÉÔ±º¯Êı¹¹Ôì */
-		/* 1.»ù´¡ÀàĞÍ×¢²áº¯Êı */
+		/* ç±»æˆå‘˜å‡½æ•°æ„é€  */
+		/* 1.åŸºç¡€ç±»å‹æ³¨å†Œå‡½æ•° */
 		template<typename ClassT, typename MemberT>
 		static FieldInfo CreateFieldInfo(
 			const std::string& Name,
@@ -110,7 +110,7 @@ namespace suz
 			Editability EditEnum
 		);
 
-		/* 2.ÈİÆ÷×¢²áº¯Êı */
+		/* 2.å®¹å™¨æ³¨å†Œå‡½æ•° */
 		template<typename ClassT, typename MemberT>
 		static FieldInfo CreateFieldInfo(
 			const std::string& Name,

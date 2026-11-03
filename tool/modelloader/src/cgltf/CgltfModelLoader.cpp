@@ -57,7 +57,7 @@ namespace suz
 #pragma region LOAD_GLTF_HELPER_FUNCTION
     cgltf_data* LoadGltfFile(const std::string& FilePath)
     {
-        /* Ä¬ÈÏ¼ÓÔØÅäÖÃ */
+        /* é»˜è®¤åŠ è½½é…ç½® */
         cgltf_options options = {};
         cgltf_data* data = nullptr;
 
@@ -67,11 +67,11 @@ namespace suz
             return nullptr;
         }
 
-        /* ¶ÁÈ¡Íâ²¿bin»º³åÇøÎÄ¼ş */
+        /* è¯»å–å¤–éƒ¨binç¼“å†²åŒºæ–‡ä»¶ */
         fileParseResult = cgltf_load_buffers(&options, data, FilePath.c_str());
         if (fileParseResult != cgltf_result_success)
         {
-            /* ¶ÁÈ¡»º³åÇøÎÄ¼şÊ§°Ü */
+            /* è¯»å–ç¼“å†²åŒºæ–‡ä»¶å¤±è´¥ */
             cgltf_free(data);
             return nullptr;
         }
@@ -86,7 +86,7 @@ namespace suz
             OutModels.clear();
         }
 
-        /* ±éÀúËùÓĞ½Úµã */
+        /* éå†æ‰€æœ‰èŠ‚ç‚¹ */
         for (usize nodeIndex = 0; nodeIndex < Data->scene->nodes_count; nodeIndex++)
         {
             cgltf_node* node = Data->scene->nodes[nodeIndex];
@@ -104,10 +104,10 @@ namespace suz
                 std::vector<uint32> indices{};
                 MaterialInfo material{};
 
-                /* ¶ÁÈ¡¶¥µãÊı¾İ */
+                /* è¯»å–é¡¶ç‚¹æ•°æ® */
                 if (LoadPrimitiveVertices(primitive, vertices))
                 {
-                    /* ¶ÁÈ¡¶¥µãË÷Òı */
+                    /* è¯»å–é¡¶ç‚¹ç´¢å¼• */
                     LoadPrimitiveIndices(primitive, indices);
 
                     modelData.vertices = vertices;
@@ -187,7 +187,7 @@ namespace suz
         }
     }
 
-    /* ½«Accessor¶ÁÈ¡³ÉFloatÊı×é */
+    /* å°†Accessorè¯»å–æˆFloatæ•°ç»„ */
     void LoadAccessorFloats(const cgltf_accessor* Accessor, std::vector<float>& OutData)
     {
         if (!Accessor) return;
@@ -198,11 +198,11 @@ namespace suz
         cgltf_accessor_unpack_floats(Accessor, OutData.data(), OutData.size());
     }
 
-    /* ´ÓÒ»¸öÍ¼ÔªÉú³É¶¥µãÊı×é */
+    /* ä»ä¸€ä¸ªå›¾å…ƒç”Ÿæˆé¡¶ç‚¹æ•°ç»„ */
     bool LoadPrimitiveVertices(const cgltf_primitive* Primitive, std::vector<ModelVertexData>& OutVertices)
     {
-        /* °´ÕÕtypeÈ¡ÊôĞÔ */
-        /* µÚ¶ş²ÎÊıÊÇcgltfÊôĞÔÀàĞÍ, ÕÒµ½¸ÃÀàĞÍµÄAccessor */
+        /* æŒ‰ç…§typeå–å±æ€§ */
+        /* ç¬¬äºŒå‚æ•°æ˜¯cgltfå±æ€§ç±»å‹, æ‰¾åˆ°è¯¥ç±»å‹çš„Accessor */
         const cgltf_accessor* locationAcc = cgltf_find_accessor(Primitive, cgltf_attribute_type_position, 0);
         const cgltf_accessor* colorAcc = cgltf_find_accessor(Primitive, cgltf_attribute_type_color, 0);
         const cgltf_accessor* texcoordAcc = cgltf_find_accessor(Primitive, cgltf_attribute_type_texcoord, 0);
@@ -217,7 +217,7 @@ namespace suz
         LoadAccessorFloats(colorAcc, colorData);
         LoadAccessorFloats(texcoordAcc, texcoordData);
 
-        /* ·ÖÅäËùĞè¶¥µãÊıÁ¿ÄÚ´æ */
+        /* åˆ†é…æ‰€éœ€é¡¶ç‚¹æ•°é‡å†…å­˜ */
         usize verticesCount = locationAcc->count;
         OutVertices.resize(verticesCount);
 
@@ -237,7 +237,7 @@ namespace suz
 
             if (colorAcc)
             {
-                /* ÑÕÉ«ÊôĞÔ¿ÉÄÜÊÇvec3»òvec4, °´ÕÕÊµ¼Ê×é¼şÊı´¦Àí */
+                /* é¢œè‰²å±æ€§å¯èƒ½æ˜¯vec3æˆ–vec4, æŒ‰ç…§å®é™…ç»„ä»¶æ•°å¤„ç† */
                 usize count = cgltf_num_components(colorAcc->type);
                 vertex.color = { colorData[vertexIndex * count + 0],colorData[vertexIndex * count + 1],colorData[vertexIndex * count + 2] };
             }
@@ -252,7 +252,7 @@ namespace suz
         return true;
     }
 
-    /* ´ÓÒ»¸öÍ¼ÔªÉú³ÉË÷ÒıÊı×é */
+    /* ä»ä¸€ä¸ªå›¾å…ƒç”Ÿæˆç´¢å¼•æ•°ç»„ */
     bool LoadPrimitiveIndices(const cgltf_primitive* Primitive, std::vector<uint32>& OutIndices)
     {
         if (!Primitive->indices) return false;
@@ -263,7 +263,7 @@ namespace suz
         return true;
     }
 
-    /* ´ÓÒ»¸ö²ÄÖÊ¶ÁÈ¡ËùĞèÌùÍ¼ */
+    /* ä»ä¸€ä¸ªæè´¨è¯»å–æ‰€éœ€è´´å›¾ */
     bool LoadPrimitiveMaterial(const cgltf_primitive* Primitive, MaterialInfo& OutMaterial)
     {
         if (!Primitive->material) return false;
@@ -276,7 +276,7 @@ namespace suz
             material->pbr_metallic_roughness.base_color_factor[3]
         };
 
-        /* »ù´¡ÑÕÉ«ÌùÍ¼ */
+        /* åŸºç¡€é¢œè‰²è´´å›¾ */
         cgltf_image* image = material->pbr_metallic_roughness.base_color_texture.texture->image;
         if (image->uri)
         {

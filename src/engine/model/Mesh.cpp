@@ -10,9 +10,9 @@ namespace suz
 	VkVertexInputBindingDescription Vertex::GetBindingDescription()
 	{
 		VkVertexInputBindingDescription bindingDescription{};
-		bindingDescription.binding = 0;									// ¶¥µãÊı×éÖĞ¿ªÊ¼°ó¶¨µÄÎ»ÖÃ(Ë÷Òı)
-		bindingDescription.stride = sizeof(Vertex);						// Ã¿¸ö¶¥µãËùÓĞÊôĞÔµÄ×Ü×Ö½Ú
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;		// Ã¿¸ö¶¥µãÖ®ºóÒÆ¶¯µ½ÏÂÒ»¸öÊµÀıÌõÄ¿
+		bindingDescription.binding = 0;									// é¡¶ç‚¹æ•°ç»„ä¸­å¼€å§‹ç»‘å®šçš„ä½ç½®(ç´¢å¼•)
+		bindingDescription.stride = sizeof(Vertex);						// æ¯ä¸ªé¡¶ç‚¹æ‰€æœ‰å±æ€§çš„æ€»å­—èŠ‚
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;		// æ¯ä¸ªé¡¶ç‚¹ä¹‹åç§»åŠ¨åˆ°ä¸‹ä¸€ä¸ªå®ä¾‹æ¡ç›®
 
 		return bindingDescription;
 	}
@@ -21,9 +21,9 @@ namespace suz
 	{
 		Vector<VkVertexInputAttributeDescription> attributeDescriptions(3);
 		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;							// ¶ÔÓ¦×ÅÉ«Æ÷µÄlocationÖ¸Áî
-		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;	// ÃèÊöÊôĞÔµÄËùÓĞ·ÖÁ¿, ´Ë´¦3¸ö32Î»¸¡µã·ÖÁ¿
-		attributeDescriptions[0].offset = offsetof(Vertex, location);	// ´Ó¶¥µãÄÚ¿ªÊ¼¶ÁÈ¡µÄÆ«ÒÆÁ¿
+		attributeDescriptions[0].location = 0;							// å¯¹åº”ç€è‰²å™¨çš„locationæŒ‡ä»¤
+		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;	// æè¿°å±æ€§çš„æ‰€æœ‰åˆ†é‡, æ­¤å¤„3ä¸ª32ä½æµ®ç‚¹åˆ†é‡
+		attributeDescriptions[0].offset = offsetof(Vertex, location);	// ä»é¡¶ç‚¹å†…å¼€å§‹è¯»å–çš„åç§»é‡
 
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
@@ -60,7 +60,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class Mesh Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class Mesh Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}

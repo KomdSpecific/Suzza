@@ -33,7 +33,7 @@ namespace suz
 		virtual bool ShowFloat(const char* Label, float* Value, const float Speed = 1.0f) override;
 		virtual bool ShowVector2Float(const char* Label, float* Vector, const float Speed = 1.0f) override;
 		virtual bool ShowVector3Float(const char* Label, float* Vector, const float Speed = 1.0f) override;
-		/* Ö¡ÉúÃüÖÜÆÚ */
+		/* å¸§ç”Ÿå‘½å‘¨æœŸ */
 		virtual void BeginFrame() override;
 		virtual void RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer) override;
 

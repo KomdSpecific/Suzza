@@ -18,14 +18,14 @@ namespace suz
 	{
 		if (!mesh || !material) return;
 
-		/* ×¢²áÍø¸ñ */
+		/* æ³¨å†Œç½‘æ ¼ */
 		MeshResourceManager& meshManager = Engine::GetMeshResourceManager();
 		MeshHandle handle = meshManager.LoadMesh(mesh);
 
 		m_meshPair.first = handle;
 		m_meshPair.second = meshManager.GetLoadedMesh(handle);
 
-		/* ×¢²á²ÄÖÊ */
+		/* æ³¨å†Œæè´¨ */
 		MaterialResourceManager& materialManager = Engine::GetMaterialResourceManager();
 		MaterialHandle materialHandle = materialManager.LoadMaterial(material);
 
@@ -111,7 +111,7 @@ namespace suz
 		modelConstant.modelMatrix = m_actorOwner->GetActorModelMatrix();
 		modelConstant.slotIndex = m_materialPair.second->GetMaterialSlot();
 
-		/* Ìá½»Meshµ½äÖÈ¾¶ÓÁÐ, ÄÜ¹»»ñÈ¡¶¥µã¡¢Ë÷Òý»º³åÇø */
+		/* æäº¤Meshåˆ°æ¸²æŸ“é˜Ÿåˆ—, èƒ½å¤ŸèŽ·å–é¡¶ç‚¹ã€ç´¢å¼•ç¼“å†²åŒº */
 		Engine::GetEngineInstance().GetRender()->SubmitMesh(m_meshPair.second, modelConstant);
 	}
 

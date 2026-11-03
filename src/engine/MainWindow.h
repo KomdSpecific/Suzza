@@ -28,7 +28,7 @@ namespace suz
 
 		void CreateWindowSurface(const VkInstance& instance, VkSurfaceKHR* surface);
 
-		/* 获取当前窗口的分辨率 */
+		/* 鑾峰彇褰撳墠绐楀彛鐨勫垎杈ㄧ巼 */
 		inline VkExtent2D GetWindowExtent() { return { static_cast<uint32_t>(m_width),static_cast<uint32_t>(m_height) }; }
 		void ResetWindowExtent();
 

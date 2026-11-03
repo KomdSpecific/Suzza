@@ -7,14 +7,14 @@ namespace suz
 {
 	VkDeviceCreateInfo DeviceSpec::DefaultDeviceCreateInfo(const DeviceSpec& Spec)
 	{
-		/* ´´½¨Âß¼­Éè±¸ */
+		/* åˆ›å»ºé€»è¾‘è®¾å¤‡ */
 		VkDeviceCreateInfo deviceCreateInfo{};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32>(Spec.queueCreateInfos.size());
 		deviceCreateInfo.pQueueCreateInfos = Spec.queueCreateInfos.data();
 		deviceCreateInfo.pEnabledFeatures = &Spec.physicalDeviceFeatures;
 
-		/* ÆôÓÃÉè±¸(Èç½»»»Á´µÈ)À©Õ¹ */
+		/* å¯ç”¨è®¾å¤‡(å¦‚äº¤æ¢é“¾ç­‰)æ‰©å±• */
 		deviceCreateInfo.enabledExtensionCount = static_cast<uint32>(Spec.deviceExtensions.size());
 		deviceCreateInfo.ppEnabledExtensionNames = Spec.deviceExtensions.data();
 
@@ -24,11 +24,11 @@ namespace suz
 		}
 		else
 		{
-			SUZZA_LOG_INFO("Éè±¸²»Ö§³ÖËùĞèµÄÌØĞÔ!");
+			SUZZA_LOG_INFO("è®¾å¤‡ä¸æ”¯æŒæ‰€éœ€çš„ç‰¹æ€§!");
 			return {};
 		}
 
-		/* ÔÙ´ÎÉèÖÃÉè±¸ÑéÖ¤²ã, ·ÀÖ¹±»ºöÂÔ */
+		/* å†æ¬¡è®¾ç½®è®¾å¤‡éªŒè¯å±‚, é˜²æ­¢è¢«å¿½ç•¥ */
 		if (Spec.enableValidationLayers)
 		{
 			deviceCreateInfo.enabledLayerCount = static_cast<uint32>(Spec.validationLayers.size());
@@ -47,7 +47,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class Device Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class Device Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -56,7 +56,7 @@ namespace suz
 	{
 		if (Spec.physicalDevice == VK_NULL_HANDLE)
 		{
-			SUZZA_LOG_ERROR("ÎŞ·¨´´½¨Âß¼­Éè±¸: ÎïÀíÉè±¸physicalDevice²»ºÏ·¨!");
+			SUZZA_LOG_ERROR("æ— æ³•åˆ›å»ºé€»è¾‘è®¾å¤‡: ç‰©ç†è®¾å¤‡physicalDeviceä¸åˆæ³•!");
 			return false;
 		}
 
@@ -68,15 +68,15 @@ namespace suz
 		VkDeviceCreateInfo deviceInfo = DeviceSpec::DefaultDeviceCreateInfo(Spec);
 		if (vkCreateDevice(Spec.physicalDevice, &deviceInfo, nullptr, &m_device) != VK_SUCCESS)
 		{
-			SUZZA_LOG_ERROR("´´½¨Âß¼­Éè±¸Ê§°Ü!");
+			SUZZA_LOG_ERROR("åˆ›å»ºé€»è¾‘è®¾å¤‡å¤±è´¥!");
 			return false;
 		}
 
-		/* »º´æ¶ÓÁĞ×åË÷Òı */
+		/* ç¼“å­˜é˜Ÿåˆ—æ—ç´¢å¼• */
 		m_graphicsFamilyIndex = Spec.queueFamilieIndices.graphicsFamliy.value();
 		m_presentFamilyIndex = Spec.queueFamilieIndices.presentFamily.value();
 
-		/* ¼ìË÷Ä¿±êÉè±¸µÄ¶ÓÁĞ¾ä±ú²¢½øĞĞ»º´æ */
+		/* æ£€ç´¢ç›®æ ‡è®¾å¤‡çš„é˜Ÿåˆ—å¥æŸ„å¹¶è¿›è¡Œç¼“å­˜ */
 		vkGetDeviceQueue(m_device, Spec.queueFamilieIndices.graphicsFamliy.value(), 0, &m_graphicsQueue);
 		vkGetDeviceQueue(m_device, Spec.queueFamilieIndices.presentFamily.value(), 0, &m_presentQueue);
 

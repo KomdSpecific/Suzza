@@ -14,13 +14,13 @@ namespace suz
 	{
 		if (!TargetActor) return false;
 
-		/* ·ÀÖ¹ÖØ¸´×¢²á */
+		/* é˜²æ­¢é‡å¤æ³¨å†Œ */
 		for (std::unique_ptr<Actor>& actor : m_actorList)
 		{
 			if (actor.get() == TargetActor) return false;
 		}
 
-		/* Ä¬ÈÏ×¢²á¸ùActor */
+		/* é»˜è®¤æ³¨å†Œæ ¹Actor */
 		m_actorList.push_back(std::unique_ptr<Actor>(TargetActor));
 		m_rootActorList.push_back(TargetActor);
 
@@ -33,23 +33,23 @@ namespace suz
 	{
 		if (!TargetActor) return false;
 
-		/* µÚÒ»ÖÖÇé¿ö, ĞÂµÄ¸¸ActorÎª¿Õ */
+		/* ç¬¬ä¸€ç§æƒ…å†µ, æ–°çš„çˆ¶Actorä¸ºç©º */
 		if (!ParentActor)
 		{
-			/* 1. µ±Ç°ActorÔÚ³¡¾°ÖĞÒÑ´æÔÚÇÒ²»ÊÇ³¡¾°¸ù½Úµã */
+			/* 1. å½“å‰Actoråœ¨åœºæ™¯ä¸­å·²å­˜åœ¨ä¸”ä¸æ˜¯åœºæ™¯æ ¹èŠ‚ç‚¹ */
 			if (Actor* oldParentActor = TargetActor->GetParentActor())
 			{
-				/* ×¢²áActorÎª¸ù½Úµã */
+				/* æ³¨å†ŒActorä¸ºæ ¹èŠ‚ç‚¹ */
 				TargetActor->SetParentActor(nullptr);
 				oldParentActor->RemoveChildActor(TargetActor);
 
 				m_rootActorList.push_back(TargetActor);
 				return true;
 			}
-			/* 2. µ±Ç°Actor¸Õ¸Õ´´½¨ */
+			/* 2. å½“å‰Actoråˆšåˆšåˆ›å»º */
 			else
 			{
-				/* ·ÀÖ¹ÖØ¸´×¢²á */
+				/* é˜²æ­¢é‡å¤æ³¨å†Œ */
 				for (std::unique_ptr<Actor>& actor : m_actorList)
 				{
 					if (actor.get() == TargetActor)
@@ -66,15 +66,15 @@ namespace suz
 				return true;
 			}
 		}
-		/* µÚ¶şÖÖÇé¿ö, ĞÂµÄ¸¸Actor²»Îª¿Õ */
+		/* ç¬¬äºŒç§æƒ…å†µ, æ–°çš„çˆ¶Actorä¸ä¸ºç©º */
 		else
 		{
-			/* 1. µ±Ç°ActorÔÚ³¡¾°ÖĞÒÑ´æÔÚÇÒ²»ÊÇ³¡¾°¸ù½Úµã */
+			/* 1. å½“å‰Actoråœ¨åœºæ™¯ä¸­å·²å­˜åœ¨ä¸”ä¸æ˜¯åœºæ™¯æ ¹èŠ‚ç‚¹ */
 			if (Actor* oldParent = TargetActor->GetParentActor())
 			{
 				if (CheckWouldCreateCycle(TargetActor, ParentActor))
 				{
-					SUZZA_LOG_ERROR("ÔÚĞÂ¸¸×æÏÈÖĞ·¢ÏÖÁËÄ¿±êActor, ¸ü»»Ê§°Ü!");
+					SUZZA_LOG_ERROR("åœ¨æ–°çˆ¶ç¥–å…ˆä¸­å‘ç°äº†ç›®æ ‡Actor, æ›´æ¢å¤±è´¥!");
 					return false;
 				}
 
@@ -85,7 +85,7 @@ namespace suz
 			}
 			else
 			{
-				/* ²éÕÒ¸ù½ÚµãÖĞÊÇ·ñ´æÔÚÄ¿±êActor */
+				/* æŸ¥æ‰¾æ ¹èŠ‚ç‚¹ä¸­æ˜¯å¦å­˜åœ¨ç›®æ ‡Actor */
 				auto findActor = std::find_if(m_rootActorList.begin(), m_rootActorList.end(),
 					[TargetActor](Actor* actor)
 					{
@@ -93,14 +93,14 @@ namespace suz
 					});
 
 				if (findActor != m_rootActorList.end())
-				/* 2. ActorÎª³¡¾°¸ù½Úµã */
+				/* 2. Actorä¸ºåœºæ™¯æ ¹èŠ‚ç‚¹ */
 				{
 					m_rootActorList.erase(findActor);
 					TargetActor->SetParentActor(ParentActor);
 					ParentActor->RegisterChildActor<Actor>(TargetActor);
 					return true;
 				}
-				/* 3. Actor¸Õ¸Õ´´½¨, ³¡¾°²»´æÔÚÄ¿±êActor */
+				/* 3. Actoråˆšåˆšåˆ›å»º, åœºæ™¯ä¸å­˜åœ¨ç›®æ ‡Actor */
 				else
 				{
 					TargetActor->SetParentActor(ParentActor);
@@ -118,7 +118,7 @@ namespace suz
 
 	void Scene::MarkedActorDestroy(Actor* TargetActor)
 	{
-		/* ·ÇÁ¢¼´É¾³ı, ¶øÊÇ±ê¼ÇÎª´ıÉ¾³ıÁĞ±í */
+		/* éç«‹å³åˆ é™¤, è€Œæ˜¯æ ‡è®°ä¸ºå¾…åˆ é™¤åˆ—è¡¨ */
 		if (!TargetActor) return;
 		TargetActor->SetActorStatus(ActorStatus::PendingDestroy);
 	}
@@ -145,11 +145,11 @@ namespace suz
 			CopyVertexDataStruct(model.vertices, vertex);
 
 			suz::MeshComponent* meshComponent = new suz::MeshComponent();
-			/* ¼ÓÔØMesh */
+			/* åŠ è½½Mesh */
 			meshComponent->CreateMesh(vertex, model.indices);
 
 			std::string texturePath = model.modelFolderPath + "/" + model.material.baseColorTexturePath;
-			/* ¼ÓÔØMaterial */
+			/* åŠ è½½Material */
 			meshComponent->CreateMaterial(new Material(texturePath));
 
 			Actor* actor = new Actor();
@@ -162,14 +162,14 @@ namespace suz
 	{
 		for (std::unique_ptr<Actor>& actor : m_actorList)
 		{
-			/* ¸øActor×¢²á×é¼ş */
+			/* ç»™Actoræ³¨å†Œç»„ä»¶ */
 			m_defaultPlayer->BatchRegisterAllSubComponents();
 			actor->BatchRegisterAllSubComponents();
 		}
 
 		m_defaultPlayer->BeginPlay();
 
-		/* ½ö¶Ô¸ù½Úµã½øĞĞUpdateÂß¼­ */
+		/* ä»…å¯¹æ ¹èŠ‚ç‚¹è¿›è¡ŒUpdateé€»è¾‘ */
 		for (Actor* actor : m_rootActorList)
 		{
 			actor->BeginPlay();
@@ -182,20 +182,20 @@ namespace suz
 
 		for (auto it = m_actorList.begin(); it != m_actorList.end(); it++)
 		{
-			/* ½ö¶Ô¸ù½Úµã½øĞĞUpdateÂß¼­ */
+			/* ä»…å¯¹æ ¹èŠ‚ç‚¹è¿›è¡ŒUpdateé€»è¾‘ */
 			if ((*it)->GetParentActor() == nullptr)
 			{
 				(*it)->Update(DeltaTime);
 			}
 
-			/* Ö¡½áÊøÔÙÖ´ĞĞÏú»ÙÂß¼­ */
+			/* å¸§ç»“æŸå†æ‰§è¡Œé”€æ¯é€»è¾‘ */
 			ActorStatus actorStatus = (*it)->GetActorStatus();
 			if (actorStatus == ActorStatus::PendingDestroy)
 			{
 				(*it)->Destroy();
 			}
 
-			/* ¶ÔÒÑ¾­Ö´ĞĞÏú»ÙÂß¼­µÄActor½øĞĞÄÚ´æ»ØÊÕ */
+			/* å¯¹å·²ç»æ‰§è¡Œé”€æ¯é€»è¾‘çš„Actorè¿›è¡Œå†…å­˜å›æ”¶ */
 			if (actorStatus == ActorStatus::Destroyed)
 			{
 				m_actorList.erase(it);

@@ -3,6 +3,7 @@
 #include "model/ModelResourceManager.h"
 #include "actor/PlayerController.h"
 #include "components/MeshComponent.h"
+#include "components/CameraComponent.h"
 #include "file/FileSystem.h"
 
 #include <vector>

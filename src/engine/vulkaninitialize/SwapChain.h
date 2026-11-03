@@ -12,7 +12,7 @@ namespace suz
 
 	struct SwapChainSupportDetails
 	{
-		VkSurfaceCapabilitiesKHR capabilities;				// �������湦��
+		VkSurfaceCapabilitiesKHR capabilities;				// 基本表面功能
 		std::vector<VkSurfaceFormatKHR> formats;
 		std::vector<VkPresentModeKHR> presentModes;
 	};
@@ -29,9 +29,9 @@ namespace suz
 
 		static SwapChainSupportDetails QuerySupportChainSupport(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface);
 
-		/* ѡ������ʵı����ʽ (��������) */
+		/* 选择最合适的表面格式 (绘制纹理) */
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& AvailableFormats);
-		/* ѡ������ʵĳ��ָ�ʽ (ͼ����ʾ����Ļ������) */
+		/* 选择最合适的呈现格式 (图像显示到屏幕的条件) */
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& AvailableModes);
 
 		void ReCreateSwapChain(BufferArea* BufferArea);
@@ -39,7 +39,7 @@ namespace suz
 
 	private:
 		void CreateSwapChain();
-		/* ����ͼ����ͼ */
+		/* 创建图像视图 */
 		void CreateImageViews();
 
 		VkExtent2D GetSwapChainExtent(const VkSurfaceCapabilitiesKHR& Capabilities);

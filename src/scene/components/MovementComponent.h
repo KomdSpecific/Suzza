@@ -23,8 +23,8 @@ namespace suz
 		suz::InputManager& m_inputManager;
 
 		SUZZA_PROPERTY(Editability::Editable)
-		float m_moveSpeed = 2.0f;						// ÒÆ¶¯ËÙ¶È
+		float m_moveSpeed = 2.0f;						// ç§»åŠ¨é€Ÿåº¦
 		SUZZA_PROPERTY(Editability::Editable)
-		float m_sensitivity = 0.1f;						// Êó±êĞı×ªÁéÃô¶È
+		float m_sensitivity = 0.1f;						// é¼ æ ‡æ—‹è½¬çµæ•åº¦
 	};
 }

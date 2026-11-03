@@ -5,7 +5,7 @@
 
 namespace suz
 {
-	/* ´æ´¢ËùÓĞµÄ¹ÜÏßÅäÖÃĞÅÏ¢ */
+	/* å­˜å‚¨æ‰€æœ‰çš„ç®¡çº¿é…ç½®ä¿¡æ¯ */
 	struct PipelineConfigInfo
 	{
 		VkPipelineViewportStateCreateInfo viewportInfo = {};
@@ -47,13 +47,13 @@ namespace suz
 		const VkRenderPass& renderPass;
 		const VkPipelineLayout& layout;
 
-		/* ¹ÜÏß×ÅÉ«Æ÷ĞÅÏ¢ */
+		/* ç®¡çº¿ç€è‰²å™¨ä¿¡æ¯ */
 		Vector<VkPipelineShaderStageCreateInfo> shaderStages{};
 
 		VkShaderModule vertShaderMoudle{};
 		VkShaderModule fragShaderMoudle{};
 
-		/* ¶¥µã°ó¶¨ºÍ¶¥µãÊôĞÔÃèÊöĞÅÏ¢ */
+		/* é¡¶ç‚¹ç»‘å®šå’Œé¡¶ç‚¹å±æ€§æè¿°ä¿¡æ¯ */
 		Vector<VkVertexInputBindingDescription> bindingDescriptions{};
 		Vector<VkVertexInputAttributeDescription> attributeDescriptions{};
 

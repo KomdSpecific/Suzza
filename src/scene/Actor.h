@@ -49,15 +49,15 @@ namespace suz
 		void SetActorStatus(ActorStatus Status);
 		const ActorStatus& GetActorStatus() const;
 
-		/* 注册子Actor */
+		/* 娉ㄥ唽瀛怉ctor */
 		template<typename Child>
 		bool RegisterChildActor(Child* TargetActor);
 		bool RemoveChildActor(Actor* ChildActor);
 		const std::vector<Actor*>& GetChildActorList() const;
-		/* 注册Actor组件 */
+		/* 娉ㄥ唽Actor缁勪欢 */
 		template<typename Comp>
 		bool RegisterComponent(Comp* TargetComponent);
-		/* 获取Actor组件 */
+		/* 鑾峰彇Actor缁勪欢 */
 		template<typename Comp>
 		Comp* GetActorComponent();
 		std::vector<Component*>& GetAllActorComponents();
@@ -149,7 +149,7 @@ namespace suz
 	{
 		if constexpr (!std::is_base_of_v<Component, Comp>) return nullptr;
 
-		/* 获取组件对应的ID */
+		/* 鑾峰彇缁勪欢瀵瑰簲鐨処D */
 		uint16 typeId = Component::GetStaticComponentId<Comp>();
 
 		for (Component* comp : m_components)

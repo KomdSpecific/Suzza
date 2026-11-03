@@ -24,7 +24,7 @@ namespace suz
 			QueueFamilyCollector collector = DeviceFunctionLibrary::FindQueueFamilies(physicalDevice, surface);
 			if (!collector.IsValid())
 			{
-				SUZZA_LOG_ERROR("ÎŞ·¨ÕÒµ½ºÏÊÊµÄ¶ÓÁĞ×å!");
+				SUZZA_LOG_ERROR("æ— æ³•æ‰¾åˆ°åˆé€‚çš„é˜Ÿåˆ—æ—!");
 				return DeviceSpec(physicalDevice);
 			}
 
@@ -40,17 +40,17 @@ namespace suz
 				spec.queueCreateInfos.push_back(queueInfo);
 			}
 
-			/* Ö¸¶¨ÒªÊ¹ÓÃµÄÉè±¸ÌØĞÔ */
-			spec.physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;						// ¿ªÆô²ÉÑùÆ÷¸÷ÏîÒìĞÔ¹ıÂË
+			/* æŒ‡å®šè¦ä½¿ç”¨çš„è®¾å¤‡ç‰¹æ€§ */
+			spec.physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;						// å¼€å¯é‡‡æ ·å™¨å„é¡¹å¼‚æ€§è¿‡æ»¤
 
-			/* ½«Éè±¸¿ªÆôÄÜÁ¦Á´±íÉèÖÃ¸øÉè±¸´´½¨ĞÅÏ¢ */
+			/* å°†è®¾å¤‡å¼€å¯èƒ½åŠ›é“¾è¡¨è®¾ç½®ç»™è®¾å¤‡åˆ›å»ºä¿¡æ¯ */
 			if (DeviceFunctionLibrary::CheckPhysicalDeviceFeatureSupport(physicalDevice))
 			{
 				spec.deviceFeaturesChain = DeviceFunctionLibrary::CreateDeviceFeaturesChain();
 			}
 			else
 			{
-				SUZZA_LOG_ERROR("Éè±¸²»Ö§³ÖËùĞèÌØĞÔ, ¹¹½¨DeviceSpecÊ§°Ü!");
+				SUZZA_LOG_ERROR("è®¾å¤‡ä¸æ”¯æŒæ‰€éœ€ç‰¹æ€§, æ„å»ºDeviceSpecå¤±è´¥!");
 				return DeviceSpec(physicalDevice);
 			}
 

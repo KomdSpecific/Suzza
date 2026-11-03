@@ -11,7 +11,7 @@ namespace suz
 		if (extensionIndex == std::string::npos) return {};
 
 		std::string extensionName = FilePath.substr(extensionIndex);
-		/* ½«À©Õ¹Ãû×ª»»³ÉÐ¡Ð´Í³Ò»ÅÐ¶Ï */
+		/* å°†æ‰©å±•åè½¬æ¢æˆå°å†™ç»Ÿä¸€åˆ¤æ–­ */
 		std::transform(extensionName.begin(), extensionName.begin(), extensionName.end(),
 			[](char c)
 			{
@@ -37,7 +37,7 @@ namespace suz
 		std::string extensionName = GetFileExtensionName(FilePath);
 		for (const auto& loader : m_modelLoaders)
 		{
-			/* ÕÒµ½Ö§³Ö¸Ã¸ñÊ½µÄ¼ÓÔØÆ÷, Ö±½Óµ÷ÓÃ */
+			/* æ‰¾åˆ°æ”¯æŒè¯¥æ ¼å¼çš„åŠ è½½å™¨, ç›´æŽ¥è°ƒç”¨ */
 			if (loader->TargetModelFormatSupport(extensionName))
 			{
 				return loader->LoadTargetModel(FilePath);
@@ -55,7 +55,7 @@ namespace suz
 	{
 		for (const auto& loader : m_modelLoaders)
 		{
-			/* Ö»ÒªÓÐ¿âÖ§³Ö²éÑ¯¼´¿É·µ»ØTrue */
+			/* åªè¦æœ‰åº“æ”¯æŒæŸ¥è¯¢å³å¯è¿”å›žTrue */
 			if (loader->TargetModelFormatSupport(ExtensionName))
 			{
 				return true;

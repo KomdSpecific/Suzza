@@ -53,34 +53,35 @@ namespace suz
 		 int HEIGHT = 600;
 
 	private:
-		/* Vulkan×ÊÔ´¹ÜÀíÆ÷, ¸ºÔğ¹ÜÀíVulkanµÄ×ÊÔ´(½»»»Á´¡¢¹ÜÏß¡¢»º³åÇøµÈ)ÉúÃüÖÜÆÚ */
+		/* Vulkanèµ„æºç®¡ç†å™¨, è´Ÿè´£ç®¡ç†Vulkançš„èµ„æº(äº¤æ¢é“¾ã€ç®¡çº¿ã€ç¼“å†²åŒºç­‰)ç”Ÿå‘½å‘¨æœŸ */
 		static VulkanResourceManager m_vkResourceManager;
-		/* Ä£ĞÍ×ÊÔ´¹ÜÀíÆ÷ */
+		/* æ¨¡å‹èµ„æºç®¡ç†å™¨ */
 		static MeshResourceManager m_meshResourceManager;
-		/* ²ÄÖÊ×ÊÔ´¹ÜÀíÆ÷ */
+		/* æè´¨èµ„æºç®¡ç†å™¨ */
 		static MaterialResourceManager m_materialResourceManager;
-		/* Í¼Ïñ¼ÓÔØ¹ÜÀíÆ÷ */
+		/* å›¾åƒåŠ è½½ç®¡ç†å™¨ */
 		static ImageLoaderManager m_imageLoaderManager;
-		/* Ä£ĞÍ¼ÓÔØ¹ÜÀíÆ÷ */
+		/* æ¨¡å‹åŠ è½½ç®¡ç†å™¨ */
 		static ModelLoaderManager m_modelLoaderManager;
-		/* Í¼ÏñBindless²å²Û¹ÜÀíÆ÷ */
+		/* å›¾åƒBindlessæ’æ§½ç®¡ç†å™¨ */
 		static BindlessSlotsAllocator m_bindlessSlotsAllocator;
-		/* ·´ÉäÏµÍ³ */
+
+		/* åå°„ç³»ç»Ÿ */
 		static ReflectionSystem m_reflectionSystem;
-		/* ÒıÇæ´°¿Ú */
+		/* å¼•æ“çª—å£ */
 		std::unique_ptr<MainWindow> m_mainWindow = nullptr;
-		/* ÓÎÏ·Ó¦ÓÃ */
+		/* æ¸¸æˆåº”ç”¨ */
 		std::unique_ptr<SuzzaApplication> m_suzzaApplication = nullptr;
-		/* ´æ´¢ÉÏÒ»´Î¼ÇÂ¼µÄÊ±¼ä */
+		/* å­˜å‚¨ä¸Šä¸€æ¬¡è®°å½•çš„æ—¶é—´ */
 		std::chrono::steady_clock::time_point m_lastTime;
-		/* äÖÈ¾Ã¿Ö¡ */
+		/* æ¸²æŸ“æ¯å¸§ */
 		std::unique_ptr<Render> m_render;
 
-		/* ÒıÇæÈ«¾ÖUIµ¥²¥Î¯ÍĞ */
+		/* å¼•æ“å…¨å±€UIå•æ’­å§”æ‰˜ */
 		EngineUIRenderEventDelegate m_uiRenderDelegate;
 
 #ifdef EDITOR
-		/* ±à¼­Æ÷UI */
+		/* ç¼–è¾‘å™¨UI */
 		std::unique_ptr<EditorUI> m_editorUI = nullptr;
 #endif
 

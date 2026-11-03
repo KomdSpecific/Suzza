@@ -30,7 +30,7 @@ namespace suz
 		Engine& engInstance = Engine::GetEngineInstance();
 		m_aspect = static_cast<float>(engInstance.WIDTH) / static_cast<float>(engInstance.HEIGHT);
 
-		/* °ó¶¨Î¯ÍĞ */
+		/* ç»‘å®šå§”æ‰˜ */
 		engInstance.GetMainWindow()->GetWindowSizeChangedDelegate().Bind<ThisClass>(this, &ThisClass::UpdateWindowAspect);
 	}
 
@@ -52,10 +52,10 @@ namespace suz
 	glm::mat4 CameraComponent::GetViewMatrix() const
 	{
 		const glm::vec3& worldLocation = m_actorOwner->GetActorWorldLocation();
-		const glm::vec3& forward = m_actorOwner->GetActorForwardVector();		// Æ«º½½Ç ×óÓÒÒ¡Í· Ë®Æ½Ğı×ª
+		const glm::vec3& forward = m_actorOwner->GetActorForwardVector();		// åèˆªè§’ å·¦å³æ‘‡å¤´ æ°´å¹³æ—‹è½¬
 		const glm::vec3& up = m_actorOwner->GetActorUpVector();
 
-		/* ·µ»Ø: ÊÀ½ç×ø±ê¿´ÏòÇ°·½µ¥Î»ÏòÁ¿µÄÄ¿±ê */
+		/* è¿”å›: ä¸–ç•Œåæ ‡çœ‹å‘å‰æ–¹å•ä½å‘é‡çš„ç›®æ ‡ */
 		return Math::GameSceneLookAt(worldLocation, worldLocation + forward, up);
 	}
 

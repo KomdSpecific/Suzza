@@ -98,7 +98,7 @@ namespace suz
 			return registry->second;
 		}
 
-		SUZZA_LOG_ERROR("找不到元数据注册的类! ", ClassName);
+		SUZZA_LOG_ERROR("鎵句笉鍒板厓鏁版嵁娉ㄥ唽鐨勭被! ", ClassName);
 		return {};
 	}
 

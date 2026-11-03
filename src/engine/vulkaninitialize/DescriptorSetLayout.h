@@ -35,7 +35,7 @@ namespace suz
 		void Destroy();
 
 	private:
-		/* 必要资源句柄 */
+		/* 蹇呰璧勬簮鍙ユ焺 */
 		VkDevice m_device = {};
 
 		VkDescriptorSetLayout m_descriptorSetLayout = {};

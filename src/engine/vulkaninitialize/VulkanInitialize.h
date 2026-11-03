@@ -24,12 +24,12 @@ namespace suz
 
 	class VulkanInitialize : public VulkanResourceBase
 	{
-		/* ÑéÖ¤²ãÆôÓÃ¿ØÖÆ */
+		/* éªŒè¯å±‚å¯ç”¨æ§åˆ¶ */
 #ifdef NDEBUG
 		const bool enableValidationLayers = false;
 #else
 		const bool enableValidationLayers = true;
-#endif // DEBUGÄ£Ê½×Ô¶¯¿ªÆôÑéÖ¤²ã
+#endif // DEBUGæ¨¡å¼è‡ªåŠ¨å¼€å¯éªŒè¯å±‚
 
 	public:
 		VulkanInitialize();
@@ -38,42 +38,42 @@ namespace suz
 		void Destroy();
 
 #pragma region HelperFunction
-		/* µ÷ÊÔ»Øµ÷º¯Êı */
-		/* ¹Ì¶¨Ç©Ãû, ÓÉVulkanÑéÖ¤²ãµ÷ÓÃ, ¿É×Ô¶¨Òå¹ıÂËºÍÊä³öÂß¼­ */
+		/* è°ƒè¯•å›è°ƒå‡½æ•° */
+		/* å›ºå®šç­¾å, ç”±VulkanéªŒè¯å±‚è°ƒç”¨, å¯è‡ªå®šä¹‰è¿‡æ»¤å’Œè¾“å‡ºé€»è¾‘ */
 		static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT severity,
 			VkDebugUtilsMessageTypeFlagsEXT type,
 			const VkDebugUtilsMessengerCallbackDataEXT* data,
 			void* userData);
 
-		/* ´´½¨µ÷ÊÔĞÅÊ¹ */
+		/* åˆ›å»ºè°ƒè¯•ä¿¡ä½¿ */
 		VkResult CreateDebugUtilsMessengerEXT(
 			VkInstance instance,
 			const VkDebugUtilsMessengerCreateInfoEXT* createInfo,
 			const VkAllocationCallbacks* allocator,
 			VkDebugUtilsMessengerEXT* outMessenger
 		);
-		/* Ïú»Ùµ÷ÊÔĞÅÊ¹ */
+		/* é”€æ¯è°ƒè¯•ä¿¡ä½¿ */
 		void DestroyDebugUtilsMessengerEXT(
 			VkInstance instance,
 			VkDebugUtilsMessengerEXT messenger,
 			const VkAllocationCallbacks* allocator
 		);
-		/* Ìî³äµ÷ÊÔĞÅÊ¹´´½¨²ÎÊı */
+		/* å¡«å……è°ƒè¯•ä¿¡ä½¿åˆ›å»ºå‚æ•° */
 		static VkDebugUtilsMessengerCreateInfoEXT PopulateDebugMessengerCreateInfo();
 
-		/* ¹¤¾ß: ¼ì²éÑéÖ¤²ãÊÇ·ñÔÚÏµÍ³ÖĞ¿ÉÓÃ */
+		/* å·¥å…·: æ£€æŸ¥éªŒè¯å±‚æ˜¯å¦åœ¨ç³»ç»Ÿä¸­å¯ç”¨ */
 		bool CheckValidationLayerSupport();
-		/* ¹¤¾ß: Éú³ÉÊµÀıËùĞèµÄÀ©Õ¹ÁĞ±í */
+		/* å·¥å…·: ç”Ÿæˆå®ä¾‹æ‰€éœ€çš„æ‰©å±•åˆ—è¡¨ */
 		std::vector<const char*> GetRequiredExtensions();
 
-		/* ÆÀ¹ÀÃ¿¸öÉè±¸ÊÇ·ñÊÊºÏ */
+		/* è¯„ä¼°æ¯ä¸ªè®¾å¤‡æ˜¯å¦é€‚åˆ */
 		bool IsDeviceSuitable(const VkPhysicalDevice& physicalDevice);
-		/* ¼ìË÷ÎïÀíÉè±¸ĞÅÏ¢ */
+		/* æ£€ç´¢ç‰©ç†è®¾å¤‡ä¿¡æ¯ */
 		VkPhysicalDeviceProperties GetPhysicalDeviceProperties();
-		/* ÆÀ¹ÀÉè±¸ÊÇ·ñÖ§³ÖÀ©Õ¹ */
+		/* è¯„ä¼°è®¾å¤‡æ˜¯å¦æ”¯æŒæ‰©å±• */
 		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice);
-		/* ÔÙÉè±¸ÖĞ²éÕÒËùĞèµÄËùÓĞ¶ÓÁĞ×å */
+		/* å†è®¾å¤‡ä¸­æŸ¥æ‰¾æ‰€éœ€çš„æ‰€æœ‰é˜Ÿåˆ—æ— */
 		QueueFamilyIndices FindQueueFamilies();
 		QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& physicalDevice);
 		static QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface);
@@ -82,9 +82,9 @@ namespace suz
 	private:
 		void InitVulkanInfo();
 		void SetupDebugMessenger();
-		void CreateVulkanInstance();								// ´´½¨VulkanÊµÀı
-		void CreateSurface();										// ´´½¨´°¿Ú±íÃæ
-		void PickPhysicalDevice();									// »ñÈ¡ÎïÀíÉè±¸
+		void CreateVulkanInstance();								// åˆ›å»ºVulkanå®ä¾‹
+		void CreateSurface();										// åˆ›å»ºçª—å£è¡¨é¢
+		void PickPhysicalDevice();									// è·å–ç‰©ç†è®¾å¤‡
 
 		MainWindow* m_mainWindow;
 
@@ -96,7 +96,7 @@ namespace suz
 
 		VkPhysicalDevice m_vkPhysicalDevice = {};
 
-		/* ³ÌĞòÊÇ·ñÒªÇó¶ÀÏÔ¿ª¹Ø */
+		/* ç¨‹åºæ˜¯å¦è¦æ±‚ç‹¬æ˜¾å¼€å…³ */
 		bool m_shouldRequiredDiscreteGPU = false;
 
 	public:

@@ -34,26 +34,26 @@ namespace suz
 			float deltaY = cursorCurrentLoc.y - cursorOldLoc.y;
 
 			glm::vec3 rotationDeg = m_actorOwner->GetActorRotation();
-			/* »º´æÅ·À­½Çµş¼ÓÊó±êÔöÁ¿ */
-			/* Êó±êyÔöÁ¿Îª¸ºÊı, ĞèÒªÈ¡·´ÔÙÏà¼Ó */
+			/* ç¼“å­˜æ¬§æ‹‰è§’å åŠ é¼ æ ‡å¢é‡ */
+			/* é¼ æ ‡yå¢é‡ä¸ºè´Ÿæ•°, éœ€è¦å–åå†ç›¸åŠ  */
 			rotationDeg.z += deltaX * m_sensitivity;
 			rotationDeg.y -= deltaY * m_sensitivity;
 
-			/* ÏŞÖÆ¸©Ñö, ·ÀÖ¹¹ı¶ÉĞı×ª */
+			/* é™åˆ¶ä¿¯ä»°, é˜²æ­¢è¿‡æ¸¡æ—‹è½¬ */
 			const float maxPitch = 89.5f;
 			rotationDeg.y = glm::clamp(rotationDeg.y, -maxPitch, maxPitch);
 
-			/* Yaw½Ç¶È¹éÒ»»¯, ·ÀÖ¹ÊıÖµÎŞÏßÀÛ»ı */
+			/* Yawè§’åº¦å½’ä¸€åŒ–, é˜²æ­¢æ•°å€¼æ— çº¿ç´¯ç§¯ */
 			rotationDeg.z = Math::NormalizeAngle(rotationDeg.z);
-			/* ÉèÖÃÅ·À­½ÇĞı×ª */
+			/* è®¾ç½®æ¬§æ‹‰è§’æ—‹è½¬ */
 			m_actorOwner->SetActorRotation(rotationDeg);
 		}
 
-		/* µÃµ½Ïà»úµÄÇ°ÏòÏòÁ¿ */
+		/* å¾—åˆ°ç›¸æœºçš„å‰å‘å‘é‡ */
 		glm::vec3 forward = m_actorOwner->GetActorForwardVector();
 		glm::vec3 right = m_actorOwner->GetActorRightVector();
 
-		/* ¼ÆËãÒÆ¶¯±ä»¯Á¿ */
+		/* è®¡ç®—ç§»åŠ¨å˜åŒ–é‡ */
 		glm::vec3 deltaMove = glm::vec3(0.0f);
 
 		if (m_inputManager.IsKeywordKeyPressed(GLFW_KEY_A))

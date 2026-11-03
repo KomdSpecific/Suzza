@@ -15,19 +15,19 @@
 
 namespace suz
 {
-	/* Vulkan×ÊÔ´¹ÜÀíÆ÷·ÖÅäÄÚ´æ */
+	/* Vulkanèµ„æºç®¡ç†å™¨åˆ†é…å†…å­˜ */
 	VulkanResourceManager Engine::m_vkResourceManager;
-	/* Ä£ĞÍ×ÊÔ´¹ÜÀíÆ÷·ÖÅäÄÚ´æ */
+	/* æ¨¡å‹èµ„æºç®¡ç†å™¨åˆ†é…å†…å­˜ */
 	MeshResourceManager Engine::m_meshResourceManager;
-	/* ²ÄÖÊ×ÊÔ´¹ÜÀíÆ÷·ÖÅäÄÚ´æ */
+	/* æè´¨èµ„æºç®¡ç†å™¨åˆ†é…å†…å­˜ */
 	MaterialResourceManager Engine::m_materialResourceManager;
-	/* Í¼Ïñ¼ÓÔØ¹ÜÀíÆ÷·ÖÅäÄÚ´æ */
+	/* å›¾åƒåŠ è½½ç®¡ç†å™¨åˆ†é…å†…å­˜ */
 	ImageLoaderManager Engine::m_imageLoaderManager;
-	/* Ä£ĞÍ¼ÓÔØ¹ÜÀíÆ÷·ÖÅäÄÚ´æ */
+	/* æ¨¡å‹åŠ è½½ç®¡ç†å™¨åˆ†é…å†…å­˜ */
 	ModelLoaderManager Engine::m_modelLoaderManager;
-	/* Í¼ÏñBindless²å²Û¹ÜÀíÆ÷·ÖÅäÄÚ´æ */
+	/* å›¾åƒBindlessæ’æ§½ç®¡ç†å™¨åˆ†é…å†…å­˜ */
 	BindlessSlotsAllocator Engine::m_bindlessSlotsAllocator;
-	/* ·´ÉäÏµÍ³·ÖÅäÄÚ´æ */
+	/* åå°„ç³»ç»Ÿåˆ†é…å†…å­˜ */
 	ReflectionSystem Engine::m_reflectionSystem;
 
 	Engine& Engine::GetEngineInstance()
@@ -73,23 +73,23 @@ namespace suz
 
 	bool Engine::Init()
 	{
-		/* ×¢²áÈ«²¿·´ÉäÀàµÄÔªÊı¾İ */
+		/* æ³¨å†Œå…¨éƒ¨åå°„ç±»çš„å…ƒæ•°æ® */
 		ReflectionSystem::RegisterAllReflectionClass();
-		/* Í¼Ïñ¼ÓÔØ¹ÜÀíÆ÷´´½¨µ÷¶ÈÆ÷ */
+		/* å›¾åƒåŠ è½½ç®¡ç†å™¨åˆ›å»ºè°ƒåº¦å™¨ */
 		m_imageLoaderManager.CreateImageDispatcher();
-		/* Ä£ĞÍ¼ÓÔØ¹ÜÀíÆ÷´´½¨µ÷¶ÈÆ÷ */
+		/* æ¨¡å‹åŠ è½½ç®¡ç†å™¨åˆ›å»ºè°ƒåº¦å™¨ */
 		m_modelLoaderManager.CreateModelLoaderDispatcher();
 
-		/* ´´½¨Ö÷´°¿Ú */
+		/* åˆ›å»ºä¸»çª—å£ */
 		m_mainWindow = std::make_unique<MainWindow>(WIDTH, HEIGHT, "First Window");
 
-		/* Vulkan³õÊ¼»¯ */
+		/* Vulkanåˆå§‹åŒ– */
 		m_vkResourceManager.InitVulkan();
 
-		/* ÏÔÊ½´¦Àí´°¿Ú´óĞ¡µ÷Õû, Ä³Ğ©Çé¿öµ¼ÖÂ´°¿Ú´óĞ¡¸ü¸Äµ«½»»»Á´Ã»ÓĞÖØ½¨µ¼ÖÂÎŞ·¨äÖÈ¾Õû¸ö´°¿Ú */
+		/* æ˜¾å¼å¤„ç†çª—å£å¤§å°è°ƒæ•´, æŸäº›æƒ…å†µå¯¼è‡´çª—å£å¤§å°æ›´æ”¹ä½†äº¤æ¢é“¾æ²¡æœ‰é‡å»ºå¯¼è‡´æ— æ³•æ¸²æŸ“æ•´ä¸ªçª—å£ */
 		m_mainWindow->BindOnFrameBufferResizeCallback(m_vkResourceManager.GetBufferArea());
 
-		/* äÖÈ¾Ã¿Ö¡ÊµÀı³õÊ¼»¯ */
+		/* æ¸²æŸ“æ¯å¸§å®ä¾‹åˆå§‹åŒ– */
 		m_render = std::make_unique<Render>();
 
 #ifdef EDITOR
@@ -101,7 +101,7 @@ namespace suz
 			m_vkResourceManager.GetDevice()->GetDevice(),
 			m_vkResourceManager.GetDevice()->GetGraphicsFamily(),
 			m_vkResourceManager.GetDevice()->GetGraphicsQueue(),
-			m_vkResourceManager.GetRenderPass()->GetRenderPass(),
+			m_vkResourceManager.GetRenderPasses().GetResource("DefaultRenderPass")->GetRenderPass(),
 			m_vkResourceManager.GetBufferArea()->GetCommandPool()
 		);
 #endif
@@ -119,11 +119,11 @@ namespace suz
 
 		while (!m_mainWindow->WindowShouldClose())
 		{
-			/* ×Ô¶¯¼ì²éºÍ´¦Àí´°¿ÚÊÂ¼ş */
+			/* è‡ªåŠ¨æ£€æŸ¥å’Œå¤„ç†çª—å£äº‹ä»¶ */
 			glfwPollEvents();
 
 #ifdef EDITOR
-			/* ±à¼­Æ÷¿ªÊ¼ĞÂµÄÒ»Ö¡ */
+			/* ç¼–è¾‘å™¨å¼€å§‹æ–°çš„ä¸€å¸§ */
 			m_editorUI->BeginFrame();
 #endif
 
@@ -135,11 +135,11 @@ namespace suz
 
 			m_render->Draw(deltaTime);
 
-			/* ±£Ö¤Êó±ê¾É×ø±êºÍµ±Ç°×ø±êÏàµÈ */
+			/* ä¿è¯é¼ æ ‡æ—§åæ ‡å’Œå½“å‰åæ ‡ç›¸ç­‰ */
 			inputManager.SetMouseOldLocation(inputManager.GetMouseCurrentLocation());
 		}
 
-		/* µÈ´ıÂß¼­Éè±¸Íê³ÉÊÕÎ²²Ù×÷ */
+		/* ç­‰å¾…é€»è¾‘è®¾å¤‡å®Œæˆæ”¶å°¾æ“ä½œ */
 		vkDeviceWaitIdle(m_vkResourceManager.GetDevice()->GetDevice());
 	}
 
@@ -151,13 +151,13 @@ namespace suz
 		m_editorUI->Destroy();
 #endif
 
-		/* Ä£ĞÍ×ÊÔ´¹ÜÀíÆ÷Í³Ò»Ïú»Ù */
+		/* æ¨¡å‹èµ„æºç®¡ç†å™¨ç»Ÿä¸€é”€æ¯ */
 		m_meshResourceManager.Destroy();
-		/* ²ÄÖÊ×ÊÔ´¹ÜÀíÆ÷Í³Ò»Ïú»Ù */
+		/* æè´¨èµ„æºç®¡ç†å™¨ç»Ÿä¸€é”€æ¯ */
 		m_materialResourceManager.Destroy();
-		/* Í¼ÏñBindless²å²ÛÍ³Ò»ÊÍ·Å */
+		/* å›¾åƒBindlessæ’æ§½ç»Ÿä¸€é‡Šæ”¾ */
 		m_bindlessSlotsAllocator.Destroy();
-		/* µ÷ÓÃVulkan×ÊÔ´¹ÜÀíÆ÷Í³Ò»Ïú»Ù */
+		/* è°ƒç”¨Vulkanèµ„æºç®¡ç†å™¨ç»Ÿä¸€é”€æ¯ */
 		m_vkResourceManager.Destroy();
 
 		m_mainWindow->Destroy();

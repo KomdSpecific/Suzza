@@ -1,7 +1,9 @@
 #pragma once
 
 #include "BaseObject.h"
-#include "model/Render.h"
+#include "model/Mesh.h"
+#include "model/DrawList.h"
+#include "DeviceContext.h"
 
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -38,29 +40,20 @@ namespace suz
 		static void CreateBuffer(const VkDeviceSize& Buffersize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Properties, VkBuffer& BufferToCreate, VkDeviceMemory& AllocatedMemory);
 		void CreateVertexBuffer(const std::vector<Vertex>& Vertices, VkBuffer& VertexBuffer, VkDeviceMemory& VertexBufferMemory);
 		uint32 CreateIndexBuffer(const std::vector<uint32>& Indices, VkBuffer& IndexBuffer, VkDeviceMemory& IndexBufferMemory);
-		/* ¸´ÖÆ»º³åÇøµ½Í¼Ïñ */
+		/* å¤åˆ¶ç¼“å†²åŒºåˆ°å›¾åƒ */
 		void CopyBufferToImage(const VkBuffer& SrcBuffer, const VkImage& DstImage, uint32 Width, uint32 Height);
-		/* Ö»´´½¨»º³åÇø²¢¹ØÁªÄÚ´æ, ²»ÕıÊ½¸ü¸Ä¶¥µãÊôĞÔ */
+		/* åªåˆ›å»ºç¼“å†²åŒºå¹¶å…³è”å†…å­˜, ä¸æ­£å¼æ›´æ”¹é¡¶ç‚¹å±æ€§ */
 		void CreateUniformBuffers();
 
 #pragma endregion
 
-		/* »æÖÆ»­ÃæµÄºËĞÄ! Â¼ÖÆÃüÁî»º³åÇø¿¿Ëü²»¶ÏÖ´ĞĞ */
-		void RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const std::unordered_map<Mesh*, std::vector<ModelConstant>>& MeshToDraw, uint32_t ImageIndex);
+		/* ç»˜åˆ¶ç”»é¢çš„æ ¸å¿ƒ! å½•åˆ¶å‘½ä»¤ç¼“å†²åŒºé å®ƒä¸æ–­æ‰§è¡Œ */
+		void RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const DrawList& MeshToDraw, uint32_t ImageIndex);
 
 		void ReCreateBufferArea(const VkExtent2D& NewSwapChainExtent);
 		void CleanupBufferArea();
 
-#pragma region STATIC_HELPER_FUNCTION
-		static VkFormat FindDepthFormat();
-		/* ÕÒµ½ÕıÈ·µÄÄÚ´æÀàĞÍ */
-		static uint32 FindMemoryType(uint32 TypeFilter, const VkMemoryPropertyFlags& Properties);
-		/* ÕÒµ½Ö§³ÖµÄ¸ñÊ½ */
-		static VkFormat FindSupportFormat(const std::vector<VkFormat>& Candidates, const VkImageTiling& Tiling, const VkFormatFeatureFlags& Features);
-
-#pragma endregion
-
-		/* Í¼Ïñ²¼¾Ö±ä»» */
+		/* å›¾åƒå¸ƒå±€å˜æ¢ */
 		void TransitionImageLayout(const VkImage& Image, const VkFormat& Format, const VkImageLayout& OldLayout, const VkImageLayout& NewLayout);
 
 		VkCommandBuffer BeginSingleTimeCommands();
@@ -74,34 +67,32 @@ namespace suz
 		void CreateCommandBuffer();
 
 		void InitViewportConfig();
-		/* ¸´ÖÆ»º³åÇø */
+		/* å¤åˆ¶ç¼“å†²åŒº */
 		void CopyBuffer(const VkBuffer& SrcBuffer, const VkBuffer& DstBuffer, const VkDeviceSize& BufferSize);
-		/* ÅĞ¶ÏÑ¡ÔñµÄÉî¶È¸ñÊ½ÊÇ·ñ°üº¬Ä£°å·ÖÁ¿ */
-		bool HasStencilComponent(const VkFormat& DepthFormat);
 
 		EngineUIRenderEventDelegate& m_engineUIDelegate;
 
 		Pipeline& m_pipeline;
 		const VkDevice& m_device;
 		const VkRenderPass& m_renderPass;
-		/* »º´æÃèÊö·ûÒıÓÃ¼¯ºÏ */
+		/* ç¼“å­˜æè¿°ç¬¦å¼•ç”¨é›†åˆ */
 		VkDescriptorSet m_bindlessDescriptorSet = {};
 
 		VkExtent2D m_swapChainExtent = {};
 
 		ViewportConfigInfo m_viewConfigInfo = {};
 
-		/* uniform»º³å±äÁ¿ */
+		/* uniformç¼“å†²å˜é‡ */
 		std::vector<VkBuffer> m_uniformBuffers = {};
 		std::vector<VkDeviceMemory> m_uniformBuffersMemory = {};
 		std::vector<void*> m_uniformBuffersMapped = {};
 
-		/* Ö¡»º³å±äÁ¿ */
+		/* å¸§ç¼“å†²å˜é‡ */
 		std::vector<VkFramebuffer> m_frameBuffers = {};
 		std::vector<VkCommandBuffer> m_commandBuffer = {};
 		VkCommandPool m_commandPool = {};
 
-		/* Éî¶ÈÍ¼Ïñ±äÁ¿ */
+		/* æ·±åº¦å›¾åƒå˜é‡ */
 		VkImage m_depthImage = {};
 		VkDeviceMemory m_depthImageMemory = {};
 		VkImageView m_depthImageView = {};

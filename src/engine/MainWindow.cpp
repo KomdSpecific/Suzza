@@ -46,7 +46,7 @@ namespace suz
 	{
 		InitWindow();
 
-		/* ÉèÖÃglfwÊäÈë»Øµ÷º¯Êı */
+		/* è®¾ç½®glfwè¾“å…¥å›è°ƒå‡½æ•° */
 		glfwSetKeyCallback(m_window, KeywordCallback);
 		glfwSetMouseButtonCallback(m_window, MouseKeyCallback);
 		glfwSetCursorPosCallback(m_window, MouseLocationChangedCallback);
@@ -56,7 +56,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			std::cerr << "Class MainWindow Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!" << std::endl;
+			std::cerr << "Class MainWindow Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!" << std::endl;
 			Destroy();
 		}
 	}
@@ -77,7 +77,7 @@ namespace suz
 	{
 		if (glfwCreateWindowSurface(instance, m_window, nullptr, surface) != VK_SUCCESS)
 		{
-			throw std::runtime_error("´´½¨´°¿Ú±íÃæÊ§°Ü!");
+			throw std::runtime_error("åˆ›å»ºçª—å£è¡¨é¢å¤±è´¥!");
 		}
 	}
 
@@ -88,7 +88,7 @@ namespace suz
 
 	void MainWindow::BindOnFrameBufferResizeCallback(BufferArea* Bufferarea)
 	{
-		/* °ó¶¨´°¿Ú´óĞ¡±ä»¯»Øµ÷º¯Êı */
+		/* ç»‘å®šçª—å£å¤§å°å˜åŒ–å›è°ƒå‡½æ•° */
 		glfwSetWindowUserPointer(m_window, Bufferarea);
 		glfwSetFramebufferSizeCallback(m_window, OnFrameBufferResized);
 	}
@@ -104,7 +104,7 @@ namespace suz
 	void MainWindow::InitWindow()
 	{
 		glfwInit();
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);				// ½ûÖ¹´´½¨OpenGLÉÏÏÂÎÄ
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);				// ç¦æ­¢åˆ›å»ºOpenGLä¸Šä¸‹æ–‡
 
 		m_window = glfwCreateWindow(m_width, m_height, m_windowName.c_str(), nullptr, nullptr);
 	}

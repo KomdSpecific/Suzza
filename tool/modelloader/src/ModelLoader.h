@@ -19,7 +19,7 @@ namespace suz
 
 	struct ModelData
 	{
-		std::string modelFolderPath;				// 模型所在文件夹路径
+		std::string modelFolderPath;				// 妯″瀷鎵�鍦ㄦ枃浠跺す璺緞
 
 		std::vector<ModelVertexData> vertices;
 		std::vector<uint32> indices;

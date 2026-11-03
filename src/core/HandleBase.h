@@ -10,24 +10,12 @@ namespace suz
 			: index(Index), generation(Generation) {
 		};
 
-		uint32 index;						// ¶ÔÏó³ØÊı×éË÷Òı
-		uint32 generation;					// ÊÀ´úºÅ
+		uint32 index;						// å¯¹è±¡æ± æ•°ç»„ç´¢å¼•
+		uint32 generation;					// ä¸–ä»£å·
 
 		bool operator==(const HandleBase& Handle) const
 		{
 			return index == Handle.index && generation == Handle.generation;
-		}
-	};
-}
-
-namespace std
-{
-	template<>
-	struct hash<suz::HandleBase>
-	{
-		suz::usize operator()(const suz::HandleBase& Handle) const noexcept
-		{
-			return (static_cast<suz::uint64>(Handle.index) << 32 | Handle.generation);
 		}
 	};
 }

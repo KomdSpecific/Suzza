@@ -11,9 +11,9 @@ namespace suz
 	class DeviceFunctionLibrary
 	{
 	public:
-		/* ²éÑ¯Éè±¸¶ÔÓ²¼şÄÜÁ¦µÄÖ§³Ö */
+		/* æŸ¥è¯¢è®¾å¤‡å¯¹ç¡¬ä»¶èƒ½åŠ›çš„æ”¯æŒ */
 		static bool CheckPhysicalDeviceFeatureSupport(const VkPhysicalDevice& PhysicalDevice);
-		/* ´´½¨Éè±¸Ó²¼şÄÜÁ¦µÄÁ´±í */
+		/* åˆ›å»ºè®¾å¤‡ç¡¬ä»¶èƒ½åŠ›çš„é“¾è¡¨ */
 		static vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceDescriptorIndexingFeaturesEXT> CreateDeviceFeaturesChain();

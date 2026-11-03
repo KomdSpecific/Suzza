@@ -14,14 +14,14 @@ namespace suz
 		uint8_t* ptr = stbi_load(FilePath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 		if (!ptr)
 		{
-			throw std::runtime_error("¼ÓÔØÎÆÀíÍ¼ÏñÊ§°Ü!");
+			throw std::runtime_error("åŠ è½½çº¹ç†å›¾åƒå¤±è´¥!");
 		}
 
 		image.texWidth = width;
 		image.texHeight = height;
 		image.texChannels = channels;
 		image.pixels = ptr;
-		/* °ó¶¨¶ÔÓ¦µÄlambdaº¯Êı */
+		/* ç»‘å®šå¯¹åº”çš„lambdaå‡½æ•° */
 		image.releaseDataCallback = [ptr]()
 			{
 				if (ptr)

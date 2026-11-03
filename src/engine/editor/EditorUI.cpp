@@ -20,7 +20,7 @@ namespace suz
 		uiRender->Init(window, Instance, PhysicalDevice, Device, GraphicsFamily, GraphicsQueue, RenderPass, CommandPool);
 		m_uiRender = std::unique_ptr<ImGuiUIRender>(std::move(uiRender));
 
-		/* Ö´ÐÐÒýÇæÈ«¾Ö¹ã²¥Î¯ÍÐ */
+		/* æ‰§è¡Œå¼•æ“Žå…¨å±€å¹¿æ’­å§”æ‰˜ */
 		EngineUIRenderEventDelegate& engineDelegate = Engine::GetEngineInstance().GetEngineUIRenderEventDelegate();
 		engineDelegate.Bind([this](const VkCommandBuffer& CommandBuffer)
 			{
@@ -80,7 +80,7 @@ namespace suz
 				DrawObjField(m_selectedActor, field);
 			}
 
-			/* ±éÀúËùÓÐµÄActor×é¼þÐÅÏ¢ */
+			/* éåŽ†æ‰€æœ‰çš„Actorç»„ä»¶ä¿¡æ¯ */
 			for (Component* comp : m_selectedActor->GetAllActorComponents())
 			{
 				ClassInfo classInfo = comp->GetClassInfo();
@@ -103,23 +103,23 @@ namespace suz
 		uint32 flags = UITreeNodeFlags_OpenOnArrow | UITreeNodeFlags_SpanAvailWidth | UITreeNodeFlags_Framed;
 		if (isSelected)
 		{
-			/* ±ê¼ÇÎªÒÑÑ¡ */
+			/* æ ‡è®°ä¸ºå·²é€‰ */
 			flags |= UITreeNodeFlags_Selected;
 		}
 
 		if (TargetActor->GetChildActorList().empty())
 		{
-			/* ±ê¼ÇÎªÒ¶×Ó½Úµã, Ò¶×Ó½Úµã»á×Ô¶¯Õ¹¿ª½ÚµãÐÅÏ¢ */
+			/* æ ‡è®°ä¸ºå¶å­èŠ‚ç‚¹, å¶å­èŠ‚ç‚¹ä¼šè‡ªåŠ¨å±•å¼€èŠ‚ç‚¹ä¿¡æ¯ */
 			//flags |= UITreeNodeFlags_Leaf;
 		}
 
-		/* »æÖÆTreeNode */
+		/* ç»˜åˆ¶TreeNode */
 		bool nodeOpen = m_uiRender->TreeNodeEx(TargetActor->GetActorName().c_str(), flags);
 
-		/* ÒµÎñ: µã»÷ÊÂ¼þ´¦Àí, Ñ¡ÖÐ²Ëµ¥ÖÐµÄActor */
+		/* ä¸šåŠ¡: ç‚¹å‡»äº‹ä»¶å¤„ç†, é€‰ä¸­èœå•ä¸­çš„Actor */
 		if (m_uiRender->IsItemLeftClicked()) m_selectedActor = TargetActor;
 
-		/* ÓÒ¼ü²Ëµ¥ */
+		/* å³é”®èœå• */
 		if (m_uiRender->BeginPopupContextItem())
 		{
 			if (m_uiRender->MenuItem("Delete Actor"))

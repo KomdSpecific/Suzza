@@ -1,7 +1,6 @@
 #include "Pipeline.h"
 #include "Engine.h"
 #include "VulkanResourceManager.h"
-#include "model/Render.h"
 #include "macros/VkMacro.h"
 #include "file/FileSystem.h"
 
@@ -12,7 +11,7 @@
 
 namespace suz
 {
-	/* ¶¨Òå¶¯Ì¬×´Ì¬ÁĞ±í */
+	/* å®šä¹‰åŠ¨æ€çŠ¶æ€åˆ—è¡¨ */
 	std::vector<VkDynamicState> dynamicStates =
 	{
 		VK_DYNAMIC_STATE_VIEWPORT,
@@ -25,8 +24,12 @@ namespace suz
 	{
 		VkPipelineLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		layoutInfo.setLayoutCount = static_cast<uint32>(Spec.descriptorSetLayout.size());
-		layoutInfo.pSetLayouts = Spec.descriptorSetLayout.data();
+
+		if (Spec.descriptorSetLayout.size() > 0)
+		{
+			layoutInfo.setLayoutCount = static_cast<uint32>(Spec.descriptorSetLayout.size());
+			layoutInfo.pSetLayouts = Spec.descriptorSetLayout.data();
+		}
 
 		if (Spec.constantRage.size() > 0)
 		{
@@ -46,30 +49,30 @@ namespace suz
 		PipelineConfigInfo pipelineConfigInfo{};
 
 		pipelineConfigInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		/* ¸æËßÊäÈë×é×°Æ÷ÒªÇó¹¹½¨Èı½ÇĞÎ */
+		/* å‘Šè¯‰è¾“å…¥ç»„è£…å™¨è¦æ±‚æ„å»ºä¸‰è§’å½¢ */
 		pipelineConfigInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		pipelineConfigInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;					// ÊÇ·ñ¿ªÆôÍ¼ÔªÖØÆô
+		pipelineConfigInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;					// æ˜¯å¦å¼€å¯å›¾å…ƒé‡å¯
 
-		/* ½«ÊÓ¿Ú(¸ºÔğ»æÖÆ²¢ÏÔÊ¾ÔÚ´°¿Ú¸øÓÃ»§)ºÍ²Ã¼ô¾ØĞÎºÏ²¢³ÉÒ»¸öĞÅÏ¢±äÁ¿ */
-		/* Ñ¡Ôñ¶¯Ì¬ÊÓ¿ÚºÍ²Ã¼ô¾ØĞÎÊ±, Ö»ĞèÖ¸¶¨¼ÆÊı¼´¿É */
+		/* å°†è§†å£(è´Ÿè´£ç»˜åˆ¶å¹¶æ˜¾ç¤ºåœ¨çª—å£ç»™ç”¨æˆ·)å’Œè£å‰ªçŸ©å½¢åˆå¹¶æˆä¸€ä¸ªä¿¡æ¯å˜é‡ */
+		/* é€‰æ‹©åŠ¨æ€è§†å£å’Œè£å‰ªçŸ©å½¢æ—¶, åªéœ€æŒ‡å®šè®¡æ•°å³å¯ */
 		pipelineConfigInfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		pipelineConfigInfo.viewportInfo.viewportCount = 1;
 		pipelineConfigInfo.viewportInfo.scissorCount = 1;
 
-		/* ¹âÕ¤»¯½×¶Î, ½«¼¸ºÎÌå·Ö½â³ÉÆ¬¶Î, Ã¿¸ö»æÖÆµÄÏñËØ¶ÔÓ¦Èı½ÇĞÎ¸²¸ÇµÄ²¿·Ö */
+		/* å…‰æ …åŒ–é˜¶æ®µ, å°†å‡ ä½•ä½“åˆ†è§£æˆç‰‡æ®µ, æ¯ä¸ªç»˜åˆ¶çš„åƒç´ å¯¹åº”ä¸‰è§’å½¢è¦†ç›–çš„éƒ¨åˆ† */
 		pipelineConfigInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		pipelineConfigInfo.rasterizationInfo.depthClampEnable = VK_FALSE;				// ²»¿ªÆôÏŞÖÆgl_PositionµÄz·ÖÁ¿¹¦ÄÜ
-		pipelineConfigInfo.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;		// ¹âÕ¤»¯Ç°²»¶ªÆúËùÓĞÍ¼Ôª
-		pipelineConfigInfo.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;		// Ìî³äÕû¸öÈı½ÇĞÎ
-		pipelineConfigInfo.rasterizationInfo.lineWidth = 1.0f;							// ÉèÖÃ»®Ïß¿í¶ÈÎª1.0f
-		pipelineConfigInfo.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;				// ÉèÖÃÌŞ³ıÕı·´ÃæÄ£Ê½
-		pipelineConfigInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;		// (CLOCKWISE):ÉèÖÃË³Ê±ÕëÎªÕıÃæ
+		pipelineConfigInfo.rasterizationInfo.depthClampEnable = VK_FALSE;				// ä¸å¼€å¯é™åˆ¶gl_Positionçš„zåˆ†é‡åŠŸèƒ½
+		pipelineConfigInfo.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;		// å…‰æ …åŒ–å‰ä¸ä¸¢å¼ƒæ‰€æœ‰å›¾å…ƒ
+		pipelineConfigInfo.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;		// å¡«å……æ•´ä¸ªä¸‰è§’å½¢
+		pipelineConfigInfo.rasterizationInfo.lineWidth = 1.0f;							// è®¾ç½®åˆ’çº¿å®½åº¦ä¸º1.0f
+		pipelineConfigInfo.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;				// è®¾ç½®å‰”é™¤æ­£åé¢æ¨¡å¼
+		pipelineConfigInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;		// (CLOCKWISE):è®¾ç½®é¡ºæ—¶é’ˆä¸ºæ­£é¢
 		pipelineConfigInfo.rasterizationInfo.depthBiasEnable = VK_FALSE;
 		pipelineConfigInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f;
 		pipelineConfigInfo.rasterizationInfo.depthBiasClamp = 0.0f;
 		pipelineConfigInfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;
 
-		/* ¶àÖØ²ÉÑù, ÓëÎïÌå¾â³İÎÊÌâÓĞ¹Ø */
+		/* å¤šé‡é‡‡æ ·, ä¸ç‰©ä½“é”¯é½¿é—®é¢˜æœ‰å…³ */
 		pipelineConfigInfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		pipelineConfigInfo.multisampleInfo.sampleShadingEnable = VK_FALSE;
 		pipelineConfigInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -78,7 +81,7 @@ namespace suz
 		pipelineConfigInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;
 		pipelineConfigInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;
 
-		/* ÑÕÉ«»ìºÏÉèÖÃ, ÎïÌåÖØµşÊ±ÖØµşÏñËØ²úÉú¶à¸öÑÕÉ« */
+		/* é¢œè‰²æ··åˆè®¾ç½®, ç‰©ä½“é‡å æ—¶é‡å åƒç´ äº§ç”Ÿå¤šä¸ªé¢œè‰² */
 		pipelineConfigInfo.colorBlendAttachment.colorWriteMask =
 			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
 			VK_COLOR_COMPONENT_A_BIT;
@@ -98,7 +101,7 @@ namespace suz
 		pipelineConfigInfo.colorBlendInfo.blendConstants[2] = 0.0f;
 		pipelineConfigInfo.colorBlendInfo.blendConstants[3] = 0.0f;
 
-		/* ÉèÖÃÉî¶È»º³åÇø, ÎªÃ¿¸öÏñËØ´æ´¢Ò»¸öÖµ, Í¨¹ıÉèÖÃÉî¶ÈÖµ´óĞ¡ÊµÏÖÇ°ºóÍ¼²ãµÄĞ§¹û */
+		/* è®¾ç½®æ·±åº¦ç¼“å†²åŒº, ä¸ºæ¯ä¸ªåƒç´ å­˜å‚¨ä¸€ä¸ªå€¼, é€šè¿‡è®¾ç½®æ·±åº¦å€¼å¤§å°å®ç°å‰åå›¾å±‚çš„æ•ˆæœ */
 		pipelineConfigInfo.depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		pipelineConfigInfo.depthStencilInfo.depthTestEnable = VK_TRUE;
 		pipelineConfigInfo.depthStencilInfo.depthWriteEnable = VK_TRUE;
@@ -110,7 +113,7 @@ namespace suz
 		pipelineConfigInfo.depthStencilInfo.front = {};
 		pipelineConfigInfo.depthStencilInfo.back = {};
 
-		/* ´´½¨¶¯Ì¬×´Ì¬¹ÜÏßĞÅÏ¢½á¹¹Ìå */
+		/* åˆ›å»ºåŠ¨æ€çŠ¶æ€ç®¡çº¿ä¿¡æ¯ç»“æ„ä½“ */
 		pipelineConfigInfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		pipelineConfigInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32>(dynamicStates.size());
 		pipelineConfigInfo.dynamicStateInfo.pDynamicStates = dynamicStates.data();
@@ -122,7 +125,7 @@ namespace suz
 	{
 		if (Spec.bindingDescriptions.size() == 0 || Spec.attributeDescriptions.size() == 0)
 		{
-			SUZZA_LOG_ERROR("Î´ÅäÖÃ¶¥µãÃèÊö»òÊôĞÔÃèÊö, Éú³É¶¥µã¶ÁÈ¡¹æÔòÊ§°Ü!");
+			SUZZA_LOG_ERROR("æœªé…ç½®é¡¶ç‚¹æè¿°æˆ–å±æ€§æè¿°, ç”Ÿæˆé¡¶ç‚¹è¯»å–è§„åˆ™å¤±è´¥!");
 			return {};
 		}
 
@@ -138,15 +141,15 @@ namespace suz
 
 	VkGraphicsPipelineCreateInfo PipelineSpec::DefaultGraphicsPipelineCreateInfo(const PipelineSpec& Spec)
 	{
-		/* ´´½¨Í¼ĞÎ¹ÜÏß¶ÔÏó */
+		/* åˆ›å»ºå›¾å½¢ç®¡çº¿å¯¹è±¡ */
 		VkGraphicsPipelineCreateInfo graphicsPipelineInfo{};
 		graphicsPipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
-		/* ½«¹ÜÏßËùÓĞµÄÅäÖÃĞÅÏ¢ÕûºÏ */
+		/* å°†ç®¡çº¿æ‰€æœ‰çš„é…ç½®ä¿¡æ¯æ•´åˆ */
 		graphicsPipelineInfo.stageCount = static_cast<uint32>(Spec.shaderStages.size());
-		graphicsPipelineInfo.pStages = Spec.shaderStages.data();					// ÉèÖÃ×ÅÉ«Æ÷½×¶ÎĞÅÏ¢
+		graphicsPipelineInfo.pStages = Spec.shaderStages.data();					// è®¾ç½®ç€è‰²å™¨é˜¶æ®µä¿¡æ¯
 
-		graphicsPipelineInfo.pVertexInputState = &Spec.pipelineConfigInfo.vertexInputState;		// ÉèÖÃ½âÎö¶¥µã·½·¨
+		graphicsPipelineInfo.pVertexInputState = &Spec.pipelineConfigInfo.vertexInputState;		// è®¾ç½®è§£æé¡¶ç‚¹æ–¹æ³•
 
 		graphicsPipelineInfo.pViewportState = &Spec.pipelineConfigInfo.viewportInfo;
 		graphicsPipelineInfo.pInputAssemblyState = &Spec.pipelineConfigInfo.inputAssemblyInfo;
@@ -172,7 +175,7 @@ namespace suz
 	{
 		if (*m_isAlive)
 		{
-			SUZZA_LOG_ERROR("Class Pipeline Warning: Î´µ÷ÓÃDestroyÊÖ¶¯Ïú»Ù!");
+			SUZZA_LOG_ERROR("Class Pipeline Warning: æœªè°ƒç”¨Destroyæ‰‹åŠ¨é”€æ¯!");
 			Destroy();
 		}
 	}
@@ -191,7 +194,7 @@ namespace suz
 	{
 		if (Spec.device == VK_NULL_HANDLE)
 		{
-			SUZZA_LOG_ERROR("ÎŞ·¨´´½¨Í¼ĞÎ¹ÜÏß: Âß¼­Éè±¸device²»ºÏ·¨!");
+			SUZZA_LOG_ERROR("æ— æ³•åˆ›å»ºå›¾å½¢ç®¡çº¿: é€»è¾‘è®¾å¤‡deviceä¸åˆæ³•!");
 			return false;
 		}
 
@@ -200,7 +203,7 @@ namespace suz
 		VkPipelineLayoutCreateInfo layoutCreateInfo = PipelineLayoutSpec::DefaultPipelineLayoutCreateInfo(Spec);
 		if (vkCreatePipelineLayout(Spec.device, &layoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
 		{
-			SUZZA_LOG_ERROR("´´½¨¹ÜÏß²¼¾ÖÊ§°Ü!");
+			SUZZA_LOG_ERROR("åˆ›å»ºç®¡çº¿å¸ƒå±€å¤±è´¥!");
 			return false;
 		}
 
@@ -211,7 +214,7 @@ namespace suz
 	{
 		if (Spec.device == VK_NULL_HANDLE)
 		{
-			SUZZA_LOG_ERROR("ÎŞ·¨´´½¨Í¼ĞÎ¹ÜÏß: Âß¼­Éè±¸device²»ºÏ·¨!");
+			SUZZA_LOG_ERROR("æ— æ³•åˆ›å»ºå›¾å½¢ç®¡çº¿: é€»è¾‘è®¾å¤‡deviceä¸åˆæ³•!");
 			return false;
 		}
 
@@ -219,24 +222,24 @@ namespace suz
 
 		if (Spec.layout == VK_NULL_HANDLE)
 		{
-			SUZZA_LOG_ERROR("ÎŞ·¨´´½¨Í¼ĞÎ¹ÜÏß: Ã»ÓĞºÏÊÊµÄ¹ÜÏß²¼¾Ölayout!");
+			SUZZA_LOG_ERROR("æ— æ³•åˆ›å»ºå›¾å½¢ç®¡çº¿: æ²¡æœ‰åˆé€‚çš„ç®¡çº¿å¸ƒå±€layout!");
 			return false;
 		}
 
 		if (Spec.renderPass == VK_NULL_HANDLE)
 		{
-			SUZZA_LOG_ERROR("ÎŞ·¨´´½¨Í¼ĞÎ¹ÜÏß: Ã»ÓĞºÏÊÊµÄ¶ÓÁĞrenderPass!");
+			SUZZA_LOG_ERROR("æ— æ³•åˆ›å»ºå›¾å½¢ç®¡çº¿: æ²¡æœ‰åˆé€‚çš„é˜Ÿåˆ—renderPass!");
 			return false;
 		}
 
-		/* ÅäÖÃÑÕÉ«»ìºÏÉèÖÃ */
+		/* é…ç½®é¢œè‰²æ··åˆè®¾ç½® */
 		Spec.pipelineConfigInfo.colorBlendInfo.attachmentCount = 1;
 		Spec.pipelineConfigInfo.colorBlendInfo.pAttachments = &Spec.pipelineConfigInfo.colorBlendAttachment;
 
 		VkGraphicsPipelineCreateInfo graphicsPipelineInfo = PipelineSpec::DefaultGraphicsPipelineCreateInfo(Spec);
 		if (vkCreateGraphicsPipelines(Spec.device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
 		{
-			SUZZA_LOG_ERROR("´´½¨Í¼ĞÎ¹ÜÏß¶ÔÏóÊ§°Ü!");
+			SUZZA_LOG_ERROR("åˆ›å»ºå›¾å½¢ç®¡çº¿å¯¹è±¡å¤±è´¥!");
 			return false;
 		}
 
@@ -252,7 +255,7 @@ namespace suz
 
 		if (m_device == VK_NULL_HANDLE)
 		{
-			SUZZA_LOG_ERROR("×ÊÔ´Ïú»ÙÊ§°Ü: Âß¼­Éè±¸device²»ºÏ·¨!");
+			SUZZA_LOG_ERROR("èµ„æºé”€æ¯å¤±è´¥: é€»è¾‘è®¾å¤‡deviceä¸åˆæ³•!");
 			return;
 		}
 
@@ -273,7 +276,7 @@ namespace suz
 
 		if (vkCreateShaderModule(device, &shaderInfo, nullptr, ShaderMoudle) != VK_SUCCESS)
 		{
-			SUZZA_LOG_ERROR("´´½¨×ÅÉ«Æ÷Ä£¿éÊ§°Ü");
+			SUZZA_LOG_ERROR("åˆ›å»ºç€è‰²å™¨æ¨¡å—å¤±è´¥");
 		}
 	}
 }

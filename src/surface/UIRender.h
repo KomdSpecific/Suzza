@@ -36,7 +36,7 @@ namespace suz
 		virtual void EndPopup() = 0;
 		virtual bool MenuItem(const char* Label) = 0;
 
-		/* »ù´¡¿Ø¼þ */
+		/* åŸºç¡€æŽ§ä»¶ */
 		virtual void Text(const char* Format, ...) = 0;
 		virtual void SeparatorText(const char* Label) = 0;
 		virtual bool Button(const char* Label) = 0;
@@ -45,7 +45,7 @@ namespace suz
 		virtual bool ShowVector2Float(const char* Label, float* Vector, const float Speed = 1.0f) = 0;
 		virtual bool ShowVector3Float(const char* Label, float* Vector, const float Speed = 1.0f) = 0;
 
-		/* Ö¡ÉúÃüÖÜÆÚ */
+		/* å¸§ç”Ÿå‘½å‘¨æœŸ */
 		virtual void BeginFrame() = 0;
 		virtual void RecordDrawCommandBuffer(const VkCommandBuffer& CommandBuffer) = 0;
 	};

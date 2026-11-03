@@ -39,6 +39,9 @@ set(SUZZA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(ASSETS_DIR "${CMAKE_BINARY_DIR}/assets")
 
 if (MSVC)
+	add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/utf-8>)
+	add_compile_options($<$<COMPILE_LANGUAGE:C>:/utf-8>)
+
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 else()
