@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "VulkanResourceBase.h"
 #include "VulkanResourcePool.h"
@@ -8,7 +8,8 @@
 #include "vulkanInitialize/VulkanInitialize.h"
 #include "vulkanInitialize/SwapChain.h"
 #include "vulkanInitialize/RenderPass.h"
-#include "vulkaninitialize/CommandPool.h"
+#include "vulkaninitialize/CommandContext.h"
+#include "vulkaninitialize/BufferContext.h"
 #include "vulkanInitialize/BufferArea.h"
 #include "vulkaninitialize/FrameBuffer.h"
 #include "vulkanInitialize/SyncObject.h"
@@ -36,7 +37,8 @@ namespace suz
 		VulkanResourcePool<Pipeline> m_pipelines = {};
 		std::unique_ptr<VulkanInitialize> m_vkInitialize = nullptr;
 		std::unique_ptr<SwapChain> m_swapChain = nullptr;
-		UniquePtr<CommandPool> m_commandPool = nullptr;
+		UniquePtr<CommandContext> m_commandContext = nullptr;
+		UniquePtr<BufferContext> m_bufferContext = nullptr;
 		std::unique_ptr<BufferArea> m_bufferArea = nullptr;
 		std::unique_ptr<Descriptor> m_descriptor = nullptr;
 		std::unique_ptr<SyncObject> m_syncObject = nullptr;
@@ -58,7 +60,8 @@ namespace suz
 		inline VulkanResourcePool<RenderPass>& GetRenderPasses() { return m_renderPasses; }
 		inline VulkanResourcePool<Pipeline>& GetPipelines() { return m_pipelines; }
 		inline VulkanResourcePool<DescriptorSetLayout>& GetDescriptorLayouts() { return m_descriptorLayouts; }
-		inline CommandPool* GetCommandPool() { return m_commandPool.get(); }
+		inline CommandContext* GetCommandContext() { return m_commandContext.get(); }
+		inline BufferContext* GetBufferContext() { return m_bufferContext.get(); }
 
 		inline const VkSampler& GetTextureSampler() const { return m_textureSampler; }
 

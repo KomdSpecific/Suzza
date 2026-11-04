@@ -132,7 +132,8 @@ namespace suz
 
 	void Texture::CreateTextureImage(const std::string FilePath)
 	{
-		BufferArea* bufferArea = Engine::GetVulkanResourceManager().GetBufferArea();
+		CommandContext* commandContext = Engine::GetVulkanResourceManager().GetCommandContext();
+		BufferContext* bufferContext = Engine::GetVulkanResourceManager().GetBufferContext();
 
 		ImageData image{};
 		if (FilePath.empty())
@@ -151,7 +152,7 @@ namespace suz
 		VkBuffer stagingBuffer{};
 		VkDeviceMemory stagingMemory{};
 
-		BufferArea::CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
+		bufferContext->CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
 
 		/* 将显存拷贝到CPU可读取的内存中 */
 		void* imageData;
@@ -167,11 +168,11 @@ namespace suz
 			m_textureImage, m_textureMemory
 		);
 
-		bufferArea->TransitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		commandContext->TransitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		/* 复制缓冲区到图像 */
-		bufferArea->CopyBufferToImage(stagingBuffer, m_textureImage, image.texWidth, image.texHeight);
+		commandContext->CopyBufferToImage(stagingBuffer, m_textureImage, image.texWidth, image.texHeight);
 		/* 转换图像格式以便于着色器访问 */
-		bufferArea->TransitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		commandContext->TransitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		/* 销毁临时缓冲区 */
 		vkDestroyBuffer(m_device, stagingBuffer, nullptr);

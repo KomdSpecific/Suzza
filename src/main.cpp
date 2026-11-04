@@ -3,10 +3,21 @@
 
 #include "debug/SuzzaLog.h"
 
-#include <cstdlib>
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
+static void SetWindowsConsoleCoding()
+{
+#ifdef WIN32
+	SetConsoleOutputCP(CP_UTF8);
+#endif
+}
 
 int main()
 {
+	SetWindowsConsoleCoding();
+
 	SuzzaApplication* suzApp = new SuzzaApplication();
 	suz::Engine& engine = suz::Engine::GetEngineInstance();
 	engine.WIDTH = 1600;

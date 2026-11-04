@@ -19,6 +19,8 @@ namespace suz
 		const VkExtent2D& SwapChainExtent,
 		const VkRenderPass& RenderPass
 	) : m_engineUIDelegate(Engine::GetEngineInstance().GetEngineUIRenderEventDelegate()),
+		m_commandContext(Engine::GetVulkanResourceManager().GetCommandContext()),
+		m_bufferContext(Engine::GetVulkanResourceManager().GetBufferContext()),
 		m_pipeline(Pipeline), m_device(Device), m_swapChainExtent(SwapChainExtent), m_renderPass(RenderPass)
 	{
 	}
@@ -34,12 +36,12 @@ namespace suz
 
 	void BufferArea::InitBufferArea()
 	{
-		CreateCommandPool();
+		//CreateCommandPool();
 		CreateDepthResources();
 		CreateFrameBuffers();
-		CreateCommandBuffer();
+		//CreateCommandBuffer();
 		InitViewportConfig();
-		CreateUniformBuffers();
+		//CreateUniformBuffers();
 	}
 
 	void BufferArea::Destroy()
@@ -48,13 +50,13 @@ namespace suz
 
 		CleanupBufferArea();
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		/*for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			vkDestroyBuffer(m_device, m_uniformBuffers[i], nullptr);
 			vkFreeMemory(m_device, m_uniformBuffersMemory[i], nullptr);
-		}
+		}*/
 
-		vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+		//vkDestroyCommandPool(m_device, m_commandPool, nullptr);
 
 		*m_isAlive = false;
 	}
@@ -66,38 +68,39 @@ namespace suz
 
 	void BufferArea::CreateBuffer(const VkDeviceSize& Buffersize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Properties, VkBuffer& BufferToCreate, VkDeviceMemory& AllocatedMemory)
 	{
-		const DeviceContext& deviceContext = Engine::GetVulkanResourceManager().GetDeviceContext();
-		VkDevice device = deviceContext.device;
+		//const DeviceContext& deviceContext = Engine::GetVulkanResourceManager().GetDeviceContext();
+		//VkDevice device = deviceContext.device;
 
-		/* 1. 定义顶点缓冲区信息 */
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = Buffersize;
-		bufferInfo.usage = Usage;											// 定义缓冲的数据将要(顶点缓冲或片段缓冲等)
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;					// 只有特定队列族独占
+		///* 1. 定义顶点缓冲区信息 */
+		//VkBufferCreateInfo bufferInfo{};
+		//bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		//bufferInfo.size = Buffersize;
+		//bufferInfo.usage = Usage;											// 定义缓冲的数据将要(顶点缓冲或片段缓冲等)
+		//bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;					// 只有特定队列族独占
 
-		if (vkCreateBuffer(device, &bufferInfo, nullptr, &BufferToCreate) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建顶点缓冲区失败!");
-		}
+		//if (vkCreateBuffer(device, &bufferInfo, nullptr, &BufferToCreate) != VK_SUCCESS)
+		//{
+		//	throw std::runtime_error("创建顶点缓冲区失败!");
+		//}
 
-		/* 查询内存需求 */
-		VkMemoryRequirements memoryRequirements{};
-		vkGetBufferMemoryRequirements(device, BufferToCreate, &memoryRequirements);
+		///* 查询内存需求 */
+		//VkMemoryRequirements memoryRequirements{};
+		//vkGetBufferMemoryRequirements(device, BufferToCreate, &memoryRequirements);
 
-		/* 2. 定义内存分配信息 */
-		VkMemoryAllocateInfo memoryAllocateInfo{};
-		memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		memoryAllocateInfo.allocationSize = memoryRequirements.size;
-		memoryAllocateInfo.memoryTypeIndex = VulkanFunctionLibrary::FindMemoryType(deviceContext.physicalDevice, memoryRequirements.memoryTypeBits, Properties);
+		///* 2. 定义内存分配信息 */
+		//VkMemoryAllocateInfo memoryAllocateInfo{};
+		//memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		//memoryAllocateInfo.allocationSize = memoryRequirements.size;
+		//memoryAllocateInfo.memoryTypeIndex = VulkanFunctionLibrary::FindMemoryType(deviceContext.physicalDevice, memoryRequirements.memoryTypeBits, Properties);
 
-		if (vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &AllocatedMemory) != VK_SUCCESS)
-		{
-			throw std::runtime_error("分配顶点缓冲区内存失败!");
-		}
+		//if (vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &AllocatedMemory) != VK_SUCCESS)
+		//{
+		//	throw std::runtime_error("分配顶点缓冲区内存失败!");
+		//}
 
-		/* 3. 将分配的内存与顶点缓冲关联起来 */
-		vkBindBufferMemory(device, BufferToCreate, AllocatedMemory, 0);
+		///* 3. 将分配的内存与顶点缓冲关联起来 */
+		//vkBindBufferMemory(device, BufferToCreate, AllocatedMemory, 0);
+		
 	}
 
 	void BufferArea::CreateVertexBuffer(const std::vector<Vertex>& Vertices, VkBuffer& VertexBuffer, VkDeviceMemory& VertexBufferMemory)
@@ -159,45 +162,26 @@ namespace suz
 
 	void BufferArea::CopyBufferToImage(const VkBuffer& SrcBuffer, const VkImage& DstImage, uint32 Width, uint32 Height)
 	{
-		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-
-		VkBufferImageCopy copyRegion{};
-		copyRegion.bufferOffset = 0;
-		copyRegion.bufferRowLength = 0;
-		copyRegion.bufferImageHeight = 0;
-
-		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		copyRegion.imageSubresource.mipLevel = 0;
-		copyRegion.imageSubresource.baseArrayLayer = 0;
-		copyRegion.imageSubresource.baseArrayLayer = 0;
-		copyRegion.imageSubresource.layerCount = 1;
-
-		/* 指定目标图像需要复制的部分 */
-		copyRegion.imageOffset = { 0,0,0 };
-		copyRegion.imageExtent = { Width,Height,1 };
-
-		vkCmdCopyBufferToImage(commandBuffer, SrcBuffer, DstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
-
-		EndSingleTimeCommands(commandBuffer);
+		m_commandContext->CopyBufferToImage(SrcBuffer, DstImage, Width, Height);
 	}
 
-	void BufferArea::CreateUniformBuffers()
-	{
-		VkDeviceSize bufferSize = sizeof(CameraViewportInfo);
+	//void BufferArea::CreateUniformBuffers()
+	//{
+	//	VkDeviceSize bufferSize = sizeof(CameraViewportInfo);
 
-		/* 只创建缓冲区并关联内存, 不正式更改顶点属性 */
-		m_uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-		m_uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-		m_uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+	//	/* 只创建缓冲区并关联内存, 不正式更改顶点属性 */
+	//	m_uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	//	m_uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+	//	m_uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
-		for (size_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
-		{
-			CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_uniformBuffers[frameIndex], m_uniformBuffersMemory[frameIndex]);
-			/* 只进行映射而不释放, 称为持久映射 */
-			/* 缓冲内存作为桥梁链接显存和CPU内存 */
-			vkMapMemory(m_device, m_uniformBuffersMemory[frameIndex], 0, bufferSize, 0, &m_uniformBuffersMapped[frameIndex]);
-		}
-	}
+	//	for (size_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
+	//	{
+	//		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_uniformBuffers[frameIndex], m_uniformBuffersMemory[frameIndex]);
+	//		/* 只进行映射而不释放, 称为持久映射 */
+	//		/* 缓冲内存作为桥梁链接显存和CPU内存 */
+	//		vkMapMemory(m_device, m_uniformBuffersMemory[frameIndex], 0, bufferSize, 0, &m_uniformBuffersMapped[frameIndex]);
+	//	}
+	//}
 
 	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const DrawList& DrawQueue, uint32_t ImageIndex)
 	{
@@ -303,133 +287,17 @@ namespace suz
 
 	void BufferArea::TransitionImageLayout(const VkImage& Image, const VkFormat& Format, const VkImageLayout& OldLayout, const VkImageLayout& NewLayout)
 	{
-		/* 开启一次性命令缓冲 */
-		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-
-		/* 图像内存屏障 */
-		/* 1. 执行布局转换 2. 保证前后管线阶段的内存可见性 3. 同步资源访问 */
-		VkImageMemoryBarrier memoryBarrier{};
-		memoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		memoryBarrier.oldLayout = OldLayout;
-		memoryBarrier.newLayout = NewLayout;
-		memoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;	// 不做队列族转移
-		memoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		memoryBarrier.image = Image;									// 目标图像
-
-		/* 子资源范围: 指定要转换的图像区域 */
-		memoryBarrier.subresourceRange.baseMipLevel = 0;
-		memoryBarrier.subresourceRange.levelCount = 1;
-		memoryBarrier.subresourceRange.baseArrayLayer = 0;
-		memoryBarrier.subresourceRange.layerCount = 1;
-
-		/* 源/目标阶段: 访问掩码 */
-		VkPipelineStageFlags sourceStage{};								// 屏障前的管线阶段
-		VkPipelineStageFlags destinationStage{};						// 屏障后的管线阶段
-
-		/* 场景: 从未定义布局 -> 深度/模板附件最优布局 */
-		if (OldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-			NewLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-		{
-			memoryBarrier.srcAccessMask = 0;
-			memoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;			// 屏障提交的命令在管线最开始完成
-			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		}
-		else if (OldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-			NewLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-		{
-			memoryBarrier.srcAccessMask = 0;							// 源端无访问权限, 旧数据直接丢弃
-			memoryBarrier.dstAccessMask =								// 目标端 深度附件设置读和写权限
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;			// 屏障提交的命令在管线最开始完成
-			destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;// 管线到达早期片段测试阶段时调用屏障
-		}
-		else if (OldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-			NewLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-		{
-			memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		}
-		else
-		{
-			throw std::invalid_argument("不受支持的图像布局转换!");
-		}
-
-		/* 设置aspect掩码 */
-		/* 深度布局: 可见面为深度面, 如果格式含模板, 额外加上模板面 */
-		if (NewLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-		{
-			memoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;	// 可见面为深度面
-			if (VulkanFunctionLibrary::HasStencilComponent(Format))
-			{
-				memoryBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;// 额外加上模板面
-			}
-		}
-		else
-		{
-			memoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		}
-
-		/* 提交管线屏障 */
-		vkCmdPipelineBarrier(
-			commandBuffer,
-			sourceStage, destinationStage,
-			0,
-			0, nullptr,							// 无内存屏障
-			0, nullptr,							// 无缓冲屏障
-			1, &memoryBarrier					// 1个图像屏障
-		);
-
-		/* 结束命令缓冲并提交执行 */
-		EndSingleTimeCommands(commandBuffer);
+		m_commandContext->TransitionImageLayout(Image, Format, OldLayout, NewLayout);
 	}
 
 	VkCommandBuffer BufferArea::BeginSingleTimeCommands()
 	{
-		/* 命令缓冲区分配 */
-		VkCommandBufferAllocateInfo allocateInfo{};
-		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocateInfo.commandPool = m_commandPool;
-		allocateInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer{};
-		vkAllocateCommandBuffers(m_device, &allocateInfo, &commandBuffer);
-
-		/* 定义命令缓冲信息 */
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		/* 开始记录命令缓冲 */
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-		return commandBuffer;
+		return m_commandContext->BeginSingleTimeCommands();
 	}
 
 	void BufferArea::EndSingleTimeCommands(const VkCommandBuffer& CommandBuffer)
 	{
-		vkEndCommandBuffer(CommandBuffer);
-
-		/* 执行命令缓冲提交 */
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &CommandBuffer;
-
-		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		VkQueue graphicsQueue = vkManager.GetDevice()->GetGraphicsQueue();
-		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue);
-
-		/* 清理临时命令缓冲 */
-		vkFreeCommandBuffers(m_device, m_commandPool, 1, &CommandBuffer);
+		m_commandContext->EndSingleTimeCommands(CommandBuffer);
 	}
 
 	void BufferArea::CreateFrameBuffers()
@@ -460,22 +328,22 @@ namespace suz
 		}
 	}
 
-	void BufferArea::CreateCommandPool()
-	{
-		VulkanInitialize* vulkanInitialize = Engine::GetVulkanResourceManager().GetVulkanInitialize();
-		QueueFamilyIndices indices = vulkanInitialize->FindQueueFamilies();
+	//void BufferArea::CreateCommandPool()
+	//{
+	//	VulkanInitialize* vulkanInitialize = Engine::GetVulkanResourceManager().GetVulkanInitialize();
+	//	QueueFamilyIndices indices = vulkanInitialize->FindQueueFamilies();
 
-		/* 创建命令缓冲区用于存储缓冲区的内存并用于分配缓冲区 */
-		VkCommandPoolCreateInfo commandPoolInfo{};
-		commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;			// 允许单独重新记录命令缓冲区
-		commandPoolInfo.queueFamilyIndex = indices.graphicsFamily.value();
+	//	/* 创建命令缓冲区用于存储缓冲区的内存并用于分配缓冲区 */
+	//	VkCommandPoolCreateInfo commandPoolInfo{};
+	//	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	//	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;			// 允许单独重新记录命令缓冲区
+	//	commandPoolInfo.queueFamilyIndex = indices.graphicsFamily.value();
 
-		if (vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_commandPool) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建命令池失败!");
-		}
-	}
+	//	if (vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+	//	{
+	//		throw std::runtime_error("创建命令池失败!");
+	//	}
+	//}
 
 	void BufferArea::CreateDepthResources()
 	{
@@ -505,22 +373,22 @@ namespace suz
 		);
 	}
 
-	void BufferArea::CreateCommandBuffer()
-	{
-		m_commandBuffer.resize(MAX_FRAMES_IN_FLIGHT);
+	//void BufferArea::CreateCommandBuffer()
+	//{
+	//	m_commandBuffer.resize(MAX_FRAMES_IN_FLIGHT);
 
-		/* 命令缓冲区分配 */
-		VkCommandBufferAllocateInfo bufferAllocateInfo{};
-		bufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		bufferAllocateInfo.commandPool = m_commandPool;										// 指定命令池
-		bufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;							// 设为主缓冲区
-		bufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffer.size());
+	//	/* 命令缓冲区分配 */
+	//	VkCommandBufferAllocateInfo bufferAllocateInfo{};
+	//	bufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	//	bufferAllocateInfo.commandPool = m_commandPool;										// 指定命令池
+	//	bufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;							// 设为主缓冲区
+	//	bufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffer.size());
 
-		if (vkAllocateCommandBuffers(m_device, &bufferAllocateInfo, m_commandBuffer.data()) != VK_SUCCESS)
-		{
-			throw std::runtime_error("分配命令缓冲区失败!");
-		}
-	}
+	//	if (vkAllocateCommandBuffers(m_device, &bufferAllocateInfo, m_commandBuffer.data()) != VK_SUCCESS)
+	//	{
+	//		throw std::runtime_error("分配命令缓冲区失败!");
+	//	}
+	//}
 
 	void BufferArea::InitViewportConfig()
 	{
@@ -540,14 +408,6 @@ namespace suz
 
 	void BufferArea::CopyBuffer(const VkBuffer& SrcBuffer, const VkBuffer& DstBuffer, const VkDeviceSize& BufferSize)
 	{
-		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-
-		VkBufferCopy bufferCopy{};
-		bufferCopy.srcOffset = 0;
-		bufferCopy.dstOffset = 0;
-		bufferCopy.size = BufferSize;
-		vkCmdCopyBuffer(commandBuffer, SrcBuffer, DstBuffer, 1, &bufferCopy);
-
-		EndSingleTimeCommands(commandBuffer);
+		m_commandContext->CopyBuffer(SrcBuffer, DstBuffer, BufferSize);
 	}
 }

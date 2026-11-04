@@ -1,4 +1,4 @@
-#include "Mesh.h"
+﻿#include "Mesh.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkaninitialize/BufferArea.h"
@@ -40,9 +40,13 @@ namespace suz
 
 	Mesh::Mesh(const Vector<Vertex>& Vertices, const Vector<uint32>& Indices)
 	{
-		BufferArea* bufferarea = Engine::GetVulkanResourceManager().GetBufferArea();
-		bufferarea->CreateVertexBuffer(Vertices, m_vertexBuffer, m_vertexBufferMemory);
-		m_indexBufferSize = bufferarea->CreateIndexBuffer(Indices, m_indexBuffer, m_indexBufferMemory);
+		BufferContext* bufferContext = Engine::GetVulkanResourceManager().GetBufferContext();
+
+		VkDeviceSize vertexSize = sizeof(Vertex) * Vertices.size();
+		bufferContext->CreateVertexBuffer(Vertices.data(), vertexSize, m_vertexBuffer, m_vertexBufferMemory);
+		bufferContext->CreateIndexBuffer(Indices.data(), Indices.size(), m_indexBuffer, m_indexBufferMemory);
+
+		m_indexBufferSize = static_cast<uint32>(Indices.size());
 	}
 
 	Mesh::Mesh(const Vector<ModelVertexData>& Vertices, const Vector<uint32>& Indices)
@@ -51,9 +55,13 @@ namespace suz
 		vertices.resize(Vertices.size());
 		memcpy(vertices.data(), Vertices.data(), sizeof(ModelVertexData) * Vertices.size());
 
-		BufferArea* bufferarea = Engine::GetVulkanResourceManager().GetBufferArea();
-		bufferarea->CreateVertexBuffer(vertices, m_vertexBuffer, m_vertexBufferMemory);
-		m_indexBufferSize = bufferarea->CreateIndexBuffer(Indices, m_indexBuffer, m_indexBufferMemory);
+		BufferContext* bufferContext = Engine::GetVulkanResourceManager().GetBufferContext();
+
+		VkDeviceSize vertexSize = sizeof(Vertex) * Vertices.size();
+		bufferContext->CreateVertexBuffer(vertices.data(), vertexSize, m_vertexBuffer, m_vertexBufferMemory);
+		bufferContext->CreateIndexBuffer(Indices.data(), Indices.size(), m_indexBuffer, m_indexBufferMemory);
+
+		m_indexBufferSize = static_cast<uint32>(Indices.size());
 	}
 
 	Mesh::~Mesh()

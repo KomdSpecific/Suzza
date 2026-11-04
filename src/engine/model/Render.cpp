@@ -1,4 +1,4 @@
-#include "Render.h"
+﻿#include "Render.h"
 #include "Engine.h"
 #include "macros/VkMacro.h"
 #include "ModelResourceManager.h"
@@ -9,6 +9,7 @@
 #include "vulkanInitialize/SwapChain.h"
 #include "vulkanInitialize/RenderPass.h"
 #include "vulkanInitialize/BufferArea.h"
+#include "vulkaninitialize/CommandContext.h"
 #include "vulkaninitialize/Descriptor.h"
 #include "vulkanInitialize/SyncObject.h"
 
@@ -29,6 +30,8 @@ namespace suz
 		m_swapChain = vkManager.GetSwapChain();
 		m_renderPass = vkManager.GetRenderPasses().GetResource("DefaultRenderPass");
 		m_bufferArea = vkManager.GetBufferArea();
+		m_commandContext = vkManager.GetCommandContext();
+		m_bufferContext = vkManager.GetBufferContext();
 		m_descriptor = vkManager.GetDescriptor();
 		m_syncObject = vkManager.GetSyncObject();
 
@@ -90,9 +93,9 @@ namespace suz
 		vkResetFences(m_device->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame]);
 
 		/* 3. 记录命令缓冲, 传入图像索引 */
-		vkResetCommandBuffer(m_bufferArea->GetCommandBuffer()[m_currentFrame], 0);
+		vkResetCommandBuffer(m_commandContext->GetCommandBuffer()[m_currentFrame], 0);
 		m_bufferArea->RecordCommandBuffer(
-			m_bufferArea->GetCommandBuffer()[m_currentFrame],
+			m_commandContext->GetCommandBuffer()[m_currentFrame],
 			m_descriptor->GetCameraDescriptorSetElement(m_currentFrame),
 			m_drawList,
 			imageIndex
@@ -111,7 +114,7 @@ namespace suz
 		submitInfo.pWaitDstStageMask = waitStages;
 		/* 指定实际提交执行的命令缓冲区 */
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_bufferArea->GetCommandBuffer()[m_currentFrame];
+		submitInfo.pCommandBuffers = &m_commandContext->GetCommandBuffer()[m_currentFrame];
 		/* 指定命令缓冲区完成执行需要发出的信号量 */
 		VkSemaphore sendSemaphores[] = { m_syncObject->GetRenderFinishedSemaphore()[m_currentFrame] };
 		submitInfo.signalSemaphoreCount = 1;
@@ -153,6 +156,6 @@ namespace suz
 	void Render::UpdateModelTransform(float DeltaTime)
 	{
 		/* 将摄像机数据传入映射内存 */
-		memcpy(m_bufferArea->GetUniformBuffersMapped()[m_currentFrame], &m_cameraViewportInfo, sizeof(m_cameraViewportInfo));
+		memcpy(m_bufferContext->GetUniformBuffersMapped()[m_currentFrame], &m_cameraViewportInfo, sizeof(m_cameraViewportInfo));
 	}
 }

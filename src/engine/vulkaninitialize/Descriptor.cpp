@@ -1,4 +1,4 @@
-#include "Descriptor.h"
+﻿#include "Descriptor.h"
 #include "Engine.h"
 #include "VulkanResourceManager.h"
 #include "Pipeline.h"
@@ -80,7 +80,7 @@ namespace suz
 			throw std::runtime_error("分配描述符集合失败!");
 		}
 
-		const std::vector<VkBuffer>& uniformBuffers = vkManager.GetBufferArea()->GetUniformBuffers();
+		const std::vector<VkBuffer>& uniformBuffers = vkManager.GetBufferContext()->GetUniformBuffers();
 
 		/* 配置集合中的每一个描述符 */
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

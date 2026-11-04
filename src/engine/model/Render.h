@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "DrawList.h"
 
@@ -11,6 +11,8 @@ namespace suz
 	class SwapChain;
 	class RenderPass;
 	class BufferArea;
+	class CommandContext;
+	class BufferContext;
 	class Descriptor;
 	class SyncObject;
 
@@ -35,6 +37,8 @@ namespace suz
 		SwapChain* m_swapChain;
 		RenderPass* m_renderPass;
 		BufferArea* m_bufferArea;
+		CommandContext* m_commandContext;
+		BufferContext* m_bufferContext;
 		Descriptor* m_descriptor;
 		SyncObject* m_syncObject;
 

@@ -1,4 +1,4 @@
-Suzza
+﻿Suzza
 
 Copyright (c) 2026 KomdSpecific
 
@@ -39,7 +39,7 @@ Repository: https://github.com/nothings/stb
 License: Public Domain / MIT (dual license)
 Retained: stb_image.h (license text embedded inside this header)
 Removed: other unused stb headers, tests, docs, security.txt, CI files
-Reference license file: thirdparty/stb/LICENSE
+Reference license file: thirdparty/stb_image/LICENSE
 
 ================================================================================
 cgltf

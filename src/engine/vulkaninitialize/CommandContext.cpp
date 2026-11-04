@@ -1,4 +1,5 @@
-#include "CommandContext.h"
+﻿#include "CommandContext.h"
+#include "factory/CommandPoolFactories.h"
 #include "functionLibrary/VulkanFunctionLibrary.h"
 
 #include "debug/SuzzaLog.h"
@@ -12,6 +13,44 @@ namespace suz
 
 	CommandContext::~CommandContext()
 	{
+		if (*m_isAlive)
+		{
+			SUZZA_LOG_ERROR("Class CommandContext Warning: 未调用Destroy手动销毁!");
+			Destroy();
+		}
+	}
+
+	bool CommandContext::CreateCommandContext(usize MaxFlightFrames)
+	{
+		CommandPoolSpec commandPoolSpec = suz_commandPool::CreateDefaultCommandPoolSpec();
+		if (!m_commandPool.Create(commandPoolSpec))
+			return false;
+
+		/* 每帧一个主命令缓冲(非帧缓冲) */
+		m_commandBuffers.resize(MaxFlightFrames);
+
+		VkCommandBufferAllocateInfo allocateInfo{};
+		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocateInfo.commandPool = m_commandPool.GetCommandPool();
+		allocateInfo.commandBufferCount = static_cast<uint32>(m_commandBuffers.size());
+
+		if (vkAllocateCommandBuffers(m_deviceContext.device, &allocateInfo, m_commandBuffers.data()) != VK_SUCCESS)
+		{
+			SUZZA_LOG_ERROR("分配命令缓冲区失败!");
+			return false;
+		}
+
+		return true;
+	}
+
+	void CommandContext::Destroy()
+	{
+		if (!(*m_isAlive)) return;
+
+		m_commandPool.Destroy();
+
+		*m_isAlive = false;
 	}
 
 	void CommandContext::TransitionImageLayout(const VkImage& Image, const VkFormat& Format, const VkImageLayout& OldLayout, const VkImageLayout& NewLayout)
@@ -113,7 +152,7 @@ namespace suz
 		allocateInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer{};
-		vkAllocateCommandBuffers(m_deviceContext.device, nullptr, &commandBuffer);
+		vkAllocateCommandBuffers(m_deviceContext.device, &allocateInfo, &commandBuffer);
 
 		/* 定义命令缓冲信息 */
 		VkCommandBufferBeginInfo beginInfo{};
@@ -145,6 +184,37 @@ namespace suz
 
 	void CommandContext::CopyBuffer(const VkBuffer& SrcBuffer, const VkBuffer& DstBuffer, const VkDeviceSize& BufferSize)
 	{
+		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
+		VkBufferCopy bufferCopy{};
+		bufferCopy.srcOffset = 0;
+		bufferCopy.dstOffset = 0;
+		bufferCopy.size = BufferSize;
+		vkCmdCopyBuffer(commandBuffer, SrcBuffer, DstBuffer, 1, &bufferCopy);
+
+		EndSingleTimeCommands(commandBuffer);
+	}
+
+	void CommandContext::CopyBufferToImage(const VkBuffer& SrcBuffer, const VkImage& DstImage, uint32 Width, uint32 Height)
+	{
+		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+
+		VkBufferImageCopy imageCopy{};
+		imageCopy.bufferOffset = 0;
+		imageCopy.bufferRowLength = 0;
+		imageCopy.bufferImageHeight = 0;
+
+		imageCopy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		imageCopy.imageSubresource.baseArrayLayer = 0;
+		imageCopy.imageSubresource.mipLevel = 0;
+		imageCopy.imageSubresource.layerCount = 1;
+
+		/* 指定目标图像需要复制的部分 */
+		imageCopy.imageOffset = { 0,0,0 };
+		imageCopy.imageExtent = { Width,Height,1 };
+
+		vkCmdCopyBufferToImage(commandBuffer, SrcBuffer, DstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
+
+		EndSingleTimeCommands(commandBuffer);
 	}
 }

@@ -1,4 +1,4 @@
-#include "Engine.h"
+﻿#include "Engine.h"
 #include "file/Filesystem.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "model/ModelResourceManager.h"
@@ -102,7 +102,7 @@ namespace suz
 			m_vkResourceManager.GetDevice()->GetGraphicsFamily(),
 			m_vkResourceManager.GetDevice()->GetGraphicsQueue(),
 			m_vkResourceManager.GetRenderPasses().GetResource("DefaultRenderPass")->GetRenderPass(),
-			m_vkResourceManager.GetBufferArea()->GetCommandPool()
+			m_vkResourceManager.GetCommandContext()->GetCommandPool()
 		);
 #endif
 

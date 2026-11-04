@@ -1,5 +1,6 @@
-#include "VulkanResourceManager.h"
+﻿#include "VulkanResourceManager.h"
 #include "file/FileSystem.h"
+#include "macros/VkMacro.h"
 #include "functionLibrary/DeviceFunctionLibrary.h"
 #include "factory/DeviceFactories.h"
 #include "factory/DescriptorSetLayoutFactories.h"
@@ -64,11 +65,16 @@ namespace suz
 			m_pipelines.CreateResource<PipelineSpec>("DefaultPipeline", pipelineSpec);
 		}
 
-		/* ====================创建命令池==================== */
+		/* =================创建命令池上下文================= */
 		{
-			/*CommandPoolSpec commandSpec = suz_commandPool::CreateDefaultCommandPoolSpec();
-			m_commandPool = std::make_unique<CommandPool>();
-			m_commandPool->Create(commandSpec);*/
+			m_commandContext = std::make_unique<CommandContext>(m_deviceContext);
+			m_commandContext->CreateCommandContext(MAX_FRAMES_IN_FLIGHT);
+		}
+
+		/* ==================创建缓冲上下文===================*/
+		{
+			m_bufferContext = std::make_unique<BufferContext>(m_deviceContext, m_commandContext.get());
+			m_bufferContext->CreateBufferContext(MAX_FRAMES_IN_FLIGHT);
 		}
 
 		/* BufferArea初始化 */
@@ -101,8 +107,10 @@ namespace suz
 		m_syncObject->Destroy();
 		m_descriptor->Destroy();
 		m_bufferArea->Destroy();
-		m_descriptorLayouts.Destroy();
+		m_bufferContext->Destroy();
+		m_commandContext->Destroy();
 		m_pipelines.Destroy();
+		m_descriptorLayouts.Destroy();
 		m_renderPasses.Destroy();
 		m_swapChain->Destroy();
 		m_device->Destroy();
