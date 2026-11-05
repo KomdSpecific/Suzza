@@ -1,6 +1,7 @@
-#include "DeviceFunctionLibrary.h"
+﻿#include "DeviceFunctionLibrary.h"
 #include "macros/VkMacro.h"
 #include "vulkaninitialize/Device.h"
+#include "vulkaninitialize/SwapChain.h"
 
 #include "debug/SuzzaLog.h"
 
@@ -91,7 +92,7 @@ namespace suz
 		Vector<VkQueueFamilyProperties> familyProperties(familiesCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &familiesCount, familyProperties.data());
 
-		int i = 0;
+		uint8 i = 0;
 		for (const VkQueueFamilyProperties& property : familyProperties)
 		{
 			if (property.queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -117,5 +118,35 @@ namespace suz
 		}
 
 		return collector;
+	}
+
+	SwapChainSupportDetails DeviceFunctionLibrary::QuerySwapChainSupport(const VkPhysicalDevice& PhysicalDevice, const VkSurfaceKHR& Surface)
+	{
+		SwapChainSupportDetails details{};
+
+		/* 获取设备的基本表面功能 */
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice, Surface, &details.capabilities);
+
+		/* 查询设备支持的表面格式 */
+		uint32 formatCount = 0;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice, Surface, &formatCount, nullptr);
+
+		if (formatCount != 0)
+		{
+			details.formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice, Surface, &formatCount, details.formats.data());
+		}
+
+		/* 查询设备支持的呈现格式 */
+		uint32 presentCount = 0;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice, Surface, &presentCount, nullptr);
+
+		if (presentCount != 0)
+		{
+			details.presentModes.resize(presentCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice, Surface, &presentCount, details.presentModes.data());
+		}
+
+		return details;
 	}
 }

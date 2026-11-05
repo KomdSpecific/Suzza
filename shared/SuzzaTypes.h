@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cstdint>
 #include <string>
@@ -29,6 +29,8 @@ namespace suz
 
 	template<typename T>
 	using Vector = std::vector<T>;
+	template<typename T, size_t Num>
+	using Array = std::array<T, Num>;
 
 	template<typename T>
 	using Set = std::set<T>;

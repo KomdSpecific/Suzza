@@ -59,7 +59,12 @@ namespace suz
 		{
 			vkDestroyBuffer(m_deviceContext.device, m_uniforms[uniformIndex], nullptr);
 			vkFreeMemory(m_deviceContext.device, m_uniformsMemory[uniformIndex], nullptr);
+			m_uniformsMapped[uniformIndex] = nullptr;
 		}
+
+		m_uniforms.clear();
+		m_uniformsMemory.clear();
+		m_uniformsMapped.clear();
 	}
 
 	bool BufferContext::CreateBuffer(const VkDeviceSize& DeviceSize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Property, VkBuffer& OutBuffer, VkDeviceMemory& OutBufferMemory)
@@ -95,6 +100,7 @@ namespace suz
 
 		/* 3. 将分配的内存与顶点缓冲关联起来 */
 		vkBindBufferMemory(m_deviceContext.device, OutBuffer, OutBufferMemory, 0);
+		return true;
 	}
 
 	void BufferContext::DestroyBuffer(VkBuffer& Buffer, VkDeviceMemory& DeviceMemory)

@@ -1,7 +1,7 @@
-#include "RenderPassFactories.h"
+﻿#include "RenderPassFactories.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
-#include "vulkaninitialize/BufferArea.h"
+#include "vulkaninitialize/functionLibrary/DeviceFunctionLibrary.h"
 #include "vulkaninitialize/functionLibrary/VulkanFunctionLibrary.h"
 
 #include "debug/SuzzaLog.h"
@@ -10,18 +10,13 @@ namespace suz
 {
 	namespace suz_renderpass
 	{
-		RenderPassSpec CreateDefaultRenderPassSpec()
+		RenderPassSpec CreateDefaultRenderPassSpec(const DeviceContext& Context, const VkFormat& SwapChainFormat)
 		{
-			VulkanResourceManager& manager = Engine::GetVulkanResourceManager();
-
-			const VkDevice& device = manager.GetDevice()->GetDevice();
-			const VkFormat& swapChainImageFormat = manager.GetSwapChain()->GetSwapChainFormat();
-
-			RenderPassSpec spec(device, swapChainImageFormat);
+			RenderPassSpec spec(Context.device, SwapChainFormat);
 			spec.attachmentDesc.resize(2);
 
 			/* ==========定义颜色缓冲附件属性========== */
-			spec.attachmentDesc[0].format = swapChainImageFormat;
+			spec.attachmentDesc[0].format = SwapChainFormat;
 			spec.attachmentDesc[0].samples = VK_SAMPLE_COUNT_1_BIT;					// 无多重采样
 			/* 确定渲染前后如何处理附件中的数据 */
 			spec.attachmentDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;			// (重要)设置颜色, 在开始时清除为常量
@@ -32,9 +27,8 @@ namespace suz
 			spec.attachmentDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			spec.attachmentDesc[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;	// 在交换链中呈现的图像
 
-			VkFormat depthFormat = VulkanFunctionLibrary::FindDepthFormat(
-				Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetPhysicalDevice()
-			);
+			VkFormat depthFormat = VulkanFunctionLibrary::FindDepthFormat(Context.physicalDevice);
+
 			/* ==========定义深度缓冲附件属性========== */
 			spec.attachmentDesc[1].format = depthFormat;
 			spec.attachmentDesc[1].samples = VK_SAMPLE_COUNT_1_BIT;					// 无多重采样

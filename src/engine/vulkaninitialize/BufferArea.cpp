@@ -21,7 +21,8 @@ namespace suz
 	) : m_engineUIDelegate(Engine::GetEngineInstance().GetEngineUIRenderEventDelegate()),
 		m_commandContext(Engine::GetVulkanResourceManager().GetCommandContext()),
 		m_bufferContext(Engine::GetVulkanResourceManager().GetBufferContext()),
-		m_pipeline(Pipeline), m_device(Device), m_swapChainExtent(SwapChainExtent), m_renderPass(RenderPass)
+		m_swapChain(Engine::GetVulkanResourceManager().GetSwapChain()),
+		m_pipeline(Pipeline), m_device(Device), m_renderPass(RenderPass)
 	{
 	}
 
@@ -37,8 +38,8 @@ namespace suz
 	void BufferArea::InitBufferArea()
 	{
 		//CreateCommandPool();
-		CreateDepthResources();
-		CreateFrameBuffers();
+		//CreateDepthResources();
+		//CreateFrameBuffers();
 		//CreateCommandBuffer();
 		InitViewportConfig();
 		//CreateUniformBuffers();
@@ -48,7 +49,7 @@ namespace suz
 	{
 		if (!(*m_isAlive)) return;
 
-		CleanupBufferArea();
+		//CleanupBufferArea();
 
 		/*for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -64,105 +65,6 @@ namespace suz
 	void BufferArea::RegisterBindlessDescriptorSet(const VkDescriptorSet& TargetDescriptorSet)
 	{
 		m_bindlessDescriptorSet = TargetDescriptorSet;
-	}
-
-	void BufferArea::CreateBuffer(const VkDeviceSize& Buffersize, const VkBufferUsageFlags& Usage, const VkMemoryPropertyFlags& Properties, VkBuffer& BufferToCreate, VkDeviceMemory& AllocatedMemory)
-	{
-		//const DeviceContext& deviceContext = Engine::GetVulkanResourceManager().GetDeviceContext();
-		//VkDevice device = deviceContext.device;
-
-		///* 1. 定义顶点缓冲区信息 */
-		//VkBufferCreateInfo bufferInfo{};
-		//bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		//bufferInfo.size = Buffersize;
-		//bufferInfo.usage = Usage;											// 定义缓冲的数据将要(顶点缓冲或片段缓冲等)
-		//bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;					// 只有特定队列族独占
-
-		//if (vkCreateBuffer(device, &bufferInfo, nullptr, &BufferToCreate) != VK_SUCCESS)
-		//{
-		//	throw std::runtime_error("创建顶点缓冲区失败!");
-		//}
-
-		///* 查询内存需求 */
-		//VkMemoryRequirements memoryRequirements{};
-		//vkGetBufferMemoryRequirements(device, BufferToCreate, &memoryRequirements);
-
-		///* 2. 定义内存分配信息 */
-		//VkMemoryAllocateInfo memoryAllocateInfo{};
-		//memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		//memoryAllocateInfo.allocationSize = memoryRequirements.size;
-		//memoryAllocateInfo.memoryTypeIndex = VulkanFunctionLibrary::FindMemoryType(deviceContext.physicalDevice, memoryRequirements.memoryTypeBits, Properties);
-
-		//if (vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &AllocatedMemory) != VK_SUCCESS)
-		//{
-		//	throw std::runtime_error("分配顶点缓冲区内存失败!");
-		//}
-
-		///* 3. 将分配的内存与顶点缓冲关联起来 */
-		//vkBindBufferMemory(device, BufferToCreate, AllocatedMemory, 0);
-		
-	}
-
-	void BufferArea::CreateVertexBuffer(const std::vector<Vertex>& Vertices, VkBuffer& VertexBuffer, VkDeviceMemory& VertexBufferMemory)
-	{
-		const VkDeviceSize bufferSize = sizeof(Vertices[0]) * Vertices.size();
-
-		/* 创建主机可见的缓冲作为临时缓冲 */
-		VkBuffer stagingBuffer = {};
-		VkDeviceMemory stagingMemory = {};
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
-
-		/* 将缓冲内存映射到CPU可访问的内存 */
-		void* data;
-		vkMapMemory(m_device, stagingMemory, 0, bufferSize, 0, &data);
-		/* 拷贝数据到映射的内存 */
-		memcpy(data, Vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(m_device, stagingMemory);
-
-		/* 创建设备本地内存的缓冲区(内存类型最佳且无法直接访问) */
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
-
-		/* 复制缓冲区 */
-		CopyBuffer(stagingBuffer, VertexBuffer, bufferSize);
-
-		/* 销毁旧的临时缓冲区 */
-		vkDestroyBuffer(m_device, stagingBuffer, nullptr);
-		vkFreeMemory(m_device, stagingMemory, nullptr);
-	}
-
-	uint32 BufferArea::CreateIndexBuffer(const std::vector<uint32>& Indices, VkBuffer& IndexBuffer, VkDeviceMemory& IndexBufferMemory)
-	{
-		const VkDeviceSize bufferSize = sizeof(Indices[0]) * Indices.size();
-		uint32 indexBufferSize = static_cast<uint32>(Indices.size());
-
-		/* 创建主机可见的缓冲作为临时缓冲 */
-		VkBuffer stagingBuffer = {};
-		VkDeviceMemory stagingMemory = {};
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
-
-		/* 将缓冲内存映射到CPU可访问的内存 */
-		/* 缓冲内存作为桥梁链接显存和CPU内存 */
-		void* data;
-		vkMapMemory(m_device, stagingMemory, 0, bufferSize, 0, &data);
-		/* 拷贝数据到映射的内存 */
-		memcpy(data, Indices.data(), (usize)bufferSize);
-		vkUnmapMemory(m_device, stagingMemory);
-
-		/* 创建设备本地内存的缓冲区(内存类型最佳且无法直接访问) */
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, IndexBuffer, IndexBufferMemory);
-
-		/* 复制缓冲区 */
-		CopyBuffer(stagingBuffer, IndexBuffer, bufferSize);
-
-		vkDestroyBuffer(m_device, stagingBuffer, nullptr);
-		vkFreeMemory(m_device, stagingMemory, nullptr);
-
-		return indexBufferSize;
-	}
-
-	void BufferArea::CopyBufferToImage(const VkBuffer& SrcBuffer, const VkImage& DstImage, uint32 Width, uint32 Height)
-	{
-		m_commandContext->CopyBufferToImage(SrcBuffer, DstImage, Width, Height);
 	}
 
 	//void BufferArea::CreateUniformBuffers()
@@ -199,14 +101,15 @@ namespace suz
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = m_renderPass;
-		renderPassInfo.framebuffer = m_frameBuffers[ImageIndex];				// 绑定帧缓冲
+		renderPassInfo.framebuffer = m_swapChain->GetFrameBuffer(ImageIndex).GetFrameBuffer();	// 绑定帧缓冲
 
-		renderPassInfo.renderArea.offset = { 0,0 };								// 定义加载原点 (加载矩形左上角)
-		renderPassInfo.renderArea.extent = m_swapChainExtent;
+		VkExtent2D extent = m_swapChain->GetSwapChainExtent();
+		renderPassInfo.renderArea.offset = { 0,0 };										// 定义加载原点 (加载矩形左上角)
+		renderPassInfo.renderArea.extent = extent;
 		/* 配置背景颜色 */
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = { {0.0f,0.0f,0.0f,1.0f} };						// 设置颜色清除值 (背景颜色)
-		clearValues[1].depthStencil = { 1.0f,0 };								// 深度 + 模板清除值
+		clearValues[0].color = { {0.0f,0.0f,0.0f,1.0f} };								// 设置颜色清除值 (背景颜色)
+		clearValues[1].depthStencil = { 1.0f,0 };										// 深度 + 模板清除值
 		renderPassInfo.clearValueCount = static_cast<uint32>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
@@ -216,10 +119,10 @@ namespace suz
 		/* 绑定图形管线 */
 		vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.GetGraphicsPipeline());
 
-		m_viewConfigInfo.viewport.width = static_cast<float>(m_swapChainExtent.width);
-		m_viewConfigInfo.viewport.height = static_cast<float>(m_swapChainExtent.height);
+		m_viewConfigInfo.viewport.width = static_cast<float>(extent.width);
+		m_viewConfigInfo.viewport.height = static_cast<float>(extent.height);
 
-		m_viewConfigInfo.scissor.extent = { m_swapChainExtent.width,m_swapChainExtent.height };
+		m_viewConfigInfo.scissor.extent = { extent.width,extent.height };
 
 		/* 设置图形视口和裁剪矩形区域 */
 		vkCmdSetViewport(CommandBuffer, 0, 1, &m_viewConfigInfo.viewport);
@@ -266,148 +169,96 @@ namespace suz
 		}
 	}
 
-	void BufferArea::ReCreateBufferArea(const VkExtent2D& NewSwapChainExtent)
-	{
-		m_swapChainExtent = NewSwapChainExtent;								// 重置分辨率
-		CreateDepthResources();
-		CreateFrameBuffers();
-	}
-
-	void BufferArea::CleanupBufferArea()
-	{
-		vkDestroyImageView(m_device, m_depthImageView, nullptr);
-		vkFreeMemory(m_device, m_depthImageMemory, nullptr);
-		vkDestroyImage(m_device, m_depthImage, nullptr);
-
-		for (const VkFramebuffer& framebuffer : m_frameBuffers)
-		{
-			vkDestroyFramebuffer(m_device, framebuffer, nullptr);
-		}
-	}
-
-	void BufferArea::TransitionImageLayout(const VkImage& Image, const VkFormat& Format, const VkImageLayout& OldLayout, const VkImageLayout& NewLayout)
-	{
-		m_commandContext->TransitionImageLayout(Image, Format, OldLayout, NewLayout);
-	}
-
-	VkCommandBuffer BufferArea::BeginSingleTimeCommands()
-	{
-		return m_commandContext->BeginSingleTimeCommands();
-	}
-
-	void BufferArea::EndSingleTimeCommands(const VkCommandBuffer& CommandBuffer)
-	{
-		m_commandContext->EndSingleTimeCommands(CommandBuffer);
-	}
-
-	void BufferArea::CreateFrameBuffers()
-	{
-		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		const std::vector<VkImageView>& swapChainImageViews = vkManager.GetSwapChain()->GetSwapChainImageViews();
-		/* 创建图像视图的帧缓冲 */
-		m_frameBuffers.resize(swapChainImageViews.size());
-
-		for (size_t currentImageView = 0; currentImageView < swapChainImageViews.size(); currentImageView++)
-		{
-			std::array<VkImageView, 2> attachments = { swapChainImageViews[currentImageView],m_depthImageView };
-
-			/* 遍历图像视图创建帧缓冲 */
-			VkFramebufferCreateInfo framebufferInfo{};
-			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = m_renderPass;
-			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-			framebufferInfo.pAttachments = attachments.data();								// 每个帧缓冲绑定一个交换链图像
-			framebufferInfo.width = m_swapChainExtent.width;
-			framebufferInfo.height = m_swapChainExtent.height;
-			framebufferInfo.layers = 1;
-
-			if (vkCreateFramebuffer(m_device, &framebufferInfo, nullptr, &m_frameBuffers[currentImageView]) != VK_SUCCESS)
-			{
-				throw std::runtime_error("创建帧缓冲失败!");
-			}
-		}
-	}
-
-	//void BufferArea::CreateCommandPool()
+	//void BufferArea::ReCreateBufferArea(const VkExtent2D& NewSwapChainExtent)
 	//{
-	//	VulkanInitialize* vulkanInitialize = Engine::GetVulkanResourceManager().GetVulkanInitialize();
-	//	QueueFamilyIndices indices = vulkanInitialize->FindQueueFamilies();
+	//	m_swapChainExtent = NewSwapChainExtent;								// 重置分辨率
+	//	CreateDepthResources();
+	//	CreateFrameBuffers();
+	//}
 
-	//	/* 创建命令缓冲区用于存储缓冲区的内存并用于分配缓冲区 */
-	//	VkCommandPoolCreateInfo commandPoolInfo{};
-	//	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	//	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;			// 允许单独重新记录命令缓冲区
-	//	commandPoolInfo.queueFamilyIndex = indices.graphicsFamily.value();
+	//void BufferArea::CleanupBufferArea()
+	//{
+	//	vkDestroyImageView(m_device, m_depthImageView, nullptr);
+	//	vkFreeMemory(m_device, m_depthImageMemory, nullptr);
+	//	vkDestroyImage(m_device, m_depthImage, nullptr);
 
-	//	if (vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+	//	for (const VkFramebuffer& framebuffer : m_frameBuffers)
 	//	{
-	//		throw std::runtime_error("创建命令池失败!");
+	//		vkDestroyFramebuffer(m_device, framebuffer, nullptr);
 	//	}
 	//}
 
-	void BufferArea::CreateDepthResources()
-	{
-		/* 查询硬件支持的最佳深度格式 */
-		VkFormat depthFormat = VulkanFunctionLibrary::FindDepthFormat(
-			Engine::GetVulkanResourceManager().GetDeviceContext().physicalDevice
-		);
-
-		/* 创建深度缓冲图像并分配设备本地显存 */
-		Texture::CreateImage(
-			m_swapChainExtent.width, m_swapChainExtent.height,
-			depthFormat,
-			VK_IMAGE_TILING_OPTIMAL,						// 最优平铺 GPU访问性能最高
-			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,	// 用途: 作为深度/模板渲染附件
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,			// 类型: GPU本地显存
-			m_depthImage,
-			m_depthImageMemory
-		);
-
-		/* 创建深度图像视图, 只可见深度面 */
-		m_depthImageView = Texture::CreateImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-		/* 将图像从未定义转换为 "深度附件最优" 布局 */
-		/* 未定义布局: 新建图像无有效数据, 转换时不保留旧内容, 性能最优 */
-		TransitionImageLayout(m_depthImage, depthFormat,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-		);
-	}
-
-	//void BufferArea::CreateCommandBuffer()
+	//void BufferArea::CreateFrameBuffers()
 	//{
-	//	m_commandBuffer.resize(MAX_FRAMES_IN_FLIGHT);
+	//	VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
+	//	const std::vector<VkImageView>& swapChainImageViews = vkManager.GetSwapChain()->GetSwapChainImageViews();
+	//	/* 创建图像视图的帧缓冲 */
+	//	m_frameBuffers.resize(swapChainImageViews.size());
 
-	//	/* 命令缓冲区分配 */
-	//	VkCommandBufferAllocateInfo bufferAllocateInfo{};
-	//	bufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	//	bufferAllocateInfo.commandPool = m_commandPool;										// 指定命令池
-	//	bufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;							// 设为主缓冲区
-	//	bufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffer.size());
-
-	//	if (vkAllocateCommandBuffers(m_device, &bufferAllocateInfo, m_commandBuffer.data()) != VK_SUCCESS)
+	//	for (size_t currentImageView = 0; currentImageView < swapChainImageViews.size(); currentImageView++)
 	//	{
-	//		throw std::runtime_error("分配命令缓冲区失败!");
+	//		std::array<VkImageView, 2> attachments = { swapChainImageViews[currentImageView],m_depthImageView };
+
+	//		/* 遍历图像视图创建帧缓冲 */
+	//		VkFramebufferCreateInfo framebufferInfo{};
+	//		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	//		framebufferInfo.renderPass = m_renderPass;
+	//		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	//		framebufferInfo.pAttachments = attachments.data();								// 每个帧缓冲绑定一个交换链图像
+	//		framebufferInfo.width = m_swapChainExtent.width;
+	//		framebufferInfo.height = m_swapChainExtent.height;
+	//		framebufferInfo.layers = 1;
+
+	//		if (vkCreateFramebuffer(m_device, &framebufferInfo, nullptr, &m_frameBuffers[currentImageView]) != VK_SUCCESS)
+	//		{
+	//			throw std::runtime_error("创建帧缓冲失败!");
+	//		}
 	//	}
+	//}
+
+	//void BufferArea::CreateDepthResources()
+	//{
+	//	/* 查询硬件支持的最佳深度格式 */
+	//	VkFormat depthFormat = VulkanFunctionLibrary::FindDepthFormat(
+	//		Engine::GetVulkanResourceManager().GetDeviceContext().physicalDevice
+	//	);
+
+	//	/* 创建深度缓冲图像并分配设备本地显存 */
+	//	Texture::CreateImage(
+	//		m_swapChainExtent.width, m_swapChainExtent.height,
+	//		depthFormat,
+	//		VK_IMAGE_TILING_OPTIMAL,						// 最优平铺 GPU访问性能最高
+	//		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,	// 用途: 作为深度/模板渲染附件
+	//		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,			// 类型: GPU本地显存
+	//		m_depthImage,
+	//		m_depthImageMemory
+	//	);
+
+	//	/* 创建深度图像视图, 只可见深度面 */
+	//	m_depthImageView = Texture::CreateImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	//	/* 将图像从未定义转换为 "深度附件最优" 布局 */
+	//	/* 未定义布局: 新建图像无有效数据, 转换时不保留旧内容, 性能最优 */
+	//	m_commandContext->TransitionImageLayout(m_depthImage, depthFormat,
+	//		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	//	);
 	//}
 
 	void BufferArea::InitViewportConfig()
 	{
+		VkExtent2D extent = m_swapChain->GetSwapChainExtent();
+
 		/* 配置视口信息, 定义管线坐标映射到图像的输出坐标 */
 		m_viewConfigInfo.viewport.x = 0.0f;
 		m_viewConfigInfo.viewport.y = 0.0f;
 		/* 定义视口宽度和高度 */
-		m_viewConfigInfo.viewport.width = static_cast<float>(m_swapChainExtent.width);
-		m_viewConfigInfo.viewport.height = static_cast<float>(m_swapChainExtent.height);
+		m_viewConfigInfo.viewport.width = static_cast<float>(extent.width);
+		m_viewConfigInfo.viewport.height = static_cast<float>(extent.height);
 		m_viewConfigInfo.viewport.minDepth = 0.0f;
 		m_viewConfigInfo.viewport.maxDepth = 1.0f;
 
 		/* 定义裁剪矩形, 在窗口裁剪出extent大小 */
 		m_viewConfigInfo.scissor.offset = { 0,0 };
-		m_viewConfigInfo.scissor.extent = { m_swapChainExtent.width,m_swapChainExtent.height };
-	}
-
-	void BufferArea::CopyBuffer(const VkBuffer& SrcBuffer, const VkBuffer& DstBuffer, const VkDeviceSize& BufferSize)
-	{
-		m_commandContext->CopyBuffer(SrcBuffer, DstBuffer, BufferSize);
+		m_viewConfigInfo.scissor.extent = { extent.width,extent.height };
 	}
 }

@@ -7,6 +7,7 @@
 #include "factory/PipelineFactories.h"
 #include "factory/RenderPassFactories.h"
 #include "factory/CommandPoolFactories.h"
+#include "factory/SwapChainFactories.h"
 
 #include "debug/SuzzaLog.h"
 #include <filesystem>
@@ -37,13 +38,26 @@ namespace suz
 		m_deviceContext.graphicsFamilyIndex = m_device->GetGraphicsFamily();
 		m_deviceContext.presentFamilyIndex = m_device->GetPresentFamily();
 
-		m_swapChain = std::make_unique<SwapChain>(m_device->GetDevice());
-		m_swapChain->InitSwapChain();
+
+		/* =================创建命令池上下文================ */
+		{
+			m_commandContext = std::make_unique<CommandContext>(m_deviceContext);
+			m_commandContext->CreateCommandContext(MAX_FRAMES_IN_FLIGHT);
+		}
+
+
+		SwapChainSpec swapChainSpec = suz_swapchain::CreateDefaultSwapChain();
 
 		/* ===================渲染通道创建================== */
 		{
-			RenderPassSpec renderPassSpec = suz_renderpass::CreateDefaultRenderPassSpec();
+			RenderPassSpec renderPassSpec = suz_renderpass::CreateDefaultRenderPassSpec(m_deviceContext, swapChainSpec.surfaceFormat.format);
 			m_renderPasses.CreateResource<RenderPassSpec>("DefaultRenderPass", renderPassSpec);
+		}
+
+		/* ===================创建交换链=================== */
+		{
+			m_swapChain = std::make_unique<SwapChain>(m_commandContext.get(), m_renderPasses.GetResource("DefaultRenderPass")->GetRenderPass());
+			m_swapChain->InitSwapChain(swapChainSpec);
 		}
 
 		/* ==================创建描述符布局================= */
@@ -63,12 +77,6 @@ namespace suz
 				std::filesystem::path(FileSystem::GetShadersFolder() / "simple_vertexshader.vert.spv").string(),
 				std::filesystem::path(FileSystem::GetShadersFolder() / "simple_fragmentshader.frag.spv").string());
 			m_pipelines.CreateResource<PipelineSpec>("DefaultPipeline", pipelineSpec);
-		}
-
-		/* =================创建命令池上下文================= */
-		{
-			m_commandContext = std::make_unique<CommandContext>(m_deviceContext);
-			m_commandContext->CreateCommandContext(MAX_FRAMES_IN_FLIGHT);
 		}
 
 		/* ==================创建缓冲上下文===================*/
@@ -108,11 +116,11 @@ namespace suz
 		m_descriptor->Destroy();
 		m_bufferArea->Destroy();
 		m_bufferContext->Destroy();
-		m_commandContext->Destroy();
 		m_pipelines.Destroy();
 		m_descriptorLayouts.Destroy();
-		m_renderPasses.Destroy();
 		m_swapChain->Destroy();
+		m_renderPasses.Destroy();
+		m_commandContext->Destroy();
 		m_device->Destroy();
 		m_vkInitialize->Destroy();
 

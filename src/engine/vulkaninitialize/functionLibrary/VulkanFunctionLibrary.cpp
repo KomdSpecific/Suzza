@@ -1,4 +1,5 @@
-#include "VulkanFunctionLibrary.h"
+﻿#include "VulkanFunctionLibrary.h"
+#include "MainWindow.h"
 
 #include "debug/SuzzaLog.h"
 
@@ -74,5 +75,50 @@ namespace suz
 	bool VulkanFunctionLibrary::HasStencilComponent(const VkFormat& DepthFormat)
 	{
 		return DepthFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || DepthFormat == VK_FORMAT_D24_UNORM_S8_UINT;
+	}
+
+	VkSurfaceFormatKHR VulkanFunctionLibrary::ChooseSuitableSurfaceFormatKHR(const Vector<VkSurfaceFormatKHR>& AvailableFormats)
+	{
+		for (const VkSurfaceFormatKHR& format : AvailableFormats)
+		{
+			/* 选择支持按顺序存储的RGB的format颜色通道类型 */
+			/* 选择支持SRGB色彩空间的colorSpace */
+			if (format.format == VK_FORMAT_R8G8B8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			{
+				return format;
+			}
+		}
+
+		return AvailableFormats[0];
+	}
+
+	VkPresentModeKHR VulkanFunctionLibrary::ChooseSuitablePresentModeKHR(const Vector<VkPresentModeKHR>& AvailableModes)
+	{
+		for (const VkPresentModeKHR& mode : AvailableModes)
+		{
+			/* 最好选择在队列已满时程序不会停止运行而是将队列中的图像替换成更新的图像 */
+			if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+			{
+				return mode;
+			}
+		}
+
+		/* 默认情况下程序在队列后面插入绘制好的图像, 显示器刷新时从队列前面获取图像 */
+		return VK_PRESENT_MODE_FIFO_KHR;
+	}
+
+	VkExtent2D VulkanFunctionLibrary::GetSwapChainExtent(const VkSurfaceCapabilitiesKHR& Capabilities, MainWindow* Window)
+	{
+		/* 某些情况下窗口实际分辨率不一定等于窗口系统的分辨率 */
+		/* 窗口系统给出了明确固定的分辨率, 直接返回 */
+		if (Capabilities.currentExtent.width != std::numeric_limits<uint32>::max())
+		{
+			return Capabilities.currentExtent;
+		}
+		else
+		{
+			Window->ResetWindowExtent();
+			return Window->GetWindowExtent();
+		}
 	}
 }

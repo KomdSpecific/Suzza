@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "VulkanResourceBase.h"
 #include "VulkanInitialize.h"
@@ -26,7 +26,7 @@ namespace suz
 			: device(Device) {
 		}
 
-		const VkDevice& device;
+		VkDevice device = {};
 
 		Vector<VkDescriptorSetLayout> descriptorSetLayout{};
 		Vector<VkPushConstantRange> constantRage{};
@@ -43,9 +43,9 @@ namespace suz
 			: device(Device), renderPass(RenderPass), layout(Layout) {
 		}
 
-		const VkDevice& device;
-		const VkRenderPass& renderPass;
-		const VkPipelineLayout& layout;
+		VkDevice device = {};
+		VkRenderPass renderPass = {};
+		VkPipelineLayout layout = {};
 
 		/* 管线着色器信息 */
 		Vector<VkPipelineShaderStageCreateInfo> shaderStages{};
@@ -80,6 +80,7 @@ namespace suz
 		static void CreateShaderMoudle(const std::vector<char>& ShaderCode, VkShaderModule* ShaderMoudle);
 
 	private:
+		/* 必要资源句柄 */
 		VkDevice m_device = {};
 
 		VkPipeline m_graphicsPipeline = {};

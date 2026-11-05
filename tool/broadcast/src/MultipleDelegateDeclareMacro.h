@@ -1,6 +1,6 @@
-#pragma once
+﻿#pragma once
 
-#include "MultipleDelegate.h"
+#include "SingleDelegate.h"
 
 #include <vector>
 

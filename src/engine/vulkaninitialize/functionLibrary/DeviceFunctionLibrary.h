@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "SuzzaTypes.h"
 
@@ -7,6 +7,7 @@
 namespace suz
 {
 	struct QueueFamilyCollector;
+	struct SwapChainSupportDetails;
 
 	class DeviceFunctionLibrary
 	{
@@ -23,5 +24,7 @@ namespace suz
 		static VkPhysicalDeviceProperties GetPhysicalDeviceProperties(const VkPhysicalDevice& PhysicalDevice);
 
 		static QueueFamilyCollector FindQueueFamilies(const VkPhysicalDevice& PhysicalDevice, const VkSurfaceKHR& Surface);
+
+		static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& PhysicalDevice, const VkSurfaceKHR& Surface);
 	};
 }

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "SuzzaTypes.h"
 
@@ -6,6 +6,8 @@
 
 namespace suz
 {
+	class MainWindow;
+
 	class VulkanFunctionLibrary
 	{
 	public:
@@ -30,5 +32,12 @@ namespace suz
 
 		/* 判断选择的深度格式是否包含模板分量 */
 		static bool HasStencilComponent(const VkFormat& DepthFormat);
+
+		/* 选择最合适的表面格式 (绘制纹理) */
+		static VkSurfaceFormatKHR ChooseSuitableSurfaceFormatKHR(const Vector<VkSurfaceFormatKHR>& AvailableFormats);
+		/* 选择最合适的呈现格式 (图像显示到屏幕的条件) */
+		static VkPresentModeKHR ChooseSuitablePresentModeKHR(const Vector<VkPresentModeKHR>& AvailableModes);
+
+		static VkExtent2D GetSwapChainExtent(const VkSurfaceCapabilitiesKHR& Capabilities, MainWindow* Window);
 	};
 }

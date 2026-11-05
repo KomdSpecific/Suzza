@@ -1,14 +1,18 @@
-#pragma once
+﻿#pragma once
 
+#include "VulkanResourceBase.h"
+#include "DeviceContext.h"
+#include "Device.h"
+#include "FrameBuffer.h"
 #include "BaseObject.h"
 
 #include <vulkan/vulkan.h>
-#include <vector>
 
 namespace suz
 {
 	class BufferArea;
 	class MainWindow;
+	class CommandContext;
 
 	struct SwapChainSupportDetails
 	{
@@ -17,48 +21,79 @@ namespace suz
 		std::vector<VkPresentModeKHR> presentModes;
 	};
 
-	class SwapChain : public BaseObject
+	struct SwapChainSpec
+	{
+		SwapChainSpec(const DeviceContext& Context, const VkSurfaceKHR& Surface)
+			: deviceContext(Context), surface(Surface) {
+		}
+
+		DeviceContext deviceContext = {};
+		VkSurfaceKHR surface = {};
+
+		QueueFamilyCollector familyIndices{};
+		Vector<uint32> queueIndices{};						// 队列族索引
+
+		SwapChainSupportDetails swapChainDetails{};			// 交换链支持功能
+		VkSurfaceFormatKHR surfaceFormat{};					// 交换链表面格式
+		VkPresentModeKHR presentMode{};						// 交换链呈现模式
+		VkExtent2D swapChainExtent{};						// 交换链图像宽高
+
+		static VkSwapchainCreateInfoKHR DefaultSwapChainCreateInfoKHR(const SwapChainSpec& Spec);
+	};
+
+	class SwapChain : public VulkanResourceBase
 	{
 	public:
-		SwapChain(const VkDevice& Device);
+		SwapChain(CommandContext* InCommandContext, const VkRenderPass& RenderPass);
 		~SwapChain();
 
-		void InitSwapChain();
+		void InitSwapChain(SwapChainSpec& Spec);
 
-		virtual void Destroy() override;
+		bool Create(SwapChainSpec& Spec);
+		bool CreateSwapChain(SwapChainSpec& Spec);
 
-		static SwapChainSupportDetails QuerySupportChainSupport(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface);
-
-		/* 选择最合适的表面格式 (绘制纹理) */
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& AvailableFormats);
-		/* 选择最合适的呈现格式 (图像显示到屏幕的条件) */
-		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& AvailableModes);
+		void Destroy();
 
 		void ReCreateSwapChain(BufferArea* BufferArea);
 		void CleanupSwapChain();
 
 	private:
-		void CreateSwapChain();
 		/* 创建图像视图 */
 		void CreateImageViews();
+		/* 创建深度资源 */
+		void CreateDepthResources();
+		/* 创建帧缓冲 */
+		void CreateFrameBuffers();
 
-		VkExtent2D GetSwapChainExtent(const VkSurfaceCapabilitiesKHR& Capabilities);
-
-		const VkDevice& m_device;
-
+		DeviceContext m_deviceContext = {};
+		CommandContext* m_commandContext = nullptr;
 		MainWindow* m_mainWindow = nullptr;
-
-		VkExtent2D m_swapChainExtent = {};
+		VkRenderPass m_renderPass = VK_NULL_HANDLE;
 
 		VkSwapchainKHR m_swapChain = {};
-		VkFormat m_swapChainImageFormat = {};
-		std::vector<VkImage> m_swapChainImages = {};
-		std::vector<VkImageView> m_swapChainImageViews = {};
+
+		VkExtent2D m_swapChainExtent = {};					// 交换链宽高数值
+		VkFormat m_swapChainImageFormat = {};				// 交换链图像格式
+
+		/* 交换链图像及外层包装的视图 */
+		Vector<VkImage> m_swapChainImages = {};
+		Vector<VkImageView> m_swapChainImageViews = {};
+
+		/* 深度图像资源 */
+		VkImage m_depthImage = {};
+		VkImageView m_depthImageView = {};
+		VkDeviceMemory m_depthImageMemory = {};
+
+		/* 帧缓冲资源 */
+		Vector<UniquePtr<FrameBuffer>> m_frameBuffers = {};
 
 	public:
-		inline const VkExtent2D& GetSwapChainExtent()const { return m_swapChainExtent; }
 		inline const VkSwapchainKHR& GetSwapChain() const { return m_swapChain; }
+
+		inline const VkExtent2D& GetSwapChainExtent() const { return m_swapChainExtent; }
 		inline const VkFormat& GetSwapChainFormat() const { return m_swapChainImageFormat; }
-		inline const std::vector<VkImageView>& GetSwapChainImageViews() const { return m_swapChainImageViews; }
+		inline const Vector<VkImageView>& GetSwapChainImageViews() const { return m_swapChainImageViews; }
+
+		inline const FrameBuffer& GetFrameBuffer(usize Index) const { return *m_frameBuffers[Index]; }
 	};
 }

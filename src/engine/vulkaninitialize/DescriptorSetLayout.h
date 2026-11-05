@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "VulkanResourceBase.h"
 #include "VulkanInitialize.h"
@@ -11,7 +11,7 @@ namespace suz
 			: device(Device) {
 		}
 
-		const VkDevice& device;
+		VkDevice device = {};
 
 		Vector<VkDescriptorSetLayoutBinding> descriptorBinding{};
 

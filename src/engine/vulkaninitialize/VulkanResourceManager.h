@@ -36,7 +36,7 @@ namespace suz
 		VulkanResourcePool<DescriptorSetLayout> m_descriptorLayouts = {};
 		VulkanResourcePool<Pipeline> m_pipelines = {};
 		std::unique_ptr<VulkanInitialize> m_vkInitialize = nullptr;
-		std::unique_ptr<SwapChain> m_swapChain = nullptr;
+		UniquePtr<SwapChain> m_swapChain = nullptr;
 		UniquePtr<CommandContext> m_commandContext = nullptr;
 		UniquePtr<BufferContext> m_bufferContext = nullptr;
 		std::unique_ptr<BufferArea> m_bufferArea = nullptr;

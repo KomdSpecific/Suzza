@@ -1,4 +1,4 @@
-#include "VulkanInitialize.h"
+﻿#include "VulkanInitialize.h"
 #include "Engine.h"
 #include "MainWindow.h"
 #include "SwapChain.h"
@@ -203,7 +203,7 @@ namespace suz
 		bool swapChainAdequate = false;
 		if (extensionsSuppored)
 		{
-			SwapChainSupportDetails swapChainSupport = SwapChain::QuerySupportChainSupport(physicalDevice, m_surface);
+			SwapChainSupportDetails swapChainSupport = DeviceFunctionLibrary::QuerySwapChainSupport(physicalDevice, m_surface);
 			swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 		}
 
