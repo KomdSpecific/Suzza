@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "VulkanResourceBase.h"
 #include "VulkanInitialize.h"
@@ -23,6 +23,8 @@ namespace suz
 		static VkDescriptorSetLayoutCreateInfo DefaultDescriptorSetLayoutCreateInfo(const DescriptorSetLayoutSpec& Spec);
 	};
 
+
+	/* 描述符布局是给予描述符uniform使用的一部分 */
 	class DescriptorSetLayout : public VulkanResourceBase
 	{
 	public:

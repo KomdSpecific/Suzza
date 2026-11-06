@@ -1,7 +1,6 @@
-﻿#include "SwapChain.h"
+#include "SwapChain.h"
 #include "Engine.h"
 #include "VulkanResourceManager.h"
-#include "BufferArea.h"
 #include "MainWindow.h"
 #include "graphics/Texture.h"
 #include "factory/SwapChainFactories.h"
@@ -135,7 +134,7 @@ namespace suz
 		*m_isAlive = false;
 	}
 
-	void SwapChain::ReCreateSwapChain(BufferArea* BufferArea)
+	void SwapChain::ReCreateSwapChain()
 	{
 		/* 窗口最小化处理 */
 		int width = 0, height = 0;

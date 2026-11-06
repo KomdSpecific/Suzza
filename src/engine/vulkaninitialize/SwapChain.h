@@ -1,10 +1,9 @@
-﻿#pragma once
+#pragma once
 
 #include "VulkanResourceBase.h"
 #include "DeviceContext.h"
 #include "Device.h"
 #include "FrameBuffer.h"
-#include "BaseObject.h"
 
 #include <vulkan/vulkan.h>
 
@@ -54,7 +53,7 @@ namespace suz
 
 		void Destroy();
 
-		void ReCreateSwapChain(BufferArea* BufferArea);
+		void ReCreateSwapChain();
 		void CleanupSwapChain();
 
 	private:

@@ -1,5 +1,6 @@
-﻿#pragma once
+#pragma once
 
+#include "DeviceContext.h"
 #include "VulkanResourceBase.h"
 #include "VulkanInitialize.h"
 
@@ -22,11 +23,11 @@ namespace suz
 
 	struct PipelineLayoutSpec
 	{
-		PipelineLayoutSpec(const VkDevice& Device)
-			: device(Device) {
+		PipelineLayoutSpec(const DeviceContext& Context)
+			: deviceContext(Context) {
 		}
 
-		VkDevice device = {};
+		DeviceContext deviceContext = {};
 
 		Vector<VkDescriptorSetLayout> descriptorSetLayout{};
 		Vector<VkPushConstantRange> constantRage{};
@@ -37,13 +38,13 @@ namespace suz
 	struct PipelineSpec
 	{
 		PipelineSpec(
-			const VkDevice& Device,
+			const DeviceContext& Context,
 			const VkRenderPass& RenderPass,
 			const VkPipelineLayout& Layout)
-			: device(Device), renderPass(RenderPass), layout(Layout) {
+			: deviceContext(Context), renderPass(RenderPass), layout(Layout) {
 		}
 
-		VkDevice device = {};
+		DeviceContext deviceContext = {};
 		VkRenderPass renderPass = {};
 		VkPipelineLayout layout = {};
 
@@ -81,7 +82,7 @@ namespace suz
 
 	private:
 		/* 必要资源句柄 */
-		VkDevice m_device = {};
+		DeviceContext m_deviceContext = {};
 
 		VkPipeline m_graphicsPipeline = {};
 		VkPipelineLayout m_pipelineLayout = {};

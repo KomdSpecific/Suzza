@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "BaseObject.h"
 #include "model/Mesh.h"
@@ -22,6 +22,17 @@ namespace suz
 		VkRect2D scissor;
 	};
 
+
+	struct DrawStage
+	{
+		Pipeline* pipeline = nullptr;
+		DrawList* drawList = nullptr;
+
+		/* 网格这种"每条 pipeline 只有一个常量"的场合用它 */
+		const void* pipelinePushConstant = nullptr;
+		uint32 constantSize = 0;
+	};
+
 	class BufferArea : public BaseObject
 	{
 	public:
@@ -40,7 +51,7 @@ namespace suz
 		void RegisterBindlessDescriptorSet(const VkDescriptorSet& TargetDescriptorSet);
 
 		/* 绘制画面的核心! 录制命令缓冲区靠它不断执行 */
-		void RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const DrawList& MeshToDraw, uint32_t ImageIndex);
+		void RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const Vector<DrawStage>& Stages, uint32_t ImageIndex);
 
 		/*void ReCreateBufferArea(const VkExtent2D& NewSwapChainExtent);
 		void CleanupBufferArea();*/

@@ -8,6 +8,8 @@ namespace suz
 	namespace suz_pipeline
 	{
 		PipelineLayoutSpec CreateDefaultPipelineLayoutSpec();
-		PipelineSpec CreateDefaultGraphicsPipelineSpec(const std::string& VertexFilePath, const std::string& FragmentFilePath);
+		PipelineSpec CreateDefaultGraphicsPipelineSpec(const String& VertexFilePath, const String& FragmentFilePath);
+
+		PipelineSpec CreateDefaultGridPipelineSpec(const String& VertexFilePath, const String& FragmentFilePath);
 	}
 }

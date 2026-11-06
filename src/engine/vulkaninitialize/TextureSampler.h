@@ -1,21 +1,22 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "DeviceContext.h"
+#include "VulkanResourceBase.h"
 
 namespace suz
 {
 	struct TextureSamplerSpec
 	{
-		TextureSamplerSpec(const VkPhysicalDevice& PhysicalDevice)
-			: physicalDevice(PhysicalDevice) {
+		TextureSamplerSpec(const DeviceContext& Context)
+			: deviceContext(Context) {
 		}
 
-		VkPhysicalDevice physicalDevice;
+		DeviceContext deviceContext = {};
 
 		static VkSamplerCreateInfo DefaultSamplerCreateInfo(const TextureSamplerSpec& Spec);
 	};
 
-	class TextureSampler
+	class TextureSampler : public VulkanResourceBase
 	{
 	public:
 		TextureSampler() = default;
@@ -24,9 +25,14 @@ namespace suz
 		bool Create(TextureSamplerSpec& Spec);
 		bool CreateTextureSampler(TextureSamplerSpec& Spec);
 
+		void Destroy();
+
 	private:
-		VkPhysicalDevice m_physicalDevice = {};
+		DeviceContext m_deviceContext = {};
 
 		VkSampler m_textureSampler = {};
+
+	public:
+		inline const VkSampler& GetTextureSampler() const { return m_textureSampler; }
 	};
 }

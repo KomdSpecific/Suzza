@@ -1,5 +1,7 @@
 #version 450
-#extension GL_EXT_nonuniform_qualifier : require
+
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_EXT_nonuniform_qualifier : enable
 
 layout (set = 1, binding = 1) uniform sampler2D bindlessTextures[];
 

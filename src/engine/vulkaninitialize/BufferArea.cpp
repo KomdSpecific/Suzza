@@ -1,4 +1,4 @@
-﻿#include "BufferArea.h"
+#include "BufferArea.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "VulkanInitialize.h"
@@ -85,7 +85,7 @@ namespace suz
 	//	}
 	//}
 
-	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const DrawList& DrawQueue, uint32_t ImageIndex)
+	void BufferArea::RecordCommandBuffer(const VkCommandBuffer& CommandBuffer, const VkDescriptorSet& CameraDescriptor, const Vector<DrawStage>& Stages, uint32_t ImageIndex)
 	{
 		VkCommandBufferBeginInfo bufferBeginInfo{};
 		bufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -117,7 +117,7 @@ namespace suz
 		vkCmdBeginRenderPass(CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		/* 绑定图形管线 */
-		vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.GetGraphicsPipeline());
+		//vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.GetGraphicsPipeline());
 
 		m_viewConfigInfo.viewport.width = static_cast<float>(extent.width);
 		m_viewConfigInfo.viewport.height = static_cast<float>(extent.height);
@@ -137,23 +137,40 @@ namespace suz
 			0, nullptr
 		);
 
-		for (const auto& [mesh, modelConstants] : DrawQueue.GetDrawQueue())
+		for (const DrawStage& stage : Stages)
 		{
-			/* 绑定顶点缓冲 */
-			VkDeviceSize offsets[] = { 0 };											// 定义读取顶点数据的字节偏移量
-			vkCmdBindVertexBuffers(CommandBuffer, 0, 1, &mesh->GetMeshVertexBuffer(), offsets);
-			if (mesh->GetMeshIndexBuffer() != VK_NULL_HANDLE)
+			if (!stage.pipeline)
+				continue;
+
+			/* 绑定图形管线 */
+			vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, stage.pipeline->GetGraphicsPipeline());
+
+			if (stage.pipelinePushConstant != nullptr)
 			{
-				vkCmdBindIndexBuffer(CommandBuffer, mesh->GetMeshIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+				vkCmdPushConstants(CommandBuffer, stage.pipeline->GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, stage.constantSize, stage.pipelinePushConstant);
 			}
 
-			for (const ModelConstant& modelConstant : modelConstants)
+			if (!stage.drawList || stage.drawList->IsEmpty())
 			{
-				vkCmdPushConstants(CommandBuffer, m_pipeline.GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ModelConstant), &modelConstant);
+				vkCmdDraw(CommandBuffer, 3, 1, 0, 0);
+				continue;
+			}
 
-				/* 发出绘制命令 */
-				/* 告诉Vulkan使用索引缓冲区 */
-				vkCmdDrawIndexed(CommandBuffer, mesh->GetIndexBufferSize(), 1, 0, 0, 0);
+			for (const auto& [mesh, modelConstants] : stage.drawList->GetDrawQueue())
+			{
+				/* 绑定顶点缓冲 */
+				VkDeviceSize offsets[] = { 0 };											// 定义读取顶点数据的字节偏移量
+				vkCmdBindVertexBuffers(CommandBuffer, 0, 1, &mesh->GetMeshVertexBuffer(), offsets);
+				vkCmdBindIndexBuffer(CommandBuffer, mesh->GetMeshIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+				for (const ModelConstant& modelConstant : modelConstants)
+				{
+					vkCmdPushConstants(CommandBuffer, m_pipeline.GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ModelConstant), &modelConstant);
+
+					/* 发出绘制命令 */
+					/* 告诉Vulkan使用索引缓冲区 */
+					vkCmdDrawIndexed(CommandBuffer, mesh->GetIndexBufferSize(), 1, 0, 0, 0);
+				}
 			}
 		}
 

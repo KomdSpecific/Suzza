@@ -23,16 +23,16 @@ namespace suz
 
 	void BufferContext::CreateBufferContext(usize MaxFlightFrame)
 	{
-		if (!(*m_isAlive)) return;
-
 		CreateUniformBuffers(MaxFlightFrame);
-
-		*m_isAlive = false;
 	}
 
 	void BufferContext::Destroy()
 	{
+		if (!(*m_isAlive)) return;
+
 		DestroyUniformBuffers();
+
+		*m_isAlive = false;
 	}
 
 	void BufferContext::CreateUniformBuffers(usize MaxFlightFrame)

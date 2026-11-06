@@ -1,4 +1,4 @@
-﻿#include "Render.h"
+#include "Render.h"
 #include "Engine.h"
 #include "macros/VkMacro.h"
 #include "ModelResourceManager.h"
@@ -26,6 +26,7 @@ namespace suz
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
 		m_device = vkManager.GetDevice();
 		m_pipeline = vkManager.GetPipelines().GetResource("DefaultPipeline");
+		m_gridPipeline = vkManager.GetPipelines().GetResource("GridPipeline");
 		m_vkInitialize = vkManager.GetVulkanInitialize();
 		m_swapChain = vkManager.GetSwapChain();
 		m_renderPass = vkManager.GetRenderPasses().GetResource("DefaultRenderPass");
@@ -52,6 +53,8 @@ namespace suz
 
 	void Render::SubmitMesh(Mesh* TargetMesh, const ModelConstant& Constant)
 	{
+		if (!TargetMesh) return;
+
 		m_drawList.SubmitMesh(TargetMesh, Constant);
 	}
 
@@ -81,7 +84,7 @@ namespace suz
 		/* 如果交换链过期可重建 */
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
-			m_swapChain->ReCreateSwapChain(m_bufferArea);
+			m_swapChain->ReCreateSwapChain();
 			return;
 		}
 		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -92,18 +95,25 @@ namespace suz
 		/* 重置围栏信号, 防止围栏重置后提前返回导致没有信号发出, 造成死锁 */
 		vkResetFences(m_device->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame]);
 
-		/* 3. 记录命令缓冲, 传入图像索引 */
+		UpdateModelTransform(DeltaTime);
+
+		/* 3. 组装 stage */
+		Vector<DrawStage> stage(2);
+		stage[0] = { m_pipeline,&m_drawList,nullptr,0 };
+
+		m_gridViewProjectionMatrix = glm::inverse(m_cameraViewportInfo.projectionMatrix * m_cameraViewportInfo.viewMatrix);
+		stage[1] = { m_gridPipeline,nullptr,&m_gridViewProjectionMatrix,sizeof(glm::mat4) };
+
+		/* 4. 记录命令缓冲, 传入图像索引 */
 		vkResetCommandBuffer(m_commandContext->GetCommandBuffer()[m_currentFrame], 0);
 		m_bufferArea->RecordCommandBuffer(
 			m_commandContext->GetCommandBuffer()[m_currentFrame],
 			m_descriptor->GetCameraDescriptorSetElement(m_currentFrame),
-			m_drawList,
+			stage,
 			imageIndex
 		);
 
-		UpdateModelTransform(DeltaTime);
-
-		/* 4. 提交命令缓冲 */
+		/* 5. 提交命令缓冲 */
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		/* 指定需要等待的图像信号量和等待对应的管线阶段 */
@@ -120,13 +130,13 @@ namespace suz
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = sendSemaphores;
 
-		/* 5. 提交命令缓冲区到图形队列 */
+		/* 6. 提交命令缓冲区到图形队列 */
 		if (vkQueueSubmit(m_device->GetGraphicsQueue(), 1, &submitInfo, m_syncObject->GetInFrameFence()[m_currentFrame]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("提交命令缓冲失败!");
 		}
 
-		/* 6. 提交结果到交换链以此最终在屏幕上显示 */
+		/* 7. 提交结果到交换链以此最终在屏幕上显示 */
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		/* 等待绘制完成的信号接收到才可以执行 */
@@ -143,7 +153,7 @@ namespace suz
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_bufferArea->IsFrameBufferResized())
 		{
 			m_bufferArea->DisableBufferResized();
-			m_swapChain->ReCreateSwapChain(m_bufferArea);
+			m_swapChain->ReCreateSwapChain();
 		}
 		else if (result != VK_SUCCESS)
 		{

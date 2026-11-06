@@ -1,4 +1,4 @@
-﻿#include "Texture.h"
+#include "Texture.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkaninitialize/VulkanInitialize.h"
@@ -127,7 +127,7 @@ namespace suz
 	void Texture::UpdateTextureSlot(uint16 SlotIndex)
 	{
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		vkManager.GetDescriptor()->UpdateBindlessDescriptor(m_textureImageView, vkManager.GetTextureSampler(), SlotIndex);
+		vkManager.GetDescriptor()->UpdateBindlessDescriptor(m_textureImageView, vkManager.GetTextureSampler()->GetTextureSampler(), SlotIndex);
 	}
 
 	void Texture::CreateTextureImage(const std::string FilePath)

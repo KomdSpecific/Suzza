@@ -54,8 +54,8 @@ namespace suz
 		}
 
 	private:
-		Class* m_objPtr;
-		std::shared_ptr<bool> m_isObjAlive;
-		MemberFuncPtr m_callbackFunction;
+		Class* m_objPtr = nullptr;
+		std::shared_ptr<bool> m_isObjAlive = nullptr;
+		MemberFuncPtr m_callbackFunction = nullptr;
 	};
 }

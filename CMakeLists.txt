@@ -81,6 +81,8 @@ configure_file(
 set(SHADER_SOURCES
     "shaders/simple_vertexshader.vert"
     "shaders/simple_fragmentshader.frag"
+    "shaders/grid_vertexshader.vert"
+    "shaders/grid_fragmentshader.frag"
 )
 
 file(MAKE_DIRECTORY ${SHADER_OUTPUT_DIR})
@@ -97,6 +99,7 @@ foreach(shader ${SHADER_SOURCES})
         OUTPUT ${spv_file}
         MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${shader}
         COMMAND Vulkan::glslc
+			--target-env=vulkan1.2
             ${CMAKE_CURRENT_SOURCE_DIR}/${shader}
             -o ${spv_file}
         COMMENT "Compiling shader ${shader_name}"

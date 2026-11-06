@@ -1,7 +1,6 @@
-﻿#include "VulkanResourceManager.h"
+#include "VulkanResourceManager.h"
 #include "file/FileSystem.h"
 #include "macros/VkMacro.h"
-#include "functionLibrary/DeviceFunctionLibrary.h"
 #include "factory/DeviceFactories.h"
 #include "factory/DescriptorSetLayoutFactories.h"
 #include "factory/PipelineFactories.h"
@@ -10,7 +9,6 @@
 #include "factory/SwapChainFactories.h"
 
 #include "debug/SuzzaLog.h"
-#include <filesystem>
 
 namespace suz
 {
@@ -68,7 +66,7 @@ namespace suz
 			m_descriptorLayouts.CreateResource<DescriptorSetLayoutSpec>("BindlessDesc", bindlessLayoutSpec);
 		}
 
-		/* ====================管线创建===================== */
+		/* ====================1. 管线创建===================== */
 		{
 			PipelineLayoutSpec layoutSpec = suz_pipeline::CreateDefaultPipelineLayoutSpec();
 			m_pipelines.CreateResource<PipelineLayoutSpec>("DefaultPipeline", layoutSpec);
@@ -77,6 +75,17 @@ namespace suz
 				std::filesystem::path(FileSystem::GetShadersFolder() / "simple_vertexshader.vert.spv").string(),
 				std::filesystem::path(FileSystem::GetShadersFolder() / "simple_fragmentshader.frag.spv").string());
 			m_pipelines.CreateResource<PipelineSpec>("DefaultPipeline", pipelineSpec);
+		}
+
+		/* =================2. 网格专属管线创建================= */
+		{
+			PipelineLayoutSpec layoutSpec = suz_pipeline::CreateDefaultPipelineLayoutSpec();
+			m_pipelines.CreateResource<PipelineLayoutSpec>("GridPipeline", layoutSpec);
+
+			PipelineSpec pipelineSpec = suz_pipeline::CreateDefaultGridPipelineSpec(
+				std::filesystem::path(FileSystem::GetShadersFolder() / "grid_vertexshader.vert.spv").string(),
+				std::filesystem::path(FileSystem::GetShadersFolder() / "grid_fragmentshader.frag.spv").string());
+			m_pipelines.CreateResource<PipelineSpec>("GridPipeline", pipelineSpec);
 		}
 
 		/* ==================创建缓冲上下文===================*/
@@ -101,7 +110,13 @@ namespace suz
 			m_device->GetDevice()
 		);
 
-		CreateTextureSampler();
+		/* ===================创建图像采样器=================== */
+		{
+			TextureSamplerSpec textureSamplerSpec(m_deviceContext);
+			
+			m_textureSampler = std::make_unique<TextureSampler>();
+			m_textureSampler->Create(textureSamplerSpec);
+		}
 
 		return true;
 	}
@@ -110,8 +125,7 @@ namespace suz
 	{
 		if (!(*m_isAlive)) return;
 
-		DestroyTextureSampler();
-
+		m_textureSampler->Destroy();
 		m_syncObject->Destroy();
 		m_descriptor->Destroy();
 		m_bufferArea->Destroy();
@@ -125,48 +139,5 @@ namespace suz
 		m_vkInitialize->Destroy();
 
 		*m_isAlive = false;
-	}
-
-	void VulkanResourceManager::CreateTextureSampler()
-	{
-		const VkPhysicalDevice& physicalDevice = m_vkInitialize->GetPhysicalDevice();
-		VkPhysicalDeviceProperties properties = DeviceFunctionLibrary::GetPhysicalDeviceProperties(physicalDevice);
-
-		VkSamplerCreateInfo samplerInfo{};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		/* 当读取超出图像范围时返回窗口背景纯色 */
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-
-		/* 开启各向异性过滤 */
-		samplerInfo.anisotropyEnable = VK_TRUE;
-		/* 传入物理设备支持的纹素样本数量最大值 */
-		samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-
-		/* 采样超出图像时填充的颜色 */
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
-		/* mipmapping过滤器 */
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias = 0.0f;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = 0.0f;
-
-		if (vkCreateSampler(m_device->GetDevice(), &samplerInfo, nullptr, &m_textureSampler) != VK_SUCCESS)
-		{
-			throw std::runtime_error("创建纹理采样器失败!");
-		}
-	}
-
-	void VulkanResourceManager::DestroyTextureSampler()
-	{
-		vkDestroySampler(m_device->GetDevice(), m_textureSampler, nullptr);
 	}
 }

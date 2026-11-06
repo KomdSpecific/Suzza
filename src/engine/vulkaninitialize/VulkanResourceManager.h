@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "VulkanResourceBase.h"
 #include "VulkanResourcePool.h"
@@ -42,10 +42,7 @@ namespace suz
 		std::unique_ptr<BufferArea> m_bufferArea = nullptr;
 		std::unique_ptr<Descriptor> m_descriptor = nullptr;
 		std::unique_ptr<SyncObject> m_syncObject = nullptr;
-
-		void CreateTextureSampler();						// 创建采样器
-		void DestroyTextureSampler();						// 销毁采样器
-		VkSampler m_textureSampler = {};
+		UniquePtr<TextureSampler> m_textureSampler = nullptr;
 
 		DeviceContext m_deviceContext = {};
 
@@ -62,8 +59,7 @@ namespace suz
 		inline VulkanResourcePool<DescriptorSetLayout>& GetDescriptorLayouts() { return m_descriptorLayouts; }
 		inline CommandContext* GetCommandContext() { return m_commandContext.get(); }
 		inline BufferContext* GetBufferContext() { return m_bufferContext.get(); }
-
-		inline const VkSampler& GetTextureSampler() const { return m_textureSampler; }
+		inline TextureSampler* GetTextureSampler() { return m_textureSampler.get(); }
 
 		inline const DeviceContext& GetDeviceContext() const { return m_deviceContext; }
 	};

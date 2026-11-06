@@ -61,6 +61,6 @@ namespace suz
 
 	glm::mat4 CameraComponent::GetProjectionMatrix(float Aspect) const
 	{
-		return glm::perspective(glm::radians(m_fovRad), Aspect, m_nearClip, m_farClip);
+		return glm::perspectiveRH_ZO(glm::radians(m_fovRad), Aspect, m_nearClip, m_farClip);
 	}
 }

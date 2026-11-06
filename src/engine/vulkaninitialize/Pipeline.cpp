@@ -192,16 +192,16 @@ namespace suz
 
 	bool Pipeline::CreatePipelineLayout(PipelineLayoutSpec& Spec)
 	{
-		if (Spec.device == VK_NULL_HANDLE)
+		if (!Spec.deviceContext.DeviceValid())
 		{
 			SUZZA_LOG_ERROR("无法创建图形管线: 逻辑设备device不合法!");
 			return false;
 		}
 
-		m_device = Spec.device;
+		m_deviceContext = Spec.deviceContext;
 
 		VkPipelineLayoutCreateInfo layoutCreateInfo = PipelineLayoutSpec::DefaultPipelineLayoutCreateInfo(Spec);
-		if (vkCreatePipelineLayout(Spec.device, &layoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
+		if (vkCreatePipelineLayout(Spec.deviceContext.device, &layoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
 		{
 			SUZZA_LOG_ERROR("创建管线布局失败!");
 			return false;
@@ -212,13 +212,13 @@ namespace suz
 
 	bool Pipeline::CreateGraphicsPipeline(PipelineSpec& Spec)
 	{
-		if (Spec.device == VK_NULL_HANDLE)
+		if (!Spec.deviceContext.DeviceValid())
 		{
 			SUZZA_LOG_ERROR("无法创建图形管线: 逻辑设备device不合法!");
 			return false;
 		}
 
-		m_device = Spec.device;
+		m_deviceContext = Spec.deviceContext;
 
 		if (Spec.layout == VK_NULL_HANDLE)
 		{
@@ -237,14 +237,14 @@ namespace suz
 		Spec.pipelineConfigInfo.colorBlendInfo.pAttachments = &Spec.pipelineConfigInfo.colorBlendAttachment;
 
 		VkGraphicsPipelineCreateInfo graphicsPipelineInfo = PipelineSpec::DefaultGraphicsPipelineCreateInfo(Spec);
-		if (vkCreateGraphicsPipelines(Spec.device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines(Spec.deviceContext.device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
 		{
 			SUZZA_LOG_ERROR("创建图形管线对象失败!");
 			return false;
 		}
 
-		vkDestroyShaderModule(Spec.device, Spec.vertShaderMoudle, nullptr);
-		vkDestroyShaderModule(Spec.device, Spec.fragShaderMoudle, nullptr);
+		vkDestroyShaderModule(Spec.deviceContext.device, Spec.vertShaderMoudle, nullptr);
+		vkDestroyShaderModule(Spec.deviceContext.device, Spec.fragShaderMoudle, nullptr);
 
 		return true;
 	}
@@ -253,14 +253,14 @@ namespace suz
 	{
 		if (!(*m_isAlive)) return;
 
-		if (m_device == VK_NULL_HANDLE)
+		if (!m_deviceContext.DeviceValid())
 		{
 			SUZZA_LOG_ERROR("资源销毁失败: 逻辑设备device不合法!");
 			return;
 		}
 
-		vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+		vkDestroyPipeline(m_deviceContext.device, m_graphicsPipeline, nullptr);
+		vkDestroyPipelineLayout(m_deviceContext.device, m_pipelineLayout, nullptr);
 
 		*m_isAlive = false;
 	}

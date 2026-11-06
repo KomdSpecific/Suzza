@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "DrawList.h"
 
@@ -32,7 +32,6 @@ namespace suz
 
 	private:
 		Device* m_device;
-		Pipeline* m_pipeline;
 		VulkanInitialize* m_vkInitialize;
 		SwapChain* m_swapChain;
 		RenderPass* m_renderPass;
@@ -44,8 +43,12 @@ namespace suz
 
 		BindlessSlotsAllocator& m_bindlessSlotsAllocator;
 
+		Pipeline* m_pipeline;
 		DrawList m_drawList = {};
 		CameraViewportInfo m_cameraViewportInfo = {};
+
+		Pipeline* m_gridPipeline;
+		glm::mat4 m_gridViewProjectionMatrix = glm::mat4(1.0f);
 
 		uint32 m_currentFrame = 0;
 	};
