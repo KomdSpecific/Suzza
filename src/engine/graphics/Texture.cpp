@@ -1,7 +1,6 @@
 #include "Texture.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
-#include "vulkaninitialize/VulkanInitialize.h"
 #include "vulkaninitialize/BufferArea.h"
 #include "vulkaninitialize/functionLibrary/DeviceFunctionLibrary.h"
 #include "vulkaninitialize/functionLibrary/VulkanFunctionLibrary.h"

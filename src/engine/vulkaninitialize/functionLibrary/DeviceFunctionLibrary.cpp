@@ -1,4 +1,4 @@
-﻿#include "DeviceFunctionLibrary.h"
+#include "DeviceFunctionLibrary.h"
 #include "macros/VkMacro.h"
 #include "vulkaninitialize/Device.h"
 #include "vulkaninitialize/SwapChain.h"
@@ -7,6 +7,68 @@
 
 namespace suz
 {
+	bool DeviceFunctionLibrary::IsPhysicalDeviceSuitable(const VkPhysicalDevice& PhysicalDevice, const VkSurfaceKHR& Surface, const Vector<const char*>& DeviceExtensions)
+	{
+		/* 查询目标设备基本属性 */
+		VkPhysicalDeviceProperties properties{};
+		VkPhysicalDeviceFeatures features{};
+		vkGetPhysicalDeviceProperties(PhysicalDevice, &properties);
+		vkGetPhysicalDeviceFeatures(PhysicalDevice, &features);
+
+		SUZZA_LOG_INFO("当前设备: ", properties.deviceName);
+		
+		if (FORCE_DISCRETE_GPU)
+		{
+			/* 显卡要求为独显 */
+			if (properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+				return false;
+		}
+
+		if (FORCE_GEOMETRY_SHADER)
+		{
+			/* 程序应适用于支持几何着色器的独立显卡 */
+			if (features.geometryShader != VK_TRUE)
+				return false;
+		}
+
+		/* 查找设备队列族索引 */
+		QueueFamilyCollector familyIndices = FindQueueFamilies(PhysicalDevice, Surface);
+
+		/* 查询设备是否支持扩展 (如交换链) */
+		bool requiredExtensionSupported = CheckPhysicalDeviceExtensionSupport(PhysicalDevice, DeviceExtensions);
+
+		/* 查询设备是否支持图像格式和呈现模式 */
+		bool swapChainAdequate = false;
+		if (requiredExtensionSupported)
+		{
+			SwapChainSupportDetails details = QuerySwapChainSupport(PhysicalDevice, Surface);
+			swapChainAdequate = !details.formats.empty() && !details.presentModes.empty();
+		}
+
+		return familyIndices.IsValid() && requiredExtensionSupported && swapChainAdequate && features.samplerAnisotropy;
+	}
+
+	bool DeviceFunctionLibrary::CheckPhysicalDeviceExtensionSupport(const VkPhysicalDevice& PhysicalDevice, const Vector<const char*>& DeviceExtensions)
+	{
+		/* 获取设备支持的所有扩展数量 */
+		uint32 extensionsCount = 0;
+		vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &extensionsCount, nullptr);
+
+		/* 获取设备支持的所有扩展 */
+		Vector<VkExtensionProperties> extensionProperties(extensionsCount);
+		vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &extensionsCount, extensionProperties.data());
+
+		Set<String> requiredExtensions(DeviceExtensions.begin(), DeviceExtensions.end());
+
+		for (const VkExtensionProperties& property : extensionProperties)
+		{
+			/* 每找到目标数据即从扩展列表排除 */
+			requiredExtensions.erase(property.extensionName);
+		}
+
+		return requiredExtensions.empty();
+	}
+
 	bool DeviceFunctionLibrary::CheckPhysicalDeviceFeatureSupport(const VkPhysicalDevice& PhysicalDevice)
 	{
 		/* 查询设备是否支持描述符索引 */

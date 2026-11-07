@@ -1,6 +1,7 @@
 #include "VulkanResourceManager.h"
 #include "file/FileSystem.h"
 #include "macros/VkMacro.h"
+#include "factory/VulkanInstanceFactories.h"
 #include "factory/DeviceFactories.h"
 #include "factory/DescriptorSetLayoutFactories.h"
 #include "factory/PipelineFactories.h"
@@ -14,23 +15,41 @@ namespace suz
 {
 	bool VulkanResourceManager::InitVulkan()
 	{
-		/* ===============初始化并调用Init函数=============== */
-		m_vkInitialize = std::make_unique<VulkanInitialize>();
+		/* ==================Vulkan初始化================== */
+		{
+			m_vulkanInstance = std::make_unique<VulkanInstance>();
+			VulkanInstanceSpec instanceSpec = suz_instance::CreateDefaultVulkanInstance();
+			m_vulkanInstance->Create(instanceSpec);
+		}
 
-		/* ==================创建逻辑设备=================== */
+		/* ==================创建物理设备=================== */
+		{
+			m_physicalDevice = std::make_unique<PhysicalDevice>(
+				m_vulkanInstance->GetVulkanInstance(),
+				m_vulkanInstance->GetSurface(),
+				DEVICE_EXTENSIONS
+			);
+			if (!m_physicalDevice->FindPhyscialDevice())
+			{
+				SUZZA_LOG_ERROR("Vulkan资源: 物理设备PhyscialDevice初始化失败!");
+				return false;
+			}
+		}
+
+		/* ===================创建逻辑设备=================== */
 		{
 			m_device = std::make_unique<Device>();
 			DeviceSpec deviceSpec = suz_device::CreateDefaultDeviceSpec();
 			if (!m_device->CreateDevice(deviceSpec))
 			{
-				SUZZA_LOG_ERROR("Vulkan资源初始化失败!");
+				SUZZA_LOG_ERROR("Vulkan资源: 逻辑设备Device初始化失败!");
 				return false;
 			}
 		}
 
 		/* ==================构建设备上下文================= */
 		m_deviceContext.device = m_device->GetDevice();
-		m_deviceContext.physicalDevice = m_vkInitialize->GetPhysicalDevice();
+		m_deviceContext.physicalDevice = m_physicalDevice->GetPhysicalDevice();
 		m_deviceContext.graphicsQueue = m_device->GetGraphicsQueue();
 		m_deviceContext.presentQueue = m_device->GetPresentQueue();
 		m_deviceContext.graphicsFamilyIndex = m_device->GetGraphicsFamily();
@@ -136,7 +155,8 @@ namespace suz
 		m_renderPasses.Destroy();
 		m_commandContext->Destroy();
 		m_device->Destroy();
-		m_vkInitialize->Destroy();
+		m_vulkanInstance->Destroy();
+		//m_vkInitialize->Destroy();
 
 		*m_isAlive = false;
 	}

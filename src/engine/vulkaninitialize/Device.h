@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SuzzaTypes.h"
+#include "macros/BuildMacro.h"
 #include "VulkanResourceBase.h"
 
 #include <vulkan/vulkan.hpp>
@@ -22,10 +23,10 @@ namespace suz
 	struct DeviceSpec
 	{
 		/* 验证层启用控制 */
-#ifdef NDEBUG
-		const bool enableValidationLayers = false;
-#else
+#ifdef SUZZA_DEBUG
 		const bool enableValidationLayers = true;
+#else
+		const bool enableValidationLayers = false;
 #endif // DEBUG模式自动开启验证层
 
 		DeviceSpec(const VkPhysicalDevice& PhysicalDevice)

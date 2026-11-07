@@ -2,10 +2,11 @@
 
 #include "VulkanResourceBase.h"
 #include "VulkanResourcePool.h"
+#include "vulkaninitialize/VulkanInstance.h"
+#include "vulkaninitialize/PhysicalDevice.h"
 #include "vulkaninitialize/Device.h"
 #include "vulkaninitialize/DescriptorSetLayout.h"
 #include "vulkanInitialize/Pipeline.h"
-#include "vulkanInitialize/VulkanInitialize.h"
 #include "vulkanInitialize/SwapChain.h"
 #include "vulkanInitialize/RenderPass.h"
 #include "vulkaninitialize/CommandContext.h"
@@ -27,15 +28,26 @@ namespace suz
 
 		void Destroy();
 
+		/* 请求的验证层列表 */
+		const Vector<const char*> VALIDATION_LAYERS = { "VK_LAYER_KHRONOS_validation" };
+		/* 需要支持的设备扩展 */
+		const Vector<const char*> DEVICE_EXTENSIONS = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+			VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
+		};
+
 	private:
 		VulkanResourceManager(const VulkanResourceManager&) = delete;
 		VulkanResourceManager& operator=(const VulkanResourceManager&) = delete;
 
+		UniquePtr<VulkanInstance> m_vulkanInstance = nullptr;
+		UniquePtr<PhysicalDevice> m_physicalDevice = nullptr;
 		UniquePtr<Device> m_device = nullptr;
+
 		VulkanResourcePool<RenderPass> m_renderPasses = {};
 		VulkanResourcePool<DescriptorSetLayout> m_descriptorLayouts = {};
 		VulkanResourcePool<Pipeline> m_pipelines = {};
-		std::unique_ptr<VulkanInitialize> m_vkInitialize = nullptr;
+
 		UniquePtr<SwapChain> m_swapChain = nullptr;
 		UniquePtr<CommandContext> m_commandContext = nullptr;
 		UniquePtr<BufferContext> m_bufferContext = nullptr;
@@ -47,8 +59,10 @@ namespace suz
 		DeviceContext m_deviceContext = {};
 
 	public:
+		inline VulkanInstance* GetVulkanInstance() { return m_vulkanInstance.get(); }
+		inline PhysicalDevice* GetPhysicalDevice() { return m_physicalDevice.get(); }
 		inline Device* GetDevice() { return m_device.get(); }
-		inline VulkanInitialize* GetVulkanInitialize() { return m_vkInitialize.get(); }
+
 		inline SwapChain* GetSwapChain() { return m_swapChain.get(); }
 		inline BufferArea* GetBufferArea() { return m_bufferArea.get(); }
 		inline Descriptor* GetDescriptor() { return m_descriptor.get(); }

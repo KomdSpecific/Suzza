@@ -26,7 +26,7 @@ namespace suz
 
 		bool WindowShouldClose() { return glfwWindowShouldClose(m_window); }
 
-		void CreateWindowSurface(const VkInstance& instance, VkSurfaceKHR* surface);
+		bool CreateWindowSurface(const VkInstance& instance, VkSurfaceKHR* surface);
 
 		/* 获取当前窗口的分辨率 */
 		inline VkExtent2D GetWindowExtent() { return { static_cast<uint32_t>(m_width),static_cast<uint32_t>(m_height) }; }

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "SuzzaTypes.h"
 
@@ -39,5 +39,25 @@ namespace suz
 		static VkPresentModeKHR ChooseSuitablePresentModeKHR(const Vector<VkPresentModeKHR>& AvailableModes);
 
 		static VkExtent2D GetSwapChainExtent(const VkSurfaceCapabilitiesKHR& Capabilities, MainWindow* Window);
+
+		static Vector<const char*> GetRequiredExtensions();
+
+#pragma region DEBUG_MESSENGER
+		static bool CheckValidationSupport(const Vector<const char*>& ValidationLayers);
+
+		static VkResult CreateDebugUtilsMessengerEXT(
+			VkInstance Instance,
+			const VkDebugUtilsMessengerCreateInfoEXT* MessengerCreateInfo,
+			const VkAllocationCallbacks* Allocator,
+			VkDebugUtilsMessengerEXT* DebugMessenger
+		);
+
+		static void DestroyDebugUtilsMessengerEXT(
+			VkInstance Instance,
+			VkDebugUtilsMessengerEXT DebugMessenger,
+			const VkAllocationCallbacks* Allocator
+		);
+
+#pragma endregion
 	};
 }

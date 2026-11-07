@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SuzzaTypes.h"
+#include "DeviceContext.h"
 #include "VulkanResourceBase.h"
 
 #include <vulkan/vulkan.h>
@@ -9,12 +9,12 @@ namespace suz
 {
 	struct RenderPassSpec
 	{
-		RenderPassSpec(const VkDevice& Device, const VkFormat& ImageFormat)
-			: device(Device), swapChainImageFormat(ImageFormat) {
+		RenderPassSpec(const DeviceContext& Context, const VkFormat& ImageFormat)
+			: deviceContext(Context), swapChainImageFormat(ImageFormat) {
 		}
 
-		const VkDevice& device;
-		const VkFormat& swapChainImageFormat;
+		DeviceContext deviceContext = {};
+		VkFormat swapChainImageFormat = {};
 
 		/* 颜色缓冲附件属性 */
 		Vector<VkAttachmentDescription> attachmentDesc{};
@@ -41,7 +41,8 @@ namespace suz
 		void Destroy();
 
 	private:
-		VkDevice m_device = {};
+		/* 必要资源句柄 */
+		DeviceContext m_deviceContext = {};
 
 		VkRenderPass m_renderPass = {};
 

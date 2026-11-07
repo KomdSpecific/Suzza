@@ -32,7 +32,7 @@ namespace suz
 
 	private:
 		Device* m_device;
-		VulkanInitialize* m_vkInitialize;
+		//VulkanInitialize* m_vkInitialize;
 		SwapChain* m_swapChain;
 		RenderPass* m_renderPass;
 		BufferArea* m_bufferArea;

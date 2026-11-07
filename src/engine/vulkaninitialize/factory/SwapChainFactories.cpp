@@ -1,4 +1,4 @@
-﻿#include "SwapChainFactories.h"
+#include "SwapChainFactories.h"
 #include "Engine.h"
 #include "MainWindow.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
@@ -14,7 +14,7 @@ namespace suz
 		SwapChainSpec CreateDefaultSwapChain()
 		{
 			DeviceContext deviceContext = Engine::GetVulkanResourceManager().GetDeviceContext();
-			const VkSurfaceKHR& surface = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetSurface();
+			const VkSurfaceKHR& surface = Engine::GetVulkanResourceManager().GetVulkanInstance()->GetSurface();
 
 			SwapChainSpec spec(deviceContext, surface);
 			spec.familyIndices = DeviceFunctionLibrary::FindQueueFamilies(deviceContext.physicalDevice, surface);

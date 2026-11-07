@@ -1,10 +1,5 @@
-﻿#include "RenderPassFactories.h"
-#include "Engine.h"
-#include "vulkaninitialize/VulkanResourceManager.h"
-#include "vulkaninitialize/functionLibrary/DeviceFunctionLibrary.h"
+#include "RenderPassFactories.h"
 #include "vulkaninitialize/functionLibrary/VulkanFunctionLibrary.h"
-
-#include "debug/SuzzaLog.h"
 
 namespace suz
 {
@@ -12,7 +7,7 @@ namespace suz
 	{
 		RenderPassSpec CreateDefaultRenderPassSpec(const DeviceContext& Context, const VkFormat& SwapChainFormat)
 		{
-			RenderPassSpec spec(Context.device, SwapChainFormat);
+			RenderPassSpec spec(Context, SwapChainFormat);
 			spec.attachmentDesc.resize(2);
 
 			/* ==========定义颜色缓冲附件属性========== */

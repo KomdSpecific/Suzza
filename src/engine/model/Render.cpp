@@ -5,7 +5,6 @@
 #include "vulkaninitialize/Device.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "vulkanInitialize/Pipeline.h"
-#include "vulkanInitialize/VulkanInitialize.h"
 #include "vulkanInitialize/SwapChain.h"
 #include "vulkanInitialize/RenderPass.h"
 #include "vulkanInitialize/BufferArea.h"
@@ -27,7 +26,7 @@ namespace suz
 		m_device = vkManager.GetDevice();
 		m_pipeline = vkManager.GetPipelines().GetResource("DefaultPipeline");
 		m_gridPipeline = vkManager.GetPipelines().GetResource("GridPipeline");
-		m_vkInitialize = vkManager.GetVulkanInitialize();
+		//m_vkInitialize = vkManager.GetVulkanInitialize();
 		m_swapChain = vkManager.GetSwapChain();
 		m_renderPass = vkManager.GetRenderPasses().GetResource("DefaultRenderPass");
 		m_bufferArea = vkManager.GetBufferArea();

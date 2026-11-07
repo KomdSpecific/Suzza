@@ -1,7 +1,6 @@
 #include "BufferArea.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
-#include "VulkanInitialize.h"
 #include "Pipeline.h"
 #include "macros/VkMacro.h"
 #include "graphics/Texture.h"

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "SuzzaTypes.h"
 
@@ -12,7 +12,12 @@ namespace suz
 	class DeviceFunctionLibrary
 	{
 	public:
-		/* 查询设备对硬件能力的支持 */
+		static bool IsPhysicalDeviceSuitable(const VkPhysicalDevice& PhysicalDevice, const VkSurfaceKHR& Surface, const Vector<const char*>& DeviceExtensions);
+
+		/* 查询设备是否支持所需的扩展 */
+		static bool CheckPhysicalDeviceExtensionSupport(const VkPhysicalDevice& PhysicalDevice, const Vector<const char*>& DeviceExtensions);
+
+		/* 查询设备对硬件特性的支持 */
 		static bool CheckPhysicalDeviceFeatureSupport(const VkPhysicalDevice& PhysicalDevice);
 		/* 创建设备硬件能力的链表 */
 		static vk::StructureChain<

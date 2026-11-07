@@ -1,7 +1,7 @@
 #pragma once
 
+#include "DeviceContext.h"
 #include "VulkanResourceBase.h"
-#include "VulkanInitialize.h"
 
 namespace suz
 {

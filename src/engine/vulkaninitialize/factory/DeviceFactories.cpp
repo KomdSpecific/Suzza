@@ -11,15 +11,14 @@ namespace suz
 	{
 		DeviceSpec CreateDefaultDeviceSpec()
 		{
-			const VkPhysicalDevice& physicalDevice = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetPhysicalDevice();
-			const VkSurfaceKHR& surface = Engine::GetVulkanResourceManager().GetVulkanInitialize()->GetSurface();
+			VulkanResourceManager& manager = Engine::GetVulkanResourceManager();
+
+			const VkPhysicalDevice& physicalDevice = manager.GetPhysicalDevice()->GetPhysicalDevice();
+			const VkSurfaceKHR& surface = manager.GetVulkanInstance()->GetSurface();
 
 			DeviceSpec spec(physicalDevice);
-			spec.validationLayers = { "VK_LAYER_KHRONOS_validation" };
-			spec.deviceExtensions = {
-				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-				VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
-			};
+			spec.validationLayers = manager.VALIDATION_LAYERS;
+			spec.deviceExtensions = manager.DEVICE_EXTENSIONS;
 
 			QueueFamilyCollector collector = DeviceFunctionLibrary::FindQueueFamilies(physicalDevice, surface);
 			if (!collector.IsValid())

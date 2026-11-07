@@ -40,16 +40,16 @@ namespace suz
 
 	bool RenderPass::CreateRenderPass(RenderPassSpec& Spec)
 	{
-		if (Spec.device == VK_NULL_HANDLE)
+		if (!Spec.deviceContext.DeviceValid())
 		{
 			SUZZA_LOG_ERROR("无法创建渲染通道: 逻辑设备device不合法!");
 			return false;
 		}
 
-		m_device = Spec.device;
+		m_deviceContext = Spec.deviceContext;
 
 		VkRenderPassCreateInfo renderPassInfo = RenderPassSpec::DefaultRenderPassCreateInfo(Spec);
-		if (vkCreateRenderPass(Spec.device, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+		if (vkCreateRenderPass(Spec.deviceContext.device, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS)
 		{
 			SUZZA_LOG_ERROR("创建渲染通道失败!");
 			return false;
@@ -62,7 +62,7 @@ namespace suz
 	{
 		if (!(*m_isAlive)) return;
 
-		vkDestroyRenderPass(m_device, m_renderPass, nullptr);
+		vkDestroyRenderPass(m_deviceContext.device, m_renderPass, nullptr);
 
 		*m_isAlive = false;
 	}

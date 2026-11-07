@@ -1,5 +1,6 @@
-﻿#include "VulkanFunctionLibrary.h"
+#include "VulkanFunctionLibrary.h"
 #include "MainWindow.h"
+#include "macros/BuildMacro.h"
 
 #include "debug/SuzzaLog.h"
 
@@ -119,6 +120,83 @@ namespace suz
 		{
 			Window->ResetWindowExtent();
 			return Window->GetWindowExtent();
+		}
+	}
+
+	Vector<const char*> VulkanFunctionLibrary::GetRequiredExtensions()
+	{
+		/* 获取GLFW窗口所需要的Vulkan实例扩展数量 */
+		uint32 extensionsCount = 0;
+		/* glfw自动返回当前平台渲染窗口必须的扩展列表 */
+		const char** requiredExtensions = glfwGetRequiredInstanceExtensions(&extensionsCount);
+
+		Vector<const char*> extensions(requiredExtensions, requiredExtensions + extensionsCount);
+
+		/* 启用验证层时, 追加调试扩展 */
+#ifdef SUZZA_DEBUG
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+#endif
+		return extensions;
+	}
+	
+	bool VulkanFunctionLibrary::CheckValidationSupport(const Vector<const char*>& ValidationLayers)
+	{
+		/* 获取可用层数量 */
+		uint32 layerCount = 0;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+		/* 获取所有可用层详情 */
+		Vector<VkLayerProperties> layerProperties(layerCount);
+		vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
+
+		for (const char* layer : ValidationLayers)
+		{
+			/* 遍历所有系统可用层 */
+			bool found = false;
+			for (const VkLayerProperties& property : layerProperties)
+			{
+				/* 如果两字符串相等直接跳出内层循环 */
+				if (strcmp(layer, property.layerName) == 0)
+				{
+					found = true;
+					break;
+				}
+			}
+
+			/* 但凡有一个验证层要求不满足直接返回 */
+			if (!found) return false;
+		}
+
+		return true;
+	}
+
+	VkResult VulkanFunctionLibrary::CreateDebugUtilsMessengerEXT(
+		VkInstance Instance,
+		const VkDebugUtilsMessengerCreateInfoEXT* MessengerCreateInfo,
+		const VkAllocationCallbacks* Allocator,
+		VkDebugUtilsMessengerEXT* DebugMessenger
+	)
+	{
+		PFN_vkCreateDebugUtilsMessengerEXT messenger = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance, "vkCreateDebugUtilsMessengerEXT");
+		if (messenger)
+		{
+			return messenger(Instance, MessengerCreateInfo, Allocator, DebugMessenger);
+		}
+
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+
+	void VulkanFunctionLibrary::DestroyDebugUtilsMessengerEXT(
+		VkInstance Instance,
+		VkDebugUtilsMessengerEXT DebugMessenger,
+		const VkAllocationCallbacks* Allocator
+	)
+	{
+		PFN_vkDestroyDebugUtilsMessengerEXT messenger = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance, "vkDestroyDebugUtilsMessengerEXT");
+		if (messenger)
+		{
+			messenger(Instance, DebugMessenger, Allocator);
 		}
 	}
 }

@@ -2,7 +2,6 @@
 #include "Engine.h"
 #include "vulkaninitialize/BufferArea.h"
 
-#include <stdexcept>
 #include <iostream>
 
 namespace suz
@@ -73,12 +72,15 @@ namespace suz
 		*m_isAlive = false;
 	}
 
-	void MainWindow::CreateWindowSurface(const VkInstance& instance, VkSurfaceKHR* surface)
+	bool MainWindow::CreateWindowSurface(const VkInstance& instance, VkSurfaceKHR* surface)
 	{
 		if (glfwCreateWindowSurface(instance, m_window, nullptr, surface) != VK_SUCCESS)
 		{
-			throw std::runtime_error("创建窗口表面失败!");
+			std::cerr << "创建窗口表面失败!" << std::endl;
+			return false;
 		}
+
+		return true;
 	}
 
 	void MainWindow::ResetWindowExtent()

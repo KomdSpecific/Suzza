@@ -1,4 +1,4 @@
-﻿#include "Engine.h"
+#include "Engine.h"
 #include "file/Filesystem.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "model/ModelResourceManager.h"
@@ -9,9 +9,10 @@
 #include "editor/EditorUI.h"
 #include "ReflectionInfo.h"
 
+#include "debug/SuzzaLog.h"
+
 #include <stdexcept>
 #include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
 
 namespace suz
 {
@@ -84,7 +85,11 @@ namespace suz
 		m_mainWindow = std::make_unique<MainWindow>(WIDTH, HEIGHT, "First Window");
 
 		/* Vulkan初始化 */
-		m_vkResourceManager.InitVulkan();
+		if (!m_vkResourceManager.InitVulkan())
+		{
+			SUZZA_LOG_ERROR("Vulkan资源初始化失败!");
+			return false;
+		}
 
 		/* 显式处理窗口大小调整, 某些情况导致窗口大小更改但交换链没有重建导致无法渲染整个窗口 */
 		m_mainWindow->BindOnFrameBufferResizeCallback(m_vkResourceManager.GetBufferArea());
@@ -96,8 +101,8 @@ namespace suz
 		m_editorUI = std::make_unique<EditorUI>();
 		m_editorUI->Init(
 			m_mainWindow->GetMainWindow(),
-			m_vkResourceManager.GetVulkanInitialize()->GetVulkanInstance(),
-			m_vkResourceManager.GetVulkanInitialize()->GetPhysicalDevice(),
+			m_vkResourceManager.GetVulkanInstance()->GetVulkanInstance(),
+			m_vkResourceManager.GetPhysicalDevice()->GetPhysicalDevice(),
 			m_vkResourceManager.GetDevice()->GetDevice(),
 			m_vkResourceManager.GetDevice()->GetGraphicsFamily(),
 			m_vkResourceManager.GetDevice()->GetGraphicsQueue(),
