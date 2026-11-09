@@ -38,7 +38,7 @@ namespace suz
 	inline void MultipleDelegate::Bind(Lambda&& CallbackFunc)
 	{
 		SingleDelegate delegate;
-		delegate.Bind<Lambda>(CallbackFunc);
+		delegate.Bind<Lambda>(std::forward<Lambda>(CallbackFunc));
 
 		m_delegates.push_back(std::move(delegate));
 	}
@@ -114,7 +114,7 @@ namespace suz
 	inline void MultipleDelegateOneParam<TArg1>::Bind(Lambda&& CallbackFunc)
 	{
 		SingleDelegateOneParam<TArg1> delegate;
-		delegate.Bind<Lambda>(CallbackFunc);
+		delegate.Bind<Lambda>(std::forward<Lambda>(CallbackFunc));
 
 		m_delegates.push_back(std::move(delegate));
 	}
@@ -193,7 +193,7 @@ namespace suz
 	inline void MultipleDelegateTwoParams<TArg1, TArg2>::Bind(Lambda&& CallbackFunc)
 	{
 		SingleDelegateTwoParams<TArg1, TArg2> delegate;
-		delegate.Bind<Lambda>(CallbackFunc);
+		delegate.Bind<Lambda>(std::forward<Lambda>(CallbackFunc));
 
 		m_delegates.push_back(std::move(delegate));
 	}

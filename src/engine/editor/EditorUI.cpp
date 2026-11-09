@@ -1,6 +1,8 @@
 #include "EditorUI.h"
 #include "Engine.h"
 #include "imgui/ImGuiUIRender.h"
+#include "model/Render.h"
+#include "model/ScenePass.h"
 #include "macros/VkMacro.h"
 #include "ReflectionInfo.h"
 
@@ -20,8 +22,8 @@ namespace suz
 		uiRender->Init(window, Instance, PhysicalDevice, Device, GraphicsFamily, GraphicsQueue, RenderPass, CommandPool);
 		m_uiRender = std::unique_ptr<ImGuiUIRender>(std::move(uiRender));
 
-		/* 执行引擎全局广播委托 */
-		EngineUIRenderEventDelegate& engineDelegate = Engine::GetEngineInstance().GetEngineUIRenderEventDelegate();
+		/* 绑定记录命令缓冲区广播委托 */
+		RecordCommandBufferDelegate& engineDelegate = Engine::GetEngineInstance().GetRender()->GetScenePass()->GetRecordCommandBufferDelegate();
 		engineDelegate.Bind([this](const VkCommandBuffer& CommandBuffer)
 			{
 				SuzzaApplication* application = Engine::GetEngineInstance().GetApplication();

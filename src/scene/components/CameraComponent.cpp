@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "Actor.h"
+#include "model/Render.h"
 #include "math/Math.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,6 +23,12 @@ namespace suz
 
 	void CameraComponent::UpdateWindowAspect(int Width, int Height)
 	{
+		if (Width <= 0 || Height <= 0)
+		{
+			m_aspect = 0;
+			return;
+		}
+
 		m_aspect = static_cast<float>(Width) / static_cast<float>(Height);
 	}
 

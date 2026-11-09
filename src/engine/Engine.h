@@ -1,13 +1,9 @@
 #pragma once
 
 #include "MainWindow.h"
-#include "model/Render.h"
-#include "SingleDelegateDeclareMacro.h"
 
 #include <memory>
 #include <chrono>
-
-DECLARE_SINGLE_DELEGATE_ONE_PARAM(EngineUIRenderEventDelegate, VkCommandBuffer);
 
 class SuzzaApplication;
 
@@ -21,6 +17,7 @@ namespace suz
 	class BindlessSlotsAllocator;
 	class ReflectionSystem;
 
+	class Render;
 	class EditorUI;
 
 	class Engine
@@ -77,9 +74,6 @@ namespace suz
 		/* 渲染每帧 */
 		std::unique_ptr<Render> m_render;
 
-		/* 引擎全局UI单播委托 */
-		EngineUIRenderEventDelegate m_uiRenderDelegate;
-
 #ifdef EDITOR
 		/* 编辑器UI */
 		std::unique_ptr<EditorUI> m_editorUI = nullptr;
@@ -89,8 +83,8 @@ namespace suz
 		void SetApplication(SuzzaApplication* gameApp);
 		SuzzaApplication* GetApplication();
 
+		Render* GetRender();
+
 		inline MainWindow* GetMainWindow() { return m_mainWindow.get(); }
-		inline Render* GetRender() { return m_render.get(); }
-		inline EngineUIRenderEventDelegate& GetEngineUIRenderEventDelegate() { return m_uiRenderDelegate; }
 	};
 }

@@ -11,7 +11,6 @@
 #include "vulkanInitialize/RenderPass.h"
 #include "vulkaninitialize/CommandContext.h"
 #include "vulkaninitialize/BufferContext.h"
-#include "vulkanInitialize/BufferArea.h"
 #include "vulkaninitialize/FrameBuffer.h"
 #include "vulkanInitialize/SyncObject.h"
 #include "vulkanInitialize/Descriptor.h"
@@ -51,7 +50,6 @@ namespace suz
 		UniquePtr<SwapChain> m_swapChain = nullptr;
 		UniquePtr<CommandContext> m_commandContext = nullptr;
 		UniquePtr<BufferContext> m_bufferContext = nullptr;
-		std::unique_ptr<BufferArea> m_bufferArea = nullptr;
 		std::unique_ptr<Descriptor> m_descriptor = nullptr;
 		std::unique_ptr<SyncObject> m_syncObject = nullptr;
 		UniquePtr<TextureSampler> m_textureSampler = nullptr;
@@ -64,7 +62,6 @@ namespace suz
 		inline Device* GetDevice() { return m_device.get(); }
 
 		inline SwapChain* GetSwapChain() { return m_swapChain.get(); }
-		inline BufferArea* GetBufferArea() { return m_bufferArea.get(); }
 		inline Descriptor* GetDescriptor() { return m_descriptor.get(); }
 		inline SyncObject* GetSyncObject() { return m_syncObject.get(); }
 

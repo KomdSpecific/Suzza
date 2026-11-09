@@ -113,15 +113,6 @@ namespace suz
 			m_bufferContext->CreateBufferContext(MAX_FRAMES_IN_FLIGHT);
 		}
 
-		/* BufferArea初始化 */
-		m_bufferArea = std::make_unique<BufferArea>(
-			*m_pipelines.GetResource("DefaultPipeline"),
-			m_device->GetDevice(),
-			m_swapChain->GetSwapChainExtent(),
-			m_renderPasses.GetResource("DefaultRenderPass")->GetRenderPass()
-		);
-		m_bufferArea->InitBufferArea();
-
 		m_descriptor = std::make_unique<Descriptor>(m_device->GetDevice());
 		m_descriptor->InitDescriptor();
 
@@ -147,7 +138,6 @@ namespace suz
 		m_textureSampler->Destroy();
 		m_syncObject->Destroy();
 		m_descriptor->Destroy();
-		m_bufferArea->Destroy();
 		m_bufferContext->Destroy();
 		m_pipelines.Destroy();
 		m_descriptorLayouts.Destroy();
@@ -156,7 +146,6 @@ namespace suz
 		m_commandContext->Destroy();
 		m_device->Destroy();
 		m_vulkanInstance->Destroy();
-		//m_vkInitialize->Destroy();
 
 		*m_isAlive = false;
 	}

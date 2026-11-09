@@ -1,6 +1,7 @@
 #include "MeshComponent.h"
 #include "Engine.h"
 #include "Actor.h"
+#include "model/Render.h"
 
 namespace suz
 {

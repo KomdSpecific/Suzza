@@ -9,7 +9,6 @@
 
 namespace suz
 {
-	class BufferArea;
 	class MainWindow;
 	class CommandContext;
 
@@ -86,6 +85,8 @@ namespace suz
 		/* 帧缓冲资源 */
 		Vector<UniquePtr<FrameBuffer>> m_frameBuffers = {};
 
+		bool m_frameBufferResized = false;
+
 	public:
 		inline const VkSwapchainKHR& GetSwapChain() const { return m_swapChain; }
 
@@ -94,5 +95,9 @@ namespace suz
 		inline const Vector<VkImageView>& GetSwapChainImageViews() const { return m_swapChainImageViews; }
 
 		inline const FrameBuffer& GetFrameBuffer(usize Index) const { return *m_frameBuffers[Index]; }
+
+		inline const bool& IsFrameBufferResized() const { return m_frameBufferResized; }
+		inline void EnableBufferResized() { m_frameBufferResized = true; }
+		inline void DisableBufferResized() { m_frameBufferResized = false; }
 	};
 }

@@ -1,8 +1,9 @@
-﻿#pragma once
+#pragma once
 
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <array>
 #include <set>
 #include <map>
 #include <unordered_map>

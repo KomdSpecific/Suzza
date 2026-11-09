@@ -1,7 +1,6 @@
-﻿#include "Mesh.h"
+#include "Mesh.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
-#include "vulkaninitialize/BufferArea.h"
 
 #include "debug/SuzzaLog.h"
 

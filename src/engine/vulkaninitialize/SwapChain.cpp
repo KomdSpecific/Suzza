@@ -62,6 +62,11 @@ namespace suz
 		: m_commandContext(InCommandContext), m_renderPass(RenderPass)
 	{
 		m_mainWindow = Engine::GetEngineInstance().GetMainWindow();
+		/* 绑定Window广播委托 */
+		m_mainWindow->GetWindowSizeChangedDelegate().Bind([this](int width, int height)->void {
+			if (!this) return;
+			this->EnableBufferResized();
+			});
 	}
 
 	SwapChain::~SwapChain()
@@ -149,13 +154,11 @@ namespace suz
 		vkDeviceWaitIdle(m_deviceContext.device);
 
 		/* 清理旧的缓冲区和交换链 */
-		//BufferArea->CleanupBufferArea();
 		CleanupSwapChain();
 
 		/* 创建新的交换链和新的帧缓冲区 */
 		SwapChainSpec spec = suz_swapchain::CreateDefaultSwapChain();
 		InitSwapChain(spec);
-		//BufferArea->ReCreateBufferArea(m_swapChainExtent);
 	}
 
 	void SwapChain::CleanupSwapChain()

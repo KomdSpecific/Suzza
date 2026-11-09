@@ -1,21 +1,13 @@
 #include "Render.h"
+#include "FrameContext.h"
+#include "ScenePass.h"
 #include "Engine.h"
-#include "macros/VkMacro.h"
 #include "ModelResourceManager.h"
-#include "vulkaninitialize/Device.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
-#include "vulkanInitialize/Pipeline.h"
-#include "vulkanInitialize/SwapChain.h"
-#include "vulkanInitialize/RenderPass.h"
-#include "vulkanInitialize/BufferArea.h"
-#include "vulkaninitialize/CommandContext.h"
-#include "vulkaninitialize/Descriptor.h"
-#include "vulkanInitialize/SyncObject.h"
 
 #include "debug/SuzzaLog.h"
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <stdexcept>
 
 namespace suz
 {
@@ -23,32 +15,25 @@ namespace suz
 		: m_bindlessSlotsAllocator(Engine::GetBindlessSlotsAllocator())
 	{
 		VulkanResourceManager& vkManager = Engine::GetVulkanResourceManager();
-		m_device = vkManager.GetDevice();
-		m_pipeline = vkManager.GetPipelines().GetResource("DefaultPipeline");
-		m_gridPipeline = vkManager.GetPipelines().GetResource("GridPipeline");
-		//m_vkInitialize = vkManager.GetVulkanInitialize();
-		m_swapChain = vkManager.GetSwapChain();
-		m_renderPass = vkManager.GetRenderPasses().GetResource("DefaultRenderPass");
-		m_bufferArea = vkManager.GetBufferArea();
+		Device* device = vkManager.GetDevice();
+		SwapChain* swapChain = vkManager.GetSwapChain();
+		RenderPass* renderPass = vkManager.GetRenderPasses().GetResource("DefaultRenderPass");
+		SyncObject* syncObject = vkManager.GetSyncObject();
+
 		m_commandContext = vkManager.GetCommandContext();
 		m_bufferContext = vkManager.GetBufferContext();
 		m_descriptor = vkManager.GetDescriptor();
-		m_syncObject = vkManager.GetSyncObject();
 
-		m_bufferArea->RegisterBindlessDescriptorSet(m_descriptor->GetBindlessDescriptorSets());
+		m_pipeline = vkManager.GetPipelines().GetResource("DefaultPipeline");
+		m_gridPipeline = vkManager.GetPipelines().GetResource("GridPipeline");
 
-		const Vector<ModelVertexData> gridVertices = {
-			{ { 10000.0f,  -10000.0f, 0.0f }, {1,1,1}, {0,0}},
-			{ { 10000.0f,  10000.0f, 0.0f }, {1,1,1}, {0,0}},
-			{ { -10000.0f,  10000.0f,  0.0f }, {1,1,1}, {0,0}},
-			{ { -10000.0f,  -10000.0f,  0.0f }, {1,1,1}, {0,0}}
-		};
+		m_frameContext = std::make_unique<FrameContext>(device, swapChain, m_commandContext, syncObject);
+		m_scenePass = std::make_unique<ScenePass>(swapChain, renderPass);
+	}
 
-		const Vector<uint16> gridIndices = {
-			0,1,2,
-			0,2,3
-		};
-	};
+	Render::~Render()
+	{
+	}
 
 	void Render::SubmitMesh(Mesh* TargetMesh, const ModelConstant& Constant)
 	{
@@ -71,29 +56,15 @@ namespace suz
 			DrawList& drawList;
 		} drawListCleaner{ m_drawList };
 
-		/* 1. 等待上一帧完成接收到围栏(Fence)信号, 并设置超时阙值 */
-		vkWaitForFences(m_device->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame], VK_TRUE, UINT64_MAX);
-
-		m_bindlessSlotsAllocator.ReleaseSlots();
-
-		/* 2. 从交换链获取图像 */
-		uint32 imageIndex;
-		/* 此处使用图像之后发送图像信号量 */
-		VkResult result = vkAcquireNextImageKHR(m_device->GetDevice(), m_swapChain->GetSwapChain(), UINT64_MAX, m_syncObject->GetImageAvailableSemaphore()[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
-		/* 如果交换链过期可重建 */
-		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		/* 1. 开启新的一帧 */
+		if (!m_frameContext->BeginFrame())
 		{
-			m_swapChain->ReCreateSwapChain();
+			SUZZA_LOG_ERROR("本帧建立失败, 提交已作废!");
 			return;
 		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-		{
-			throw std::runtime_error("从交换链获取图像失败!");
-		}
-
-		/* 重置围栏信号, 防止围栏重置后提前返回导致没有信号发出, 造成死锁 */
-		vkResetFences(m_device->GetDevice(), 1, &m_syncObject->GetInFrameFence()[m_currentFrame]);
-
+		/* 2. 释放上一帧的纹理插槽 */
+		m_bindlessSlotsAllocator.ReleaseSlots();
+		/* 拷贝摄像机矩阵数据到uniform缓冲区映射内存 */
 		UpdateModelTransform(DeltaTime);
 
 		/* 3. 组装 stage */
@@ -104,67 +75,36 @@ namespace suz
 		stage[1] = { m_gridPipeline,nullptr,&m_gridViewProjectionMatrix,sizeof(glm::mat4) };
 
 		/* 4. 记录命令缓冲, 传入图像索引 */
-		vkResetCommandBuffer(m_commandContext->GetCommandBuffer()[m_currentFrame], 0);
-		m_bufferArea->RecordCommandBuffer(
-			m_commandContext->GetCommandBuffer()[m_currentFrame],
-			m_descriptor->GetCameraDescriptorSetElement(m_currentFrame),
+		m_scenePass->RecordCommandBuffer(
+			m_commandContext->GetCommandBuffer()[m_frameContext->GetFrameIndex()],
+			{ m_descriptor->GetCameraDescriptorSetElement(m_frameContext->GetFrameIndex()),m_descriptor->GetBindlessDescriptorSets() },
 			stage,
-			imageIndex
+			m_frameContext->GetImageIndex()
 		);
 
 		/* 5. 提交命令缓冲 */
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		/* 指定需要等待的图像信号量和等待对应的管线阶段 */
-		VkSemaphore waitSemaphores[]{ m_syncObject->GetImageAvailableSemaphore()[m_currentFrame] };
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-		/* 指定实际提交执行的命令缓冲区 */
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_commandContext->GetCommandBuffer()[m_currentFrame];
-		/* 指定命令缓冲区完成执行需要发出的信号量 */
-		VkSemaphore sendSemaphores[] = { m_syncObject->GetRenderFinishedSemaphore()[m_currentFrame] };
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = sendSemaphores;
-
-		/* 6. 提交命令缓冲区到图形队列 */
-		if (vkQueueSubmit(m_device->GetGraphicsQueue(), 1, &submitInfo, m_syncObject->GetInFrameFence()[m_currentFrame]) != VK_SUCCESS)
+		VkSemaphore submitSemaphore;
+		if (!m_frameContext->SubmitFrame(submitSemaphore))
 		{
-			throw std::runtime_error("提交命令缓冲失败!");
+			SUZZA_LOG_ERROR("当前帧提交图形队列失败, 当前帧作废!");
+			return;
 		}
 
-		/* 7. 提交结果到交换链以此最终在屏幕上显示 */
-		VkPresentInfoKHR presentInfo{};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		/* 等待绘制完成的信号接收到才可以执行 */
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = sendSemaphores;
-		/* 指定将要呈现的交换链, 以及交换链需要呈现的图像索引 */
-		VkSwapchainKHR swapchains[] = { m_swapChain->GetSwapChain() };
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapchains;
-		presentInfo.pImageIndices = &imageIndex;
-
-		/* 最终: 请求提交图像到呈现队列 */
-		result = vkQueuePresentKHR(m_device->GetPresentQueue(), &presentInfo);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_bufferArea->IsFrameBufferResized())
+		/* 6. 提交交换链图像到呈现队列, 最终在屏幕上显示 */
+		if (!m_frameContext->PresentFrame(submitSemaphore))
 		{
-			m_bufferArea->DisableBufferResized();
-			m_swapChain->ReCreateSwapChain();
+			SUZZA_LOG_ERROR("当前帧提交呈现队列失败, 当前帧作废!");
 		}
-		else if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("呈现交换链图像失败!");
-		}
-
-		m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void Render::UpdateModelTransform(float DeltaTime)
 	{
 		/* 将摄像机数据传入映射内存 */
-		memcpy(m_bufferContext->GetUniformBuffersMapped()[m_currentFrame], &m_cameraViewportInfo, sizeof(m_cameraViewportInfo));
+		memcpy(m_bufferContext->GetUniformBuffersMapped()[m_frameContext->GetFrameIndex()], &m_cameraViewportInfo, sizeof(m_cameraViewportInfo));
+	}
+
+	ScenePass* Render::GetScenePass()
+	{
+		return m_scenePass.get();
 	}
 }

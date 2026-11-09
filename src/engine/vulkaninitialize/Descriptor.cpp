@@ -1,9 +1,9 @@
-﻿#include "Descriptor.h"
+#include "Descriptor.h"
 #include "Engine.h"
 #include "VulkanResourceManager.h"
 #include "Pipeline.h"
-#include "BufferArea.h"
 #include "macros/VkMacro.h"
+#include "model/RenderTypes.h"
 
 #include "debug/SuzzaLog.h"
 

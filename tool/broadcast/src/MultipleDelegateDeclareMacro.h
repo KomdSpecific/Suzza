@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "SingleDelegate.h"
 
@@ -39,7 +39,7 @@ namespace suz \
 	inline void DELEGATE_CLASS_NAME::Bind(Lambda&& CallbackFunc) \
 	{ \
 		SingleDelegate delegate; \
-		delegate.Bind<Lambda>(CallbackFunc); \
+		delegate.Bind<Lambda>(std::forward<Lambda>(CallbackFunc)); \
 		\
 		m_delegates.push_back(std::move(delegate)); \
 	} \
@@ -115,7 +115,7 @@ namespace suz \
 	inline void DELEGATE_CLASS_NAME::Bind(Lambda&& CallbackFunc) \
 	{ \
 		SingleDelegateOneParam<PARAM1> delegate; \
-		delegate.Bind<Lambda>(CallbackFunc); \
+		delegate.Bind<Lambda>(std::forward<Lambda>(CallbackFunc)); \
 		\
 		m_delegates.push_back(std::move(delegate)); \
 	} \
@@ -191,7 +191,7 @@ namespace suz \
 	inline void DELEGATE_CLASS_NAME::Bind(Lambda&& CallbackFunc) \
 	{ \
 		SingleDelegateTwoParams<PARAM1, PARAM2> delegate; \
-		delegate.Bind<Lambda>(CallbackFunc); \
+		delegate.Bind<Lambda>(std::forward<Lambda>(CallbackFunc)); \
 		\
 		m_delegates.push_back(std::move(delegate)); \
 	} \

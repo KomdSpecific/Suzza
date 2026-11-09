@@ -1,5 +1,4 @@
 #include "RenderPass.h"
-#include "vulkaninitialize/BufferArea.h"
 
 #include "debug/SuzzaLog.h"
 

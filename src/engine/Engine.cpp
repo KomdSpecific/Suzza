@@ -2,6 +2,7 @@
 #include "file/Filesystem.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "model/ModelResourceManager.h"
+#include "model/Render.h"
 #include "ImageLoaderManager.h"
 #include "ModelLoaderManager.h"
 #include "macros/VkMacro.h"
@@ -82,7 +83,7 @@ namespace suz
 		m_modelLoaderManager.CreateModelLoaderDispatcher();
 
 		/* 创建主窗口 */
-		m_mainWindow = std::make_unique<MainWindow>(WIDTH, HEIGHT, "First Window");
+		m_mainWindow = std::make_unique<MainWindow>(WIDTH, HEIGHT, "Suzza Engine");
 
 		/* Vulkan初始化 */
 		if (!m_vkResourceManager.InitVulkan())
@@ -92,7 +93,7 @@ namespace suz
 		}
 
 		/* 显式处理窗口大小调整, 某些情况导致窗口大小更改但交换链没有重建导致无法渲染整个窗口 */
-		m_mainWindow->BindOnFrameBufferResizeCallback(m_vkResourceManager.GetBufferArea());
+		m_mainWindow->BindOnFrameBufferResizeCallback();
 
 		/* 渲染每帧实例初始化 */
 		m_render = std::make_unique<Render>();
@@ -176,5 +177,10 @@ namespace suz
 	SuzzaApplication* Engine::GetApplication()
 	{
 		return m_suzzaApplication.get();
+	}
+
+	Render* Engine::GetRender()
+	{
+		return m_render.get();
 	}
 }

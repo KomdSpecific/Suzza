@@ -1,6 +1,5 @@
 #include "MainWindow.h"
 #include "Engine.h"
-#include "vulkaninitialize/BufferArea.h"
 
 #include <iostream>
 
@@ -88,18 +87,14 @@ namespace suz
 		glfwGetFramebufferSize(m_window, &m_width, &m_height);
 	}
 
-	void MainWindow::BindOnFrameBufferResizeCallback(BufferArea* Bufferarea)
+	void MainWindow::BindOnFrameBufferResizeCallback()
 	{
 		/* 绑定窗口大小变化回调函数 */
-		glfwSetWindowUserPointer(m_window, Bufferarea);
 		glfwSetFramebufferSizeCallback(m_window, OnFrameBufferResized);
 	}
 
 	void MainWindow::OnFrameBufferResized(GLFWwindow* Window, int Width, int Height)
 	{
-		BufferArea* bufferArea = reinterpret_cast<BufferArea*>(glfwGetWindowUserPointer(Window));
-		bufferArea->EnableBufferResized();
-
 		Engine::GetEngineInstance().GetMainWindow()->m_windowChangedDelegate.Broadcast(Width, Height);
 	}
 

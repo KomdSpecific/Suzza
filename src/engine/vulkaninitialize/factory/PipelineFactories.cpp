@@ -2,6 +2,8 @@
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
 #include "file/FileSystem.h"
+#include "model/Mesh.h"
+#include "model/RenderTypes.h"
 
 #include "debug/SuzzaLog.h"
 

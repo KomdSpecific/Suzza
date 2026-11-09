@@ -1,15 +1,12 @@
 #include "Texture.h"
 #include "Engine.h"
 #include "vulkaninitialize/VulkanResourceManager.h"
-#include "vulkaninitialize/BufferArea.h"
 #include "vulkaninitialize/functionLibrary/DeviceFunctionLibrary.h"
 #include "vulkaninitialize/functionLibrary/VulkanFunctionLibrary.h"
 #include "ImageLoaderManager.h"
 #include "file/FileSystem.h"
 
 #include "debug/SuzzaLog.h"
-
-#include <stdexcept>
 
 namespace suz
 {
@@ -72,7 +69,8 @@ namespace suz
 
 		if (vkCreateImage(device, &imageInfo, nullptr, &Image) != VK_SUCCESS)
 		{
-			throw std::runtime_error("创建图像失败!");
+			SUZZA_LOG_ERROR("创建图像失败!");
+			return;
 		}
 
 		/* 查询图像显存需求 */
@@ -88,7 +86,8 @@ namespace suz
 
 		if (vkAllocateMemory(device, &allocateInfo, nullptr, &ImageMemory) != VK_SUCCESS)
 		{
-			throw std::runtime_error("分配图像显存失败!");
+			SUZZA_LOG_ERROR("分配图像显存失败!");
+			return;
 		}
 
 		/* 将显存绑定到图像 */
@@ -117,7 +116,8 @@ namespace suz
 		VkImageView imageView{};
 		if (vkCreateImageView(device, &imageCreateInfo, nullptr, &imageView) != VK_SUCCESS)
 		{
-			throw std::runtime_error("创建图像视图失败!");
+			SUZZA_LOG_ERROR("创建图像视图失败!");
+			return imageView;
 		}
 
 		return imageView;

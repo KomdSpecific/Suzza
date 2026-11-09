@@ -2,12 +2,9 @@
 
 #include "BaseObject.h"
 #include "SuzzaTypes.h"
-#include "Component.h"
 #include "structtype/ModelStructor.h"
 
 #include <vulkan/vulkan.h>
-#include <array>
-#include <unordered_set>
 
 namespace suz
 {

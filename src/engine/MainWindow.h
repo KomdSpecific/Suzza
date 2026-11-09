@@ -3,7 +3,6 @@
 #include "BaseObject.h"
 #include "input/InputManager.h"
 #include "MultipleDelegateDeclareMacro.h"
-#include "SingleDelegateDeclareMacro.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -14,8 +13,6 @@ DECLARE_MULTIPLE_DELEGATE_TWO_PARAMS(WindowSizeChangedDelegate, int, int)
 
 namespace suz
 {
-	class BufferArea;
-
 	class MainWindow : public BaseObject
 	{
 	public:
@@ -32,7 +29,7 @@ namespace suz
 		inline VkExtent2D GetWindowExtent() { return { static_cast<uint32_t>(m_width),static_cast<uint32_t>(m_height) }; }
 		void ResetWindowExtent();
 
-		void BindOnFrameBufferResizeCallback(BufferArea* Bufferarea);
+		void BindOnFrameBufferResizeCallback();
 
 		static void OnFrameBufferResized(GLFWwindow* Window, int Width, int Height);
 
